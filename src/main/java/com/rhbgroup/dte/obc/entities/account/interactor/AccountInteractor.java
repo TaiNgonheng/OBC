@@ -1,10 +1,10 @@
 package com.rhbgroup.dte.obc.entities.account.interactor;
 
+import com.rhbgroup.dte.obc.common.enums.ResponseMessage;
 import com.rhbgroup.dte.obc.entities.Account;
 import com.rhbgroup.dte.obc.entities.account.controller.request.AccountRequest;
 import com.rhbgroup.dte.obc.entities.account.interactor.gateway.AccountService;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
-import com.rhbgroup.dte.obc.exceptions.UserAuthenticationMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,7 +38,7 @@ public class AccountInteractor {
             return authentication;
 
         } catch (AuthenticationException ex) {
-            throw new UserAuthenticationException(UserAuthenticationMessage.INVALID_CREDENTIAL);
+            throw new UserAuthenticationException(ResponseMessage.INVALID_CREDENTIAL);
         }
 
     }

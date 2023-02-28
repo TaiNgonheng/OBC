@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.exceptions;
 
+import com.rhbgroup.dte.obc.common.enums.ResponseMessage;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -7,5 +8,5 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class UserAuthenticationException extends RuntimeException {
 
-    private final UserAuthenticationMessage authenticationMessage;
+    private final ResponseMessage responseMessage;
 }

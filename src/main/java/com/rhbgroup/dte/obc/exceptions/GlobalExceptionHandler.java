@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.exceptions;
 
+import com.rhbgroup.dte.obc.common.ResponseWrapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -25,13 +26,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UserAuthenticationException.class)
-    public ResponseEntity<Object> authenticationException(UserAuthenticationException ex) {
-
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("message", ex.getAuthenticationMessage().getMsg());
-        body.put("code", ex.getAuthenticationMessage().getCode());
-
-        return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ResponseWrapper<String>> authenticationException(UserAuthenticationException ex) {
+        return new ResponseEntity<>(
+                ResponseWrapper.failed(ex.getResponseMessage()),
+                HttpStatus.UNAUTHORIZED
+        );
     }
 }

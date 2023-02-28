@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.entities.account.controller;
 
+import com.rhbgroup.dte.obc.common.ResponseWrapper;
 import com.rhbgroup.dte.obc.common.utils.func.Functions;
 import com.rhbgroup.dte.obc.entities.account.controller.request.AccountRequest;
 import com.rhbgroup.dte.obc.entities.account.controller.response.AccountResponse;
@@ -22,16 +23,17 @@ public class AccountController {
     private final AccountMapper accountMapper;
 
     @PostMapping("/init-link-account")
-    public ResponseEntity<AccountResponse> initLink(@RequestBody AccountRequest request) {
+    public ResponseEntity<ResponseWrapper<AccountResponse>> initLink(@RequestBody AccountRequest request) {
 
         return Functions.of(accountInteractor::authenticate)
                 .andThen(authentication -> accountMapper.toAccountResponse(request, authentication))
+                .andThen(ResponseWrapper::ok)
                 .andThen(ResponseEntity::ok)
                 .apply(request);
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<String> getOtp() {
-        return ResponseEntity.ok("018203");
+    public ResponseEntity<ResponseWrapper<String>> getOtp() {
+        return ResponseEntity.ok(ResponseWrapper.ok("012345"));
     }
 }
