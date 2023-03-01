@@ -38,7 +38,9 @@ springdoc:
     enabled: true
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api/v1
 
 app:
   jwt-secret: my-secret

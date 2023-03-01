@@ -1,9 +1,6 @@
 package com.rhbgroup.dte.obc.entities.account.mapper;
 
-import com.rhbgroup.dte.obc.entities.Account;
-import com.rhbgroup.dte.obc.entities.account.controller.request.AccountRequest;
-import com.rhbgroup.dte.obc.entities.account.controller.response.AccountResponse;
-import com.rhbgroup.dte.obc.security.JwtTokenManager;
+import com.rhbgroup.dte.obc.model.AccountResponse;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -15,13 +12,14 @@ public class AccountMapper {
     @Autowired
     private JwtTokenUtils jwtTokenUtils;
 
-    public AccountResponse toAccountResponse(AccountRequest accountRequest, Authentication authentication) {
-        return AccountResponse.builder()
-                .account(Account.builder()
-                        .username(accountRequest.getUsername())
-                        .password(accountRequest.getPassword())
-                        .build())
-                .token(jwtTokenUtils.generateJwt(authentication))
-                .build();
+    // TODO using mapstruct
+    public AccountResponse toAccountResponse(Authentication authentication) {
+        AccountResponse accountResponse = new AccountResponse();
+        accountResponse.setAccessToken(jwtTokenUtils.generateJwt(authentication));
+        accountResponse.setLast3DigitsPhone("123");
+        accountResponse.setRequireOtp(1);
+        accountResponse.setRequireChangePhone(0);
+
+        return accountResponse;
     }
 }

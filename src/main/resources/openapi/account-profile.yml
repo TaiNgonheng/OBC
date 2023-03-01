@@ -1,0 +1,86 @@
+openapi: 3.0.0
+
+info:
+  title: User Profile
+  version: "1.0"
+  description: "This API helps us to interact with configuration and their associated entities like version and others if any"
+
+servers: # context path - /api/v1
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /init-link-account:
+    post:
+      summary: Initialize CASA linking account
+      description: Link CASA between NBC and GoWave
+      operationId: initLinkAccount
+      requestBody:
+        description: Create account
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '405':
+          description: Validation exception
+
+components:
+  schemas:
+    AccountRequest:
+      type: object
+      properties:
+        loginType:
+          type: string
+          enum:
+            - PHONE_PIN
+            - USER_PWD
+          example: PHONE_PIN
+        login:
+          type: string
+          example: john789
+        key:
+          type: string
+          description: A hash password in SHA256
+          example: hash_password
+        bakongAccId:
+          type: string
+          example: john@email.com
+        phoneNumber:
+          type: string
+          example: '09827923472'
+
+    AccountResponse:
+      type: object
+      description: Account Response
+      properties:
+        accessToken:
+          type: string
+          example: jwt_token
+        requireOtp:
+          type: integer
+          example: 1
+        requireChangePhone:
+          type: integer
+          example: 0
+        last3DigitsPhone:
+          type: string
+          example: 123
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: security scheme type (HTTP bearer)

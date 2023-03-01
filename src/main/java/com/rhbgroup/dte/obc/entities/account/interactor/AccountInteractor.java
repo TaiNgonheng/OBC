@@ -2,9 +2,9 @@ package com.rhbgroup.dte.obc.entities.account.interactor;
 
 import com.rhbgroup.dte.obc.common.enums.ResponseMessage;
 import com.rhbgroup.dte.obc.entities.Account;
-import com.rhbgroup.dte.obc.entities.account.controller.request.AccountRequest;
 import com.rhbgroup.dte.obc.entities.account.interactor.gateway.AccountService;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
+import com.rhbgroup.dte.obc.model.AccountRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,16 +24,10 @@ public class AccountInteractor {
         return accountService.doSomething();
     }
 
-    public Account initAccount() {
-        return accountService.doSomething();
-    }
-
     public Authentication authenticate(AccountRequest accountRequest) {
         try {
-            Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    accountRequest.getUsername(),
-                    accountRequest.getPassword())
-            );
+            Authentication authentication = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(accountRequest.getLogin(), accountRequest.getKey()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             return authentication;
 
