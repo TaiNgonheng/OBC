@@ -1,6 +1,5 @@
 package com.rhbgroup.dte.obc.common;
 
-import com.rhbgroup.dte.obc.common.enums.ResponseMessage;
 import lombok.Builder;
 import lombok.Value;
 

@@ -27,9 +27,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAuthenticationException.class)
     public ResponseEntity<ResponseWrapper<String>> authenticationException(UserAuthenticationException ex) {
-        return new ResponseEntity<>(
-                ResponseWrapper.failed(ex.getResponseMessage()),
-                HttpStatus.UNAUTHORIZED
-        );
+        return new ResponseEntity<>(ResponseWrapper.failed(ex.getResponseMessage()), HttpStatus.UNAUTHORIZED);
     }
 }

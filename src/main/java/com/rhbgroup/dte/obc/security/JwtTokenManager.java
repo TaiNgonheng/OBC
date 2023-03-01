@@ -1,6 +1,6 @@
 package com.rhbgroup.dte.obc.security;
 
-import com.rhbgroup.dte.obc.entities.user.interactor.UserInteractor;
+import com.rhbgroup.dte.obc.domains.user.interactor.UserInteractor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

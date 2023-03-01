@@ -1,6 +1,6 @@
 package com.rhbgroup.dte.obc.security;
 
-import com.rhbgroup.dte.obc.entities.user.interactor.DaoUserDetailService;
+import com.rhbgroup.dte.obc.domains.user.interactor.gateway.DaoUserDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,8 +27,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   private final DaoUserDetailService userDetailsService;
   private final JwtTokenManager jwtTokenManager;
 
-  private static final String[] ALLOW_PATHS = new String[]{
-      "/init-link-account", "/authenticate", "/swagger-ui/**", "/v3/api-docs/**"};
+  private static final String[] ALLOW_PATHS = new String[]{"/init-link-account", "/authenticate", "/swagger-ui/**", "/v3/api-docs/**"};
 
   @Bean
   public PasswordEncoder passwordEncoder() {
