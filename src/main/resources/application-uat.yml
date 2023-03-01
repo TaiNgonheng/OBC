@@ -1,33 +1,40 @@
 spring:
   jpa:
-    show-sql: false
+    show-sql: true
     hibernate:
-      ddl-auto: none #create, create-drop, validate, update, none
+      ddl-auto: none
+
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST:localhost}:33060/obc?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=true
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/obc?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=true&connectTimeout=20000
     username: ${MYSQL_USERNAME:root}
     password: ${MYSQL_PASSWORD:1qaz!QAZ}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimumIdle: ${SPRING_HIKARI_MIN_IDLE:2}
+      maximumPoolSize: ${SPRING_HIKARI_MAX_POOL_SIZE:20}
+      idleTimeout: ${SPRING_HIKARI_IDLE_TIMEOUT:120000}
+      connectionTimeout: ${SPRING_HIKARI_CONNECTION_TIMEOUT:300000}
+      leakDetectionThreshold: ${SPRING_HIKARI_LEAK_DETECTION_THRESHOLD:300000}
 
-  liquibase:
-    enabled: true
-    change-log: classpath:/liquibase/uat-changelog.xml
+  flyway:
+    locations: classpath:sql/ddl,classpath:sql/dml
+
+  jackson:
+    default-property-inclusion: NON_NULL
 
   application:
-    name: ${APP_NAME:obc-uat}
+    name: ${APP_NAME:obc-sit}
 
-#logging:
-#  level:
-#    web: debug
+logging:
+  level:
+    web: debug
 
 springdoc:
   api-docs:
-    enabled: false
+    enabled: true
   swagger-ui:
-    enabled: false
-
-app:
-  jwt-secret: ${JWT_SECRET_KEY:my-secret}
+    enabled: true
 
 server:
-  port: 8081
+  port: 8080
+
