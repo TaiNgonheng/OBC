@@ -1,7 +1,8 @@
 package com.rhbgroup.dte.obc.security;
 
-import com.rhbgroup.dte.obc.domains.user.interactor.gateway.DaoUserDetailService;
+import com.rhbgroup.dte.obc.domains.user.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,8 +14,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -24,14 +25,23 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-  private final DaoUserDetailService userDetailsService;
+  private final UserDetailsServiceImpl userDetailsService;
   private final JwtTokenManager jwtTokenManager;
 
-  private static final String[] ALLOW_PATHS = new String[]{"/init-link-account", "/authenticate", "/swagger-ui/**", "/v3/api-docs/**"};
+  @Bean
+  @Override
+  public AuthenticationManager authenticationManagerBean() throws Exception {
+    return super.authenticationManagerBean();
+  }
+
+  @Override
+  protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+  }
 
   @Bean
   public PasswordEncoder passwordEncoder() {
-    return new StandardPasswordEncoder();
+    return new BCryptPasswordEncoder();
   }
 
   @Bean
@@ -60,8 +70,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         // Adding authorization config
         .authorizeHttpRequests()
-        .antMatchers(HttpMethod.POST, ALLOW_PATHS).permitAll()
-        .antMatchers(HttpMethod.GET, ALLOW_PATHS).permitAll()
+        .antMatchers(HttpMethod.POST, WhitelistUrlManager.getWhitelistUrls()).permitAll()
+        .antMatchers(HttpMethod.GET, WhitelistUrlManager.getWhitelistUrls()).permitAll()
         .anyRequest().authenticated()
         .and()
 
@@ -71,17 +81,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // Adding custom filters
         .addFilterBefore(
             new JwtAuthenticationFilter(jwtTokenManager), UsernamePasswordAuthenticationFilter.class);
-  }
-
-  @Bean
-  @Override
-  public AuthenticationManager authenticationManagerBean() throws Exception {
-    return super.authenticationManagerBean();
-  }
-
-  @Override
-  public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-    authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
   }
 
 }

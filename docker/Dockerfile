@@ -1,10 +1,10 @@
 FROM adoptopenjdk/openjdk11:jre-11.0.10_9-alpine
 
-ENV SERVICE_NAME=configuration
+ENV SERVICE_NAME=obc
 
 ARG APP_PATH=/app
-ARG APP_USER=app
-ARG APP_GROUP=app
+ARG APP_USER=/app
+ARG APP_GROUP=/app
 
 ARG MS_DIR=microservices
 ARG CW_AGENT_DIR=${MS_DIR}/cloudwatch-agent-prometheus

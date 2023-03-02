@@ -8,5 +8,5 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class UserAuthenticationException extends RuntimeException {
 
-    private final ResponseMessage responseMessage;
+  private final ResponseMessage responseMessage;
 }

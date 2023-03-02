@@ -1,4 +1,4 @@
 package com.rhbgroup.dte.obc.domains.user.mapper;
 
-public class UserMapper {
+public class UserProfileMapper {
 }

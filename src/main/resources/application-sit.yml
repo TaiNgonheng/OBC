@@ -44,3 +44,4 @@ server:
 
 app:
   jwt-secret: my-secret
+  jwt-ttl: 300
