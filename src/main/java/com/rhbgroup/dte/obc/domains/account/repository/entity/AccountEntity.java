@@ -1,18 +1,17 @@
 package com.rhbgroup.dte.obc.domains.account.repository.entity;
 
-import lombok.Getter;
-import lombok.Setter;
-
+import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.time.Instant;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
-@Entity(name = "tbl_account")
+@Entity(name = "tbl_obc_account")
 public class AccountEntity {
 
   @Id
@@ -21,10 +20,13 @@ public class AccountEntity {
   private Long id;
 
   @Column(name = "bakong_id", nullable = false)
-  private Long bakongId;
+  private String bakongId;
 
   @Column(name = "account_id", nullable = false)
-  private Long accountId;
+  private String accountId;
+
+  @Column(name = "user_id", nullable = false)
+  private Long userId;
 
   @Column(name = "active")
   private Boolean active;
@@ -34,5 +36,4 @@ public class AccountEntity {
 
   @Column(name = "updated_date")
   private Instant updatedDate;
-
 }

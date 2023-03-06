@@ -1,14 +1,13 @@
 package com.rhbgroup.dte.obc.domains.user.repository.entity;
 
-import lombok.Getter;
-import lombok.Setter;
-
+import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.time.Instant;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -34,13 +33,12 @@ public class UserProfileEntity {
   @Column(name = "email", nullable = false)
   private String email;
 
-  @Column(name = "cif")
-  private String cif;
+  @Column(name = "cif_no")
+  private String cifNo;
 
   @Column(name = "created_date")
   private Instant createdDate;
 
-  @Column(name = "update_date")
-  private Instant updateDate;
-
+  @Column(name = "updated_date")
+  private Instant updatedDate;
 }
