@@ -3,7 +3,7 @@ version: '3.1'
 services:
   db-uat:
     container_name: obc-uat-db
-    image: mysql:5
+    image: mysql:8
     ports:
       - '33068:3306'
     restart: always
