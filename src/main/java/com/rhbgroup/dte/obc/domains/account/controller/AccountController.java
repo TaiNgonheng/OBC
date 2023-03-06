@@ -12,14 +12,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class AccountController implements DefaultApiDelegate {
 
-  @Autowired
-  private AccountService accountService;
+  @Autowired private AccountService accountService;
 
   @Override
   public ResponseEntity<InitAccountResponse> initLinkAccount(InitAccountRequest request) {
-    return Functions.of(accountService::authenticate)
-        .andThen(ResponseEntity::ok)
-        .apply(request);
+    return Functions.of(accountService::authenticate).andThen(ResponseEntity::ok).apply(request);
   }
-
 }

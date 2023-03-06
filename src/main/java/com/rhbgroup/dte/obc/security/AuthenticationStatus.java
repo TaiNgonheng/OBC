@@ -27,7 +27,9 @@ public class AuthenticationStatus {
   }
 
   public enum Status {
-    SUCCESS, INVALID, EXPIRED, BYPASSED
+    SUCCESS,
+    INVALID,
+    EXPIRED,
+    BYPASSED
   }
 }
-

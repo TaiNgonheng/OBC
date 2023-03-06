@@ -1,15 +1,14 @@
 package com.rhbgroup.dte.obc.security;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Arrays;
+import org.apache.commons.lang3.StringUtils;
 
 public class WhitelistUrlManager {
 
-  private static final String[] WHITELIST_URLS = new String[]{"/init-link-account", "/authenticate"};
+  private static final String[] WHITELIST_URLS =
+      new String[] {"/init-link-account", "/authenticate"};
 
-  private WhitelistUrlManager() {
-  }
+  private WhitelistUrlManager() {}
 
   public static String[] getWhitelistUrls() {
     return WHITELIST_URLS;
@@ -22,5 +21,4 @@ public class WhitelistUrlManager {
 
     return Arrays.asList(WHITELIST_URLS).contains(servletPath);
   }
-
 }

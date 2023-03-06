@@ -1,0 +1,2 @@
+// @SpringBootTest
+public class ObcTestApplication {}

@@ -5,6 +5,4 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Mapper(componentModel = "spring")
-public interface AccountMapper {
-
-}
+public interface AccountMapper {}

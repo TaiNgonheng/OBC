@@ -2,7 +2,6 @@ package com.rhbgroup.dte.obc.security;
 
 import com.rhbgroup.dte.obc.domains.user.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -63,16 +62,25 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity httpSecurity) throws Exception {
 
     httpSecurity
-        .cors().and()
-        .csrf().disable()
-        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-        .exceptionHandling().authenticationEntryPoint(authEntryPoint()).and()
+        .cors()
+        .and()
+        .csrf()
+        .disable()
+        .sessionManagement()
+        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .and()
+        .exceptionHandling()
+        .authenticationEntryPoint(authEntryPoint())
+        .and()
 
         // Adding authorization config
         .authorizeHttpRequests()
-        .antMatchers(HttpMethod.POST, WhitelistUrlManager.getWhitelistUrls()).permitAll()
-        .antMatchers(HttpMethod.GET, WhitelistUrlManager.getWhitelistUrls()).permitAll()
-        .anyRequest().authenticated()
+        .antMatchers(HttpMethod.POST, WhitelistUrlManager.getWhitelistUrls())
+        .permitAll()
+        .antMatchers(HttpMethod.GET, WhitelistUrlManager.getWhitelistUrls())
+        .permitAll()
+        .anyRequest()
+        .authenticated()
         .and()
 
         // Authentication provider
@@ -80,7 +88,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         // Adding custom filters
         .addFilterBefore(
-            new JwtAuthenticationFilter(jwtTokenManager), UsernamePasswordAuthenticationFilter.class);
+            new JwtAuthenticationFilter(jwtTokenManager),
+            UsernamePasswordAuthenticationFilter.class);
   }
-
 }

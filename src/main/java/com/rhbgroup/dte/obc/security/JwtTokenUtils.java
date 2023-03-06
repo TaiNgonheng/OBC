@@ -8,18 +8,15 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.UnsupportedJwtException;
+import java.util.Date;
+import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
-import java.util.function.Function;
 
 @Slf4j
 @Component
@@ -30,8 +27,8 @@ public class JwtTokenUtils {
 
   @Value("${app.jwt-ttl}")
   private Long tokenTTL; // in second
-  @Autowired
-  private PasswordEncoder encoder;
+
+  @Autowired private PasswordEncoder encoder;
 
   public String getUsernameFromJwtToken(String jwt) {
     return getClaimFromToken(jwt, Claims::getSubject);
@@ -75,5 +72,4 @@ public class JwtTokenUtils {
     Date expiryDate = getClaimFromToken(token, Claims::getExpiration);
     return expiryDate.before(new Date());
   }
-
 }

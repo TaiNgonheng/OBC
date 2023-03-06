@@ -18,19 +18,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class AccountServiceImpl implements AccountService {
 
-  @Autowired
-  private AuthenticationManager authManager;
+  @Autowired private AuthenticationManager authManager;
 
-  @Autowired
-  private JwtTokenUtils jwtTokenUtils;
+  @Autowired private JwtTokenUtils jwtTokenUtils;
 
   @Override
   public InitAccountResponse authenticate(InitAccountRequest request) {
 
     Authentication authentication;
     try {
-      authentication = authManager.authenticate(
-          new UsernamePasswordAuthenticationToken(request.getLogin(), request.getKey()));
+      authentication =
+          authManager.authenticate(
+              new UsernamePasswordAuthenticationToken(request.getLogin(), request.getKey()));
       SecurityContextHolder.getContext().setAuthentication(authentication);
 
     } catch (AuthenticationException ex) {
@@ -48,6 +47,5 @@ public class AccountServiceImpl implements AccountService {
     accountResponse.setData(data);
 
     return accountResponse;
-
   }
 }
