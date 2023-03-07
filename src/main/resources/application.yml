@@ -1,0 +1,5 @@
+spring:
+  profiles:
+    active: sit
+  main:
+    allow-circular-references: true

@@ -1,0 +1,37 @@
+version: '3.1'
+
+services:
+  db-uat:
+    container_name: obc-uat-db
+    image: mysql:8
+    ports:
+      - '33068:3306'
+    restart: always
+    environment:
+      - MYSQL_DATABASE=obc
+      - MYSQL_ROOT_USERNAME=admin
+      - MYSQL_ROOT_PASSWORD=1qaz!QAZ
+    volumes:
+      - obc-uat-db:/data/db
+      - obc-uat-configdb:/data/configdb
+
+  db-sit:
+    container_name: obc-sit-db
+    image: mysql:5
+    ports:
+      - '3306:3306'
+    restart: always
+    environment:
+      - MYSQL_DATABASE=obc
+      - MYSQL_ROOT_USERNAME=admin
+      - MYSQL_ROOT_PASSWORD=1qaz!QAZ
+    volumes:
+      - obc-sit-db:/data/db
+      - obc-sit-configdb:/data/configdb
+
+volumes:
+  obc-uat-db:
+  obc-uat-configdb:
+  obc-sit-db:
+  obc-sit-configdb:
+
