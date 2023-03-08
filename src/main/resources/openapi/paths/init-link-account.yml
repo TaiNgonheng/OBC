@@ -1,0 +1,27 @@
+#init-link-account:
+post:
+  tags:
+    - Account
+  summary: Initialize CASA linking account
+  description: Link CASA between NBC and GoWave
+  operationId: initLinkAccount
+  requestBody:
+    description: Create account
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/account/InitAccountRequest.yml'
+    required: true
+  responses:
+    '200':
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/account/InitAccountResponse.yml'
+    '400':
+      description: Invalid Account ID
+    '404':
+      description: Account not found
+    '405':
+      description: Validation exception

@@ -1,0 +1,11 @@
+type: object
+description: Account model
+properties:
+  id:
+    type: integer
+  bakongId:
+    type: string
+  accountId:
+    type: string
+  active:
+    type: boolean

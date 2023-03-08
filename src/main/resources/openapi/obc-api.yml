@@ -1,0 +1,40 @@
+openapi: 3.0.0
+
+info:
+  title: Open Banking Client
+  version: "1.0"
+  description: "Those APIs describe how OBC system communicate with NBC gateway"
+
+tags:
+  - name: Account
+    description: Account APIs
+  - name: UserProfile
+    description: Account APIs
+
+servers: # context path - /api/v1
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /init-link-account:
+    $ref: './paths/init-link-account.yml'
+
+components:
+  schemas:
+    AccountModel:
+      $ref: './schemas/account/AccountModel.yml'
+    ResponseWrapper:
+      $ref: './schemas/account/ResponseWrapper.yml'
+    ResponseStatus:
+      $ref: './schemas/account/ResponseStatus.yml'
+    InitAccountRequest:
+      $ref: './schemas/account/InitAccountRequest.yml'
+    InitAccountResponse:
+      $ref: './schemas/account/InitAccountResponse.yml'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: security scheme type (HTTP bearer)

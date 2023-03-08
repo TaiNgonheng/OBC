@@ -1,0 +1,21 @@
+type: object
+properties:
+  loginType:
+    type: string
+    enum:
+      - PHONE_PIN
+      - USER_PWD
+    example: PHONE_PIN
+  login:
+    type: string
+    example: john789
+  key:
+    type: string
+    description: A hash password in SHA256
+    example: hash_password
+  bakongAccId:
+    type: string
+    example: john@email.com
+  phoneNumber:
+    type: string
+    example: '09827923472'

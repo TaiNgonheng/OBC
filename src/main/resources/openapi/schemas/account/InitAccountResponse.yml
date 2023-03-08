@@ -1,0 +1,20 @@
+allOf:
+  - $ref: './ResponseWrapper.yml'
+  - type: object
+    properties:
+      data:
+        type: object
+        description: Account Response
+        properties:
+          accessToken:
+            type: string
+            example: jwt_token
+          requireOtp:
+            type: integer
+            example: 1
+          requireChangePhone:
+            type: integer
+            example: 0
+          last3DigitsPhone:
+            type: string
+            example: 123
