@@ -7,6 +7,7 @@ import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class AccountServiceImpl implements AccountService {
 
   @Autowired private AuthenticationManager authManager;
@@ -25,6 +27,9 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public InitAccountResponse authenticate(InitAccountRequest request) {
 
+    String encodedPassword = jwtTokenUtils.encodePassword(request.getKey());
+    log.info("Password encoded >> {}", encodedPassword);
+
     Authentication authentication;
     try {
       authentication =
@@ -33,7 +38,7 @@ public class AccountServiceImpl implements AccountService {
       SecurityContextHolder.getContext().setAuthentication(authentication);
 
     } catch (AuthenticationException ex) {
-      throw new UserAuthenticationException(ResponseMessage.INVALID_TOKEN);
+      throw new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED);
     }
 
     InitAccountResponseAllOfData data = new InitAccountResponseAllOfData();

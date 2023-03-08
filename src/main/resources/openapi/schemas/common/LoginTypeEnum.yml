@@ -1,0 +1,5 @@
+type: string
+enum:
+  - PHONE_PIN
+  - USER_PWD
+example: PHONE_PIN

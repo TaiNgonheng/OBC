@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.exceptions;
 
+import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.ResponseWrapper;
 import java.time.LocalDateTime;
@@ -25,15 +26,27 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(UserAuthenticationException.class)
-  public ResponseEntity<ResponseWrapper> authenticationException(UserAuthenticationException ex) {
+  public ResponseEntity<ResponseWrapper> userAuthenticationException(
+      UserAuthenticationException ex) {
 
-    ResponseStatus status = new ResponseStatus();
-    status.setCode(1);
-    status.setErrorCode(ex.getResponseMessage().getCode().toString());
-    status.setErrorMessage(ex.getResponseMessage().getMsg());
+    ResponseStatus status =
+        new ResponseStatus()
+            .code(AppConstants.STATUS.ERROR)
+            .errorCode(ex.getResponseMessage().getCode().toString())
+            .errorMessage(ex.getResponseMessage().getMsg());
 
-    ResponseWrapper response = new ResponseWrapper();
-    response.setStatus(status);
-    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    return new ResponseEntity<>(new ResponseWrapper().status(status), HttpStatus.UNAUTHORIZED);
+  }
+
+  @ExceptionHandler(BizException.class)
+  public ResponseEntity<ResponseWrapper> authenticationException(BizException ex) {
+
+    ResponseStatus status =
+        new ResponseStatus()
+            .code(AppConstants.STATUS.ERROR)
+            .errorCode(ex.getResponseMessage().getCode().toString())
+            .errorMessage(ex.getResponseMessage().getMsg());
+
+    return new ResponseEntity<>(new ResponseWrapper().status(status), HttpStatus.BAD_REQUEST);
   }
 }

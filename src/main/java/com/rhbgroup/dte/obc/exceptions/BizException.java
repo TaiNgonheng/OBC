@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class UserAuthenticationException extends RuntimeException {
+public class BizException extends RuntimeException {
 
   private final ResponseMessage responseMessage;
 }

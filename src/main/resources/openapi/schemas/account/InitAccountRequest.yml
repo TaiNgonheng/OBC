@@ -1,0 +1,17 @@
+type: object
+properties:
+  loginType:
+    $ref: '../common/LoginTypeEnum.yml'
+  login:
+    type: string
+    example: john789
+  key:
+    type: string
+    description: A hash password in SHA256
+    example: sha256_password
+  bakongAccId:
+    type: string
+    example: john@email.com
+  phoneNumber:
+    type: string
+    example: '855123456789'
