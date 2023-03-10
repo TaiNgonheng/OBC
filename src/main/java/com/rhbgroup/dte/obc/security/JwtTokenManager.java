@@ -1,9 +1,9 @@
 package com.rhbgroup.dte.obc.security;
 
 import javax.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,11 +13,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class JwtTokenManager {
 
-  @Autowired private UserDetailsService userDetailsService;
+  private final UserDetailsService userDetailsService;
 
-  @Autowired private JwtTokenUtils jwtTokenUtils;
+  private final JwtTokenUtils jwtTokenUtils;
 
   public AuthenticationStatus verifyRequest(HttpServletRequest httpServletRequest) {
 
@@ -29,8 +30,6 @@ public class JwtTokenManager {
     String authorizationHeader = httpServletRequest.getHeader("Authorization");
     if (StringUtils.isNotBlank(authorizationHeader) && authorizationHeader.contains("Bearer")) {
       String jwtToken = authorizationHeader.substring(7);
-
-      // TODO if jwt token requires RSA, we need one extra step to validate using public key
 
       // Verify if token is valid
       if (jwtTokenUtils.notValidFormat(jwtToken)) {

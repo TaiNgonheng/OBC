@@ -16,22 +16,23 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import javax.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@AllArgsConstructor
 public class UserExchangeServiceImpl implements UserExchangeService {
 
-  @Autowired private PasswordEncoder passwordEncoder;
+  private PasswordEncoder passwordEncoder;
 
-  @Autowired private UserExchangeMapper userExchangeMapper;
+  private UserExchangeMapper userExchangeMapper;
 
-  @Autowired private UserRoleMapper userRoleMapper;
+  private UserRoleMapper userRoleMapper;
 
-  @Autowired private UserProfileRepository userProfileRepository;
+  private UserProfileRepository userProfileRepository;
 
-  @Autowired private UserRoleRepository userRoleRepository;
+  private UserRoleRepository userRoleRepository;
 
   @Override
   @Transactional(rollbackOn = RuntimeException.class)

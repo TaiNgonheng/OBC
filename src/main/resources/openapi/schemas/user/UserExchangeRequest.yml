@@ -1,14 +1,18 @@
 type: object
 properties:
-  loginType:
-    $ref: '../common/LoginTypeEnum.yml'
   login:
     type: string
     example: john789
+    nullable: false
   key:
     type: string
     description: A hash password in SHA256
     example: sha256_password
+    nullable: false
+  mobileNo:
+    type: string
+    description: A user mobile number
+    nullable: false
   cifNo:
     type: string
     example: 07623817190371

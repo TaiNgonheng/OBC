@@ -6,26 +6,20 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Date;
 import java.util.function.Function;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 public class JwtTokenUtils {
 
   @Value("${app.jwt-secret}")
-  private String mySecret;
+  String mySecret;
 
   @Value("${app.jwt-ttl}")
-  private Long tokenTTL; // in second
-
-  @Autowired private PasswordEncoder encoder;
+  Long tokenTTL; // in second
 
   public String getUsernameFromJwtToken(String jwt) {
     try {
@@ -61,10 +55,6 @@ public class JwtTokenUtils {
         .setExpiration(new Date((new Date()).getTime() + (tokenTTL * 1000)))
         .signWith(SignatureAlgorithm.HS512, mySecret)
         .compact();
-  }
-
-  public String encodePassword(String password) {
-    return encoder.encode(password);
   }
 
   public boolean isExpired(String token) {

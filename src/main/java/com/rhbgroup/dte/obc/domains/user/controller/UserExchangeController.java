@@ -6,16 +6,17 @@ import com.rhbgroup.dte.obc.domains.user.mapper.UserExchangeMapper;
 import com.rhbgroup.dte.obc.domains.user.service.UserExchangeService;
 import com.rhbgroup.dte.obc.model.UserExchangeRequest;
 import com.rhbgroup.dte.obc.model.UserExchangeResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class UserExchangeController implements UserExchangeApiDelegate {
 
-  @Autowired private UserExchangeMapper userExchangeMapper;
+  private final UserExchangeMapper userExchangeMapper;
 
-  @Autowired private UserExchangeService userExchangeService;
+  private final UserExchangeService userExchangeService;
 
   @Override
   public ResponseEntity<UserExchangeResponse> userExchange(
