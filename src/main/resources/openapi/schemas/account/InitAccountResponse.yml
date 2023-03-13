@@ -1,5 +1,5 @@
 allOf:
-  - $ref: './ResponseWrapper.yml'
+  - $ref: '../common/ResponseWrapper.yml'
   - type: object
     properties:
       data:

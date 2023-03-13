@@ -7,9 +7,11 @@ info:
 
 tags:
   - name: Account
-    description: Account APIs
+    description: Account
   - name: UserProfile
-    description: Account APIs
+    description: User profile
+  - name: UserExchange
+    description: User exchange
 
 servers: # context path - /api/v1
   - url: http://localhost:8080
@@ -18,19 +20,27 @@ servers: # context path - /api/v1
 paths:
   /init-link-account:
     $ref: './paths/init-link-account.yml'
+  /gw/user-exchange:
+    $ref: './paths/user-exchange.yml'
 
 components:
   schemas:
-    AccountModel:
-      $ref: './schemas/account/AccountModel.yml'
     ResponseWrapper:
-      $ref: './schemas/account/ResponseWrapper.yml'
+      $ref: './schemas/common/ResponseWrapper.yml'
     ResponseStatus:
-      $ref: './schemas/account/ResponseStatus.yml'
+      $ref: './schemas/common/ResponseStatus.yml'
     InitAccountRequest:
       $ref: './schemas/account/InitAccountRequest.yml'
     InitAccountResponse:
       $ref: './schemas/account/InitAccountResponse.yml'
+    ExchangeAccountRequest:
+      $ref: './schemas/user/UserExchangeRequest.yml'
+    ExchangeAccountResponse:
+      $ref: './schemas/user/UserExchangeResponse.yml'
+    AccountModel:
+      $ref: './schemas/account/AccountModel.yml'
+    UserModel:
+      $ref: './schemas/user/UserModel.yml'
 
   securitySchemes:
     bearerAuth:

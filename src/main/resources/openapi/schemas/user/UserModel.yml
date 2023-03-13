@@ -1,0 +1,23 @@
+type: object
+description: User Model
+properties:
+  username:
+    type: string
+  password:
+    type: string
+  loginType:
+    $ref: '../common/LoginTypeEnum.yml'
+  otpId:
+    type: string
+  otpVerifiedStatus:
+    type: boolean
+  otpVerifiedDate:
+    type: string
+    format: date-time
+  mobileNo:
+    type: string
+  cifNo:
+    type: string
+  status:
+    type: string
+    example: UNLINKED

@@ -1,16 +1,17 @@
-#init-link-account:
+#/gw/account-exchange:
+
 post:
   tags:
-    - Account
-  summary: Initialize CASA linking account
-  description: Link CASA between NBC and GoWave
-  operationId: initLinkAccount
+    - UserExchange
+  summary: User exchange between CDRB and OBC
+  description: User exchange between CDRB and OBC
+  operationId: userExchange
   requestBody:
-    description: Create account
+    description: User exchange request
     content:
       application/json:
         schema:
-          $ref: '../schemas/account/InitAccountRequest.yml'
+          $ref: '../schemas/user/UserExchangeRequest.yml'
     required: true
   responses:
     '200':
@@ -18,7 +19,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../schemas/account/InitAccountResponse.yml'
+            $ref: '../schemas/user/UserExchangeResponse.yml'
     '400':
       description: Bad Request
     '401':

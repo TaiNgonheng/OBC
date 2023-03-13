@@ -23,6 +23,10 @@ public enum ResponseMessage {
   OTP_EXPIRED(13, "OTP expired. Please try again."),
   KYC_NOT_VERIFIED(14, "Cannot link account due to your account not yet verified."),
   ACCOUNT_ALREADY_LINKED(15, "This account is already linked to another Bakong account."),
+
+  // Custom message
+  NO_SUCH_USER_FOUND(100, "User not found."),
+  USER_ALREADY_EXIST(101, "User already exist."),
   ;
 
   private final Integer code;
