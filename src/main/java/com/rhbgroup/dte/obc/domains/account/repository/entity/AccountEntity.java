@@ -15,7 +15,7 @@ import lombok.Setter;
 public class AccountEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id", nullable = false)
   private Long id;
 
@@ -31,7 +31,7 @@ public class AccountEntity {
   @Column(name = "active")
   private Boolean active;
 
-  @Column(name = "created_date")
+  @Column(name = "created_date", insertable = false)
   private Instant createdDate;
 
   @Column(name = "updated_date")

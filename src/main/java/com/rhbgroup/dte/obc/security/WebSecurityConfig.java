@@ -15,8 +15,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -53,11 +51,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     return authProvider;
   }
 
-  @Bean
-  public AuthenticationEntryPoint authEntryPoint() {
-    return new Http403ForbiddenEntryPoint();
-  }
-
   @Override
   protected void configure(HttpSecurity httpSecurity) throws Exception {
 
@@ -68,9 +61,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .disable()
         .sessionManagement()
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
-        .exceptionHandling()
-        .authenticationEntryPoint(authEntryPoint())
         .and()
 
         // Adding authorization config

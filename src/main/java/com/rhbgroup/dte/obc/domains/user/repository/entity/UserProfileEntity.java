@@ -15,10 +15,10 @@ import lombok.Setter;
 public class UserProfileEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "username", nullable = false)
+  @Column(name = "username", unique = true, nullable = false)
   private String username;
 
   @Column(name = "password", nullable = false)
@@ -27,18 +27,30 @@ public class UserProfileEntity {
   @Column(name = "otp_id")
   private String otpId;
 
-  @Column(name = "mobile_no", nullable = false)
+  @Column(name = "otp_verified_status")
+  private Boolean otpVerifiedStatus;
+
+  @Column(name = "otp_verified_date")
+  private Instant otpVerifiedDate;
+
+  @Column(name = "status")
+  private String status;
+
+  @Column(name = "mobile_no", unique = true)
   private String mobileNo;
 
-  @Column(name = "email", nullable = false)
+  @Column(name = "email", unique = true)
   private String email;
 
   @Column(name = "cif_no")
   private String cifNo;
 
-  @Column(name = "created_date")
+  @Column(name = "created_date", insertable = false)
   private Instant createdDate;
 
   @Column(name = "updated_date")
   private Instant updatedDate;
+
+  @Column(name = "updated_by")
+  private String updatedBy;
 }

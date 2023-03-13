@@ -1,18 +1,19 @@
 package com.rhbgroup.dte.obc.domains.account.controller;
 
-import com.rhbgroup.dte.obc.api.DefaultApiDelegate;
+import com.rhbgroup.dte.obc.api.AccountApiDelegate;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AccountController implements DefaultApiDelegate {
+@RequiredArgsConstructor
+public class AccountController implements AccountApiDelegate {
 
-  @Autowired private AccountService accountService;
+  private final AccountService accountService;
 
   @Override
   public ResponseEntity<InitAccountResponse> initLinkAccount(InitAccountRequest request) {
