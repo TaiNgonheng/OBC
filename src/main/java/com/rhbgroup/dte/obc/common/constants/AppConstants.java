@@ -31,9 +31,9 @@ public class AppConstants {
 
   @UtilityClass
   public class SYSTEM {
-    public static final String OPEN_BANKING_CLIENT = "OBC_SYS";
-    public static final String GOWAVE = "GOWAVE_SYS";
-    public static final String OPEN_BANKING_GATEWAY = "NBC_SYS";
+    public static final String OPEN_BANKING_CLIENT = "OBC_SYSTEM";
+    public static final String GOWAVE = "GOWAVE_SYSTEM";
+    public static final String OPEN_BANKING_GATEWAY = "NBC_SYSTEM";
   }
 
   @UtilityClass

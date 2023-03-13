@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS `tbl_obc_config` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `service_name` varchar(50) NOT NULL,
-  `service_key` varchar(50) NOT NULL,
+  `login` varchar(50) NOT NULL,
   `secret` varchar(100) NOT NULL,
   `token` varchar(250) NOT NULL,
   `required_trx_otp` bit(1) NOT NULL DEFAULT 0,
