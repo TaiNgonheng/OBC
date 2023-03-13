@@ -8,8 +8,6 @@ import com.rhbgroup.dte.obc.domains.config.repository.ConfigRepository;
 import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
 import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
-import com.rhbgroup.dte.obc.dto.TestRequestDto;
-import com.rhbgroup.dte.obc.dto.TestResponseDto;
 import com.rhbgroup.dte.obc.dto.request.BakongLoginRequest;
 import com.rhbgroup.dte.obc.dto.response.BakongLoginResponse;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
@@ -18,6 +16,7 @@ import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +27,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -83,12 +80,19 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public InitAccountResponse initLinkAccount(InitAccountRequest request) {
-    TestRequestDto testRequestDto = new TestRequestDto();
-    testRequestDto.setId("1235");
-    testRequestDto.setStatus("available");
-    testRequestDto.setName("asd");
-    TestResponseDto b = springRestUlti.sendPost("https://petstore.swagger.io/v2/pet",testRequestDto, ParameterizedTypeReference.forType(TestResponseDto.class));
-    TestResponseDto a = springRestUlti.sendGet("https://petstore.swagger.io/v2/pet/1",ParameterizedTypeReference.forType(TestResponseDto.class));
+    //    TestRequestDto testRequestDto = new TestRequestDto();
+    //    testRequestDto.setId("1235");
+    //    testRequestDto.setStatus("available");
+    //    testRequestDto.setName("asd");
+    //    TestResponseDto b =
+    //        springRestUlti.sendPost(
+    //            "https://petstore.swagger.io/v2/pet",
+    //            testRequestDto,
+    //            ParameterizedTypeReference.forType(TestResponseDto.class));
+    //    TestResponseDto a =
+    //        springRestUlti.sendGet(
+    //            "https://petstore.swagger.io/v2/pet/1",
+    //            ParameterizedTypeReference.forType(TestResponseDto.class));
     InitAccountResponse accountResponse = new InitAccountResponse();
     Optional<UserProfileEntity> userProfile =
         userProfileRepository.getByUsernameAndPassword(request.getLogin(), request.getKey());
@@ -103,16 +107,21 @@ public class AccountServiceImpl implements AccountService {
       Optional<ConfigEntity> configEntity =
           configRepository.getByServiceName(ServiceType.PG1.getName());
       // call pg1 api
-      BakongLoginRequest bakongLoginRequest = new BakongLoginRequest(request.getLogin(),request.getKey());
-      BakongLoginResponse bakongLoginResponse = springRestUlti.sendPost("", bakongLoginRequest, ParameterizedTypeReference.forType(BakongLoginResponse.class));
-      if(bakongLoginResponse!=null){
+      BakongLoginRequest bakongLoginRequest =
+          new BakongLoginRequest(request.getLogin(), request.getKey());
+      BakongLoginResponse bakongLoginResponse =
+          springRestUlti.sendPost(
+              "",
+              bakongLoginRequest,
+              ParameterizedTypeReference.forType(BakongLoginResponse.class));
+      if (bakongLoginResponse != null) {}
 
-      }
       bakongLoginResponse = new BakongLoginResponse();
-      bakongLoginResponse.setId_token("eyJhbGciUxMiJ9.eyJzdWIiOiJtb25pdG9yMSIsImF1dGgiOiJST0xFX01BTkFHRVIiLCJwZ\n" +
-              "XJtaXNzaW9ucyI6W10sImlkIjo0NDAyLCJleHAiOjE2NDMyNjc5NDl9.fBdsbaL4NDRnDj\n" +
-              "H_CG3JVaaQAZSaEUdjowd8XhJ_JcrJwyJqNsLpAs4A65TgbgTw-P6gJj8qES-E9CffcWq\n" +
-              "K-g");
+      bakongLoginResponse.setId_token(
+          "eyJhbGciUxMiJ9.eyJzdWIiOiJtb25pdG9yMSIsImF1dGgiOiJST0xFX01BTkFHRVIiLCJwZ\n"
+              + "XJtaXNzaW9ucyI6W10sImlkIjo0NDAyLCJleHAiOjE2NDMyNjc5NDl9.fBdsbaL4NDRnDj\n"
+              + "H_CG3JVaaQAZSaEUdjowd8XhJ_JcrJwyJqNsLpAs4A65TgbgTw-P6gJj8qES-E9CffcWq\n"
+              + "K-g");
       jwt = bakongLoginResponse.getId_token();
       // cache jwt
     }

@@ -1,4 +1,3 @@
 package com.rhbgroup.dte.obc.dto.request;
 
-public class BakongGetProfileRequest {
-}
+public class BakongGetProfileRequest {}

@@ -4,14 +4,13 @@ import lombok.Data;
 
 @Data
 public class BakongLoginRequest {
-    private String username;
-    private String password;
+  private String username;
+  private String password;
 
-    public BakongLoginRequest() {
-    }
+  public BakongLoginRequest() {}
 
-    public BakongLoginRequest(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
+  public BakongLoginRequest(String username, String password) {
+    this.username = username;
+    this.password = password;
+  }
 }

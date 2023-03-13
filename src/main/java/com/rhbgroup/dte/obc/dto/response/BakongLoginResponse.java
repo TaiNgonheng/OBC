@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class BakongLoginResponse {
-    private String id_token;
+  private String id_token;
 }
