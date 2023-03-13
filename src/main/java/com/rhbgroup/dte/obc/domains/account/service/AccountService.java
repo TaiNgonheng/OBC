@@ -6,4 +6,6 @@ import com.rhbgroup.dte.obc.model.InitAccountResponse;
 public interface AccountService {
 
   InitAccountResponse authenticate(InitAccountRequest request);
+
+  InitAccountResponse initLinkAccount(InitAccountRequest request);
 }

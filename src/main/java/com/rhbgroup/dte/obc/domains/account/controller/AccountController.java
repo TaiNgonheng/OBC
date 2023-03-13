@@ -16,6 +16,6 @@ public class AccountController implements AccountApiDelegate {
 
   @Override
   public ResponseEntity<InitAccountResponse> initLinkAccount(InitAccountRequest request) {
-    return Functions.of(accountService::authenticate).andThen(ResponseEntity::ok).apply(request);
+    return Functions.of(accountService::initLinkAccount).andThen(ResponseEntity::ok).apply(request);
   }
 }
