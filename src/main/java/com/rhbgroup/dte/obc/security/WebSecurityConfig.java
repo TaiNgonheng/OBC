@@ -1,6 +1,9 @@
 package com.rhbgroup.dte.obc.security;
 
+import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.domains.user.service.UserDetailsServiceImpl;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +18,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -51,16 +56,25 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     return authProvider;
   }
 
+  @Bean
+  public AccessDeniedHandler accessDeniedHandler() {
+    return new CustomAccessDeniedHandler();
+  }
+
   @Override
   protected void configure(HttpSecurity httpSecurity) throws Exception {
 
     httpSecurity
         .cors()
+        .configurationSource(this::setupCORS)
         .and()
         .csrf()
         .disable()
         .sessionManagement()
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .and()
+        .exceptionHandling()
+        .accessDeniedHandler(accessDeniedHandler())
         .and()
 
         // Adding authorization config
@@ -69,6 +83,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .permitAll()
         .antMatchers(HttpMethod.GET, WhitelistUrlManager.getWhitelistUrls())
         .permitAll()
+        .antMatchers(WhitelistUrlManager.getUrls(AppConstants.SYSTEM.GOWAVE))
+        .hasAuthority(AppConstants.ROLE.SYSTEM_USER)
+        .antMatchers(WhitelistUrlManager.getUrls(AppConstants.SYSTEM.OPEN_BANKING_GATEWAY))
+        .hasAuthority(WhitelistUrlManager.getRole(AppConstants.SYSTEM.OPEN_BANKING_GATEWAY))
         .anyRequest()
         .authenticated()
         .and()
@@ -80,5 +98,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .addFilterBefore(
             new JwtAuthenticationFilter(jwtTokenManager),
             UsernamePasswordAuthenticationFilter.class);
+  }
+
+  private CorsConfiguration setupCORS(HttpServletRequest httpServletRequest) {
+    CorsConfiguration corsConfiguration = new CorsConfiguration();
+    // TODO temporary set allow origin to * for testing purpose
+    corsConfiguration.setAllowedOrigins(List.of("*"));
+    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+    corsConfiguration.setAllowedHeaders(List.of("*"));
+    corsConfiguration.setAllowCredentials(false);
+    return corsConfiguration;
   }
 }

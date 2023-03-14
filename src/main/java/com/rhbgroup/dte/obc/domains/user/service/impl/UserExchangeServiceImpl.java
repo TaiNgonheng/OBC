@@ -12,16 +12,20 @@ import com.rhbgroup.dte.obc.domains.user.repository.entity.UserRoleEntity;
 import com.rhbgroup.dte.obc.domains.user.service.UserExchangeService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.UserModel;
+import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
+import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class UserExchangeServiceImpl implements UserExchangeService {
 
   private PasswordEncoder passwordEncoder;
@@ -33,6 +37,10 @@ public class UserExchangeServiceImpl implements UserExchangeService {
   private UserProfileRepository userProfileRepository;
 
   private UserRoleRepository userRoleRepository;
+
+  private UserAuthService userAuthService;
+
+  private JwtTokenUtils jwtTokenUtils;
 
   @Override
   @Transactional(rollbackOn = RuntimeException.class)
@@ -53,6 +61,14 @@ public class UserExchangeServiceImpl implements UserExchangeService {
         .apply(userModel);
 
     return "success";
+  }
+
+  @Override
+  public String revokeToken(UserModel model) {
+
+    return Functions.of(userAuthService::authenticate)
+        .andThen(jwtTokenUtils::generateJwt)
+        .apply(model);
   }
 
   private final UnaryOperator<UserProfileEntity> checkUserExisting =
@@ -77,14 +93,17 @@ public class UserExchangeServiceImpl implements UserExchangeService {
           }
         }
 
+        // Update user credential
+        newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
         return newUser;
       };
 
   private final Consumer<UserRoleEntity> performUserRoleIfNeeded =
-      userRole -> {
-        Optional<UserRoleEntity> byUserId = userRoleRepository.findByUserId(userRole.getUserId());
-        if (byUserId.isEmpty()) {
-          userRoleRepository.save(userRole);
-        }
-      };
+      newUserRole ->
+          userRoleRepository
+              .findByUserId(newUserRole.getUserId())
+              .ifPresentOrElse(
+                  // throwing error
+                  entity -> log.info("userRole::Found existing entity >> {}", entity),
+                  () -> userRoleRepository.save(newUserRole));
 }

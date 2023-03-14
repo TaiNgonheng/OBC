@@ -2,6 +2,9 @@ package com.rhbgroup.dte.obc.domains.user.mapper;
 
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
+import com.rhbgroup.dte.obc.model.GWAuthenticationRequest;
+import com.rhbgroup.dte.obc.model.GWAuthenticationResponse;
+import com.rhbgroup.dte.obc.model.GWAuthenticationResponseAllOfData;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.UserExchangeRequest;
 import com.rhbgroup.dte.obc.model.UserExchangeResponse;
@@ -19,6 +22,8 @@ public interface UserExchangeMapper {
   @Mapping(source = "key", target = "password")
   UserModel toModel(UserExchangeRequest userExchangeRequest);
 
+  UserModel fromAuthRequestToModel(GWAuthenticationRequest request);
+
   @Mapping(source = "otpVerifiedDate", target = "otpVerifiedDate", qualifiedByName = "toInstant")
   UserProfileEntity toEntity(UserModel userModel);
 
@@ -31,5 +36,11 @@ public interface UserExchangeMapper {
     return new UserExchangeResponse()
         .status(new ResponseStatus().code(AppConstants.STATUS.SUCCESS))
         .data(data);
+  }
+
+  default GWAuthenticationResponse toAuthResponse(String token) {
+    return new GWAuthenticationResponse()
+        .status(new ResponseStatus().code(AppConstants.STATUS.SUCCESS))
+        .data(new GWAuthenticationResponseAllOfData().token(token));
   }
 }
