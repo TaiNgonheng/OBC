@@ -17,5 +17,3 @@ CREATE TABLE IF NOT EXISTS `tbl_obc_account` (
   `updated_by` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-ALTER TABLE obc.tbl_obc_account ADD CONSTRAINT tbl_obc_account_FK FOREIGN KEY (user_id) REFERENCES obc.tbl_obc_profile(id) ON DELETE CASCADE;
