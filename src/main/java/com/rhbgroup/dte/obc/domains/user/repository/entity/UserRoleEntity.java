@@ -20,7 +20,7 @@ public class UserRoleEntity {
   private Long id;
 
   @Column(name = "user_id", unique = true, nullable = false)
-  private String userId;
+  private Long userId;
 
   @Column(name = "role", nullable = false)
   private String role;

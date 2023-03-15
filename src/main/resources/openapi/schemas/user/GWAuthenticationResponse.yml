@@ -4,7 +4,8 @@ allOf:
     properties:
       data:
         type: object
+        description: Account Response
         properties:
-          userId:
+          token:
             type: string
-            example: 1
+            example: jwt_token

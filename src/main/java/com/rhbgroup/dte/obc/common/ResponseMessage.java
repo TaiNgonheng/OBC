@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum ResponseMessage {
+
+  // NBC error messages
   INTERNAL_SERVER_ERROR(1, "Internal server error."),
   ACCOUNT_DEACTIVATED(2, "Account is deactivated."),
   NO_ACCOUNT_FOUND(3, "No account found."),
@@ -24,9 +26,12 @@ public enum ResponseMessage {
   KYC_NOT_VERIFIED(14, "Cannot link account due to your account not yet verified."),
   ACCOUNT_ALREADY_LINKED(15, "This account is already linked to another Bakong account."),
 
-  // Custom message
+  // CDRB error messages
   NO_SUCH_USER_FOUND(100, "User not found."),
   USER_ALREADY_EXIST(101, "User already exist."),
+
+  // Generic error message
+  CONSTRAINT_VIOLATION_ERROR(300, "Constraint violation exception."),
   ;
 
   private final Integer code;

@@ -1,0 +1,13 @@
+type: object
+properties:
+
+  username:
+    type: string
+    example: john789
+    nullable: false
+
+  password:
+    type: string
+    description: A hash password in SHA256
+    example: mypassword
+    nullable: false

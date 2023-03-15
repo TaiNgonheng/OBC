@@ -22,6 +22,8 @@ paths:
     $ref: './paths/init-link-account.yml'
   /gw/user-exchange:
     $ref: './paths/user-exchange.yml'
+  /gw/login:
+    $ref: './paths/gw-login.yml'
 
 components:
   schemas:
@@ -37,6 +39,10 @@ components:
       $ref: './schemas/user/UserExchangeRequest.yml'
     ExchangeAccountResponse:
       $ref: './schemas/user/UserExchangeResponse.yml'
+    GWAuthenticationRequest:
+      $ref: './schemas/user/GWAuthenticationRequest.yml'
+    GWAuthenticationResponse:
+      $ref: './schemas/user/GWAuthenticationResponse.yml'
     AccountModel:
       $ref: './schemas/account/AccountModel.yml'
     UserModel:
