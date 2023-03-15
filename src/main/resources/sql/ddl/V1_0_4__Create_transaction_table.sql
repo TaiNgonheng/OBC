@@ -23,5 +23,3 @@ CREATE TABLE IF NOT EXISTS `tbl_obc_transaction` (
   `credit_debit_indicator` varchar(5) DEFAULT "D" NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-ALTER TABLE obc.tbl_obc_transaction ADD CONSTRAINT tbl_obc_transaction_FK FOREIGN KEY (user_id) REFERENCES obc.tbl_obc_profile(id) ON DELETE CASCADE;

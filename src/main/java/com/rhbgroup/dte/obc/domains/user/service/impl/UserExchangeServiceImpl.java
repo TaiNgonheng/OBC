@@ -9,19 +9,24 @@ import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.UserRoleRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
 import com.rhbgroup.dte.obc.domains.user.repository.entity.UserRoleEntity;
+import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserExchangeService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.model.ExchangeAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.UserModel;
+import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class UserExchangeServiceImpl implements UserExchangeService {
 
   private PasswordEncoder passwordEncoder;
@@ -34,11 +39,15 @@ public class UserExchangeServiceImpl implements UserExchangeService {
 
   private UserRoleRepository userRoleRepository;
 
+  private UserAuthService userAuthService;
+
+  private JwtTokenUtils jwtTokenUtils;
+
   @Override
   @Transactional(rollbackOn = RuntimeException.class)
-  public String exchangeUser(UserModel userModel) {
+  public ExchangeAccountResponseAllOfData exchangeUser(UserModel userModel) {
 
-    Functions.of(userExchangeMapper::toEntity)
+    return Functions.of(userExchangeMapper::toEntity)
         .andThen(checkUserExisting)
         .andThen(userProfileRepository::save)
         .andThen(
@@ -49,10 +58,17 @@ public class UserExchangeServiceImpl implements UserExchangeService {
                     AppConstants.PERMISSION.concat(
                         AppConstants.PERMISSION.CAN_GET_BALANCE,
                         AppConstants.PERMISSION.CAN_TOP_UP)))
-        .andThen(Functions.peek(performUserRoleIfNeeded))
+        .andThen(performUserRoleIfNeeded)
+        .andThen(userExchangeMapper::toGwExchangeUserResponse)
         .apply(userModel);
+  }
 
-    return "success";
+  @Override
+  public String revokeToken(UserModel model) {
+
+    return Functions.of(userAuthService::authenticate)
+        .andThen(jwtTokenUtils::generateJwt)
+        .apply(model);
   }
 
   private final UnaryOperator<UserProfileEntity> checkUserExisting =
@@ -77,14 +93,18 @@ public class UserExchangeServiceImpl implements UserExchangeService {
           }
         }
 
+        // Update user credential
+        newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
         return newUser;
       };
 
-  private final Consumer<UserRoleEntity> performUserRoleIfNeeded =
-      userRole -> {
-        Optional<UserRoleEntity> byUserId = userRoleRepository.findByUserId(userRole.getUserId());
-        if (byUserId.isEmpty()) {
-          userRoleRepository.save(userRole);
-        }
+  private final Function<UserRoleEntity, Long> performUserRoleIfNeeded =
+      newUserRole -> {
+        userRoleRepository
+            .findByUserId(newUserRole.getUserId())
+            .ifPresentOrElse(
+                entity -> log.info("userRole::Found existing entity >> {}", entity),
+                () -> userRoleRepository.save(newUserRole));
+        return newUserRole.getUserId();
       };
 }
