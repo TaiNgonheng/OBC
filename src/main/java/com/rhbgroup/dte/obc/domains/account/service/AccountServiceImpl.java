@@ -3,12 +3,15 @@ package com.rhbgroup.dte.obc.domains.account.service;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.enums.ServiceType;
 import com.rhbgroup.dte.obc.common.func.Functions;
+import com.rhbgroup.dte.obc.common.util.CacheUtil;
+import com.rhbgroup.dte.obc.common.util.DateTimeUtil;
 import com.rhbgroup.dte.obc.common.util.SpringRestUlti;
 import com.rhbgroup.dte.obc.domains.config.repository.ConfigRepository;
 import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
 import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
 import com.rhbgroup.dte.obc.dto.request.BakongLoginRequest;
+import com.rhbgroup.dte.obc.dto.response.BakongGetProfileResponse;
 import com.rhbgroup.dte.obc.dto.response.BakongLoginResponse;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
@@ -16,10 +19,11 @@ import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,19 +32,26 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
-
-  private final JwtTokenUtils jwtTokenUtils;
-  private final AuthenticationManager authManager;
-
-  @Autowired private SpringRestUlti springRestUlti;
-
-  @Autowired private UserProfileRepository userProfileRepository;
-
-  @Autowired private ConfigRepository configRepository;
+  @Resource
+  private JwtTokenUtils jwtTokenUtils;
+  @Resource
+  private AuthenticationManager authManager;
+  @Resource
+  private SpringRestUlti springRestUlti;
+  @Resource
+  private CacheUtil cacheUtil;
+  @Resource
+  private DateTimeUtil dateTimeUtil;
+  @Resource
+  private UserProfileRepository userProfileRepository;
+  @Resource
+  private ConfigRepository configRepository;
+  private final String KTC_STATUS = "FULL_KYC";
 
   @Override
   public InitAccountResponse authenticate(InitAccountRequest request) {
@@ -80,19 +91,6 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public InitAccountResponse initLinkAccount(InitAccountRequest request) {
-    //    TestRequestDto testRequestDto = new TestRequestDto();
-    //    testRequestDto.setId("1235");
-    //    testRequestDto.setStatus("available");
-    //    testRequestDto.setName("asd");
-    //    TestResponseDto b =
-    //        springRestUlti.sendPost(
-    //            "https://petstore.swagger.io/v2/pet",
-    //            testRequestDto,
-    //            ParameterizedTypeReference.forType(TestResponseDto.class));
-    //    TestResponseDto a =
-    //        springRestUlti.sendGet(
-    //            "https://petstore.swagger.io/v2/pet/1",
-    //            ParameterizedTypeReference.forType(TestResponseDto.class));
     InitAccountResponse accountResponse = new InitAccountResponse();
     Optional<UserProfileEntity> userProfile =
         userProfileRepository.getByUsernameAndPassword(request.getLogin(), request.getKey());
@@ -100,13 +98,12 @@ public class AccountServiceImpl implements AccountService {
       accountResponse.setStatus(new ResponseStatus().errorCode("4"));
       return accountResponse;
     }
-    // check pg1 jwt
-    String jwt = null;
+    String jwtKey = request.getLogin().concat("_pg1_").concat(dateTimeUtil.dateToKey(new Date()));
+    //validate pg1 jwt token
+    String jwt = cacheUtil.getValueFromKey(jwtKey);
     if (jwt == null || jwtTokenUtils.isExpired(jwt)) {
-      // get pg1 credential
       Optional<ConfigEntity> configEntity =
           configRepository.getByServiceName(ServiceType.PG1.getName());
-      // call pg1 api
       BakongLoginRequest bakongLoginRequest =
           new BakongLoginRequest(request.getLogin(), request.getKey());
       BakongLoginResponse bakongLoginResponse =
@@ -114,22 +111,31 @@ public class AccountServiceImpl implements AccountService {
               "",
               bakongLoginRequest,
               ParameterizedTypeReference.forType(BakongLoginResponse.class));
-      if (bakongLoginResponse != null) {}
-
-      bakongLoginResponse = new BakongLoginResponse();
-      bakongLoginResponse.setId_token(
-          "eyJhbGciUxMiJ9.eyJzdWIiOiJtb25pdG9yMSIsImF1dGgiOiJST0xFX01BTkFHRVIiLCJwZ\n"
-              + "XJtaXNzaW9ucyI6W10sImlkIjo0NDAyLCJleHAiOjE2NDMyNjc5NDl9.fBdsbaL4NDRnDj\n"
-              + "H_CG3JVaaQAZSaEUdjowd8XhJ_JcrJwyJqNsLpAs4A65TgbgTw-P6gJj8qES-E9CffcWq\n"
-              + "K-g");
-      jwt = bakongLoginResponse.getId_token();
-      // cache jwt
+      if (bakongLoginResponse == null) {
+        accountResponse.setStatus(new ResponseStatus().errorCode("1"));
+        return accountResponse;
+      }
+      cacheUtil.addKey(jwtKey, bakongLoginResponse.getId_token());
     }
-    // get bakong profile
-
-    // validate profile kyc
+    // validate pg1 profile
+    Map<String, String> header = new HashMap<>();
+    header.put("Authorization", "Bearer ".concat(jwt));
+    BakongGetProfileResponse bakongUserProfile =
+        springRestUlti.sendGet(
+            "", header, ParameterizedTypeReference.forType(BakongGetProfileResponse.class));
+    if (bakongUserProfile == null) {
+      accountResponse.setStatus(new ResponseStatus().errorCode("1"));
+      return accountResponse;
+    }
+    if (!KTC_STATUS.equals(bakongUserProfile.getKycStatus())) {
+      accountResponse.setStatus(new ResponseStatus().errorCode("1"));
+      return accountResponse;
+    }
     InitAccountResponseAllOfData data = new InitAccountResponseAllOfData();
-    // validate phone number
+    if (bakongUserProfile.getPhone().equals(request.getPhoneNumber())) {
+      data.setRequireChangePhone(1);
+      data.setLast3DigitsPhone(bakongUserProfile.getPhone());
+    }
     // get require OTP config
     Optional<ConfigEntity> configEntity =
         configRepository.getByServiceName(ServiceType.INFO_BIP.getName());

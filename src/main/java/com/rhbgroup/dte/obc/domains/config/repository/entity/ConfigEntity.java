@@ -16,8 +16,8 @@ public class ConfigEntity {
   @Column(name = "service_name", nullable = false)
   private String serviceName;
 
-  @Column(name = "service_key", nullable = false)
-  private String serviceKey;
+  @Column(name = "login", nullable = false)
+  private String login;
 
   @Column(name = "secret", nullable = false)
   private String secret;
