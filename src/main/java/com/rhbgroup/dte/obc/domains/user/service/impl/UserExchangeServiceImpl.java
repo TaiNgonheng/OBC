@@ -1,6 +1,5 @@
 package com.rhbgroup.dte.obc.domains.user.service.impl;
 
-import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.user.mapper.UserExchangeMapper;
@@ -11,7 +10,6 @@ import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
 import com.rhbgroup.dte.obc.domains.user.repository.entity.UserRoleEntity;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserExchangeService;
-import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.ExchangeAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
@@ -21,6 +19,7 @@ import java.util.function.UnaryOperator;
 import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +47,7 @@ public class UserExchangeServiceImpl implements UserExchangeService {
   public ExchangeAccountResponseAllOfData exchangeUser(UserModel userModel) {
 
     return Functions.of(userExchangeMapper::toEntity)
-        .andThen(checkUserExisting)
+        .andThen(getNewUserOrUpdatedUser)
         .andThen(userProfileRepository::save)
         .andThen(
             userProfileEntity ->
@@ -71,28 +70,24 @@ public class UserExchangeServiceImpl implements UserExchangeService {
         .apply(model);
   }
 
-  private final UnaryOperator<UserProfileEntity> checkUserExisting =
+  private final UnaryOperator<UserProfileEntity> getNewUserOrUpdatedUser =
       newUser -> {
         Optional<UserProfileEntity> userOptional =
             userProfileRepository.getByUsername(newUser.getUsername());
 
-        // Compare the existing password
-        // if the user already exist with username but not password
-        // allow to continue to update user password
         if (userOptional.isPresent()) {
-
           UserProfileEntity existingUser = userOptional.get();
-          boolean isMatched =
-              passwordEncoder.matches(newUser.getPassword(), existingUser.getPassword());
-          if (isMatched) {
-            throw new BizException(ResponseMessage.USER_ALREADY_EXIST);
-          } else {
-            // Update user credential
-            existingUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
-            return existingUser;
+          // Update user credential & mobile number
+          String newPassword = newUser.getPassword();
+          String newMobileNo = newUser.getMobileNo();
+          if (StringUtils.isNotBlank(newPassword)) {
+            existingUser.setPassword(passwordEncoder.encode(newPassword));
           }
+          if (StringUtils.isNotBlank(newMobileNo)) {
+            existingUser.setMobileNo(newMobileNo);
+          }
+          return existingUser;
         }
-
         // Update user credential
         newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
         return newUser;
