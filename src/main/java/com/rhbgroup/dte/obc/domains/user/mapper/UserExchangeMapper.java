@@ -2,6 +2,7 @@ package com.rhbgroup.dte.obc.domains.user.mapper;
 
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
+import com.rhbgroup.dte.obc.model.ExchangeAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.GWAuthenticationRequest;
 import com.rhbgroup.dte.obc.model.GWAuthenticationResponse;
 import com.rhbgroup.dte.obc.model.GWAuthenticationResponseAllOfData;
@@ -32,7 +33,7 @@ public interface UserExchangeMapper {
     return offsetDateTime == null ? null : offsetDateTime.toInstant();
   }
 
-  default UserExchangeResponse toResponse(String data) {
+  default UserExchangeResponse toResponse(ExchangeAccountResponseAllOfData data) {
     return new UserExchangeResponse()
         .status(new ResponseStatus().code(AppConstants.STATUS.SUCCESS))
         .data(data);
@@ -42,5 +43,9 @@ public interface UserExchangeMapper {
     return new GWAuthenticationResponse()
         .status(new ResponseStatus().code(AppConstants.STATUS.SUCCESS))
         .data(new GWAuthenticationResponseAllOfData().token(token));
+  }
+
+  default ExchangeAccountResponseAllOfData toGwExchangeUserResponse(Long userId) {
+    return new ExchangeAccountResponseAllOfData().userId(String.valueOf(userId));
   }
 }

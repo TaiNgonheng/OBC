@@ -3,4 +3,8 @@ allOf:
   - type: object
     properties:
       data:
-        type: string
+        type: object
+        properties:
+          userId:
+            type: string
+            example: 1

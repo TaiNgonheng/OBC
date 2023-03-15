@@ -9,13 +9,14 @@ import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.UserRoleRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
 import com.rhbgroup.dte.obc.domains.user.repository.entity.UserRoleEntity;
+import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserExchangeService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.model.ExchangeAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.UserModel;
-import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -44,9 +45,9 @@ public class UserExchangeServiceImpl implements UserExchangeService {
 
   @Override
   @Transactional(rollbackOn = RuntimeException.class)
-  public String exchangeUser(UserModel userModel) {
+  public ExchangeAccountResponseAllOfData exchangeUser(UserModel userModel) {
 
-    Functions.of(userExchangeMapper::toEntity)
+    return Functions.of(userExchangeMapper::toEntity)
         .andThen(checkUserExisting)
         .andThen(userProfileRepository::save)
         .andThen(
@@ -57,10 +58,9 @@ public class UserExchangeServiceImpl implements UserExchangeService {
                     AppConstants.PERMISSION.concat(
                         AppConstants.PERMISSION.CAN_GET_BALANCE,
                         AppConstants.PERMISSION.CAN_TOP_UP)))
-        .andThen(Functions.peek(performUserRoleIfNeeded))
+        .andThen(performUserRoleIfNeeded)
+        .andThen(userExchangeMapper::toGwExchangeUserResponse)
         .apply(userModel);
-
-    return "success";
   }
 
   @Override
@@ -98,12 +98,13 @@ public class UserExchangeServiceImpl implements UserExchangeService {
         return newUser;
       };
 
-  private final Consumer<UserRoleEntity> performUserRoleIfNeeded =
-      newUserRole ->
-          userRoleRepository
-              .findByUserId(newUserRole.getUserId())
-              .ifPresentOrElse(
-                  // throwing error
-                  entity -> log.info("userRole::Found existing entity >> {}", entity),
-                  () -> userRoleRepository.save(newUserRole));
+  private final Function<UserRoleEntity, Long> performUserRoleIfNeeded =
+      newUserRole -> {
+        userRoleRepository
+            .findByUserId(newUserRole.getUserId())
+            .ifPresentOrElse(
+                entity -> log.info("userRole::Found existing entity >> {}", entity),
+                () -> userRoleRepository.save(newUserRole));
+        return newUserRole.getUserId();
+      };
 }

@@ -6,15 +6,13 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class Functions {
+  private Functions() {}
+
   public static <T, R> Function<T, R> of(Function<T, R> function) {
     return function;
   }
 
   public static <T, U, R> BiFunction<T, U, R> of(BiFunction<T, U, R> function) {
-    return function;
-  }
-
-  public static <T, U, V, R> TriFunction<T, U, V, R> of(TriFunction<T, U, V, R> function) {
     return function;
   }
 
@@ -36,10 +34,6 @@ public class Functions {
 
   public static <T, U> Consumer<U> partial(BiConsumer<T, U> biConsumer, T t) {
     return u -> biConsumer.accept(t, u);
-  }
-
-  public static <T, U, V, R> Function<V, R> partial(TriFunction<T, U, V, R> triFunction, T t, U u) {
-    return v -> triFunction.apply(t, u, v);
   }
 
   public static <T, U, R> Function<T, R> partialRight(BiFunction<T, U, R> biFunction, U u) {
