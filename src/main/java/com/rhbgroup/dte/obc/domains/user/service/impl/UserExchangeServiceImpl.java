@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.domains.user.service.impl;
 
+import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.user.mapper.UserExchangeMapper;
@@ -10,12 +11,15 @@ import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
 import com.rhbgroup.dte.obc.domains.user.repository.entity.UserRoleEntity;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserExchangeService;
+import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.ExchangeAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -88,7 +92,20 @@ public class UserExchangeServiceImpl implements UserExchangeService {
           }
           return existingUser;
         }
-        // Update user credential
+
+        // All fields will be mandatory when new user profile arrives
+        boolean isMissingRequiredField =
+            Stream.of(
+                    newUser.getUsername(),
+                    newUser.getPassword(),
+                    newUser.getCifNo(),
+                    newUser.getMobileNo())
+                .anyMatch(Objects::isNull);
+
+        if (isMissingRequiredField) {
+          throw new BizException(ResponseMessage.MANDATORY_FIELD_MISSING);
+        }
+
         newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
         return newUser;
       };
