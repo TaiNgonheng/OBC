@@ -6,6 +6,8 @@ import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
 import javax.cache.configuration.MutableConfiguration;
+import javax.cache.expiry.CreatedExpiryPolicy;
+import javax.cache.expiry.Duration;
 import javax.cache.spi.CachingProvider;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +16,19 @@ public class JcacheUtil implements CacheUtil {
 
   private Cache<String, String> cache;
 
+  private CacheManager cacheManager;
+
   @PostConstruct
   public void postConstruct() {
     CachingProvider cachingProvider = Caching.getCachingProvider();
-    CacheManager cacheManager = cachingProvider.getCacheManager();
+    this.cacheManager = cachingProvider.getCacheManager();
+  }
+
+  @Override
+  public void createCache(String cacheName, Duration expireTime) {
     MutableConfiguration<String, String> config = new MutableConfiguration<>();
-    this.cache = cacheManager.createCache("obcCache", config);
+    config.setExpiryPolicyFactory(CreatedExpiryPolicy.factoryOf(expireTime));
+    cacheManager.createCache(cacheName, config);
   }
 
   @Override
@@ -28,12 +37,21 @@ public class JcacheUtil implements CacheUtil {
   }
 
   @Override
-  public void addKey(String key, String value) {
-    this.cache.put(key, value);
+  public void addKey(String cacheName, String key, String value) {
+    Cache<String, String> cache = cacheManager.getCache(cacheName);
+    cache.put(key, value);
   }
+
+  public void addKey(String key, String value) {}
 
   @Override
   public String getValueFromKey(String key) {
-    return this.cache.get(key);
+    return null;
+  }
+
+  @Override
+  public String getValueFromKey(String cacheName, String key) {
+    Cache<String, String> cache = cacheManager.getCache(cacheName);
+    return cache.get(key);
   }
 }
