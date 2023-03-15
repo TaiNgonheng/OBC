@@ -32,6 +32,7 @@ public enum ResponseMessage {
 
   // Generic error message
   CONSTRAINT_VIOLATION_ERROR(300, "Constraint violation exception."),
+  PG1_COMMUNICATION_FAILURE(301, "Failed to communicate with PG1 server"),
   ;
 
   private final Integer code;
