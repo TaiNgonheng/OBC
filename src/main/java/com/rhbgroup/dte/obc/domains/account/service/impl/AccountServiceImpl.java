@@ -96,10 +96,9 @@ public class AccountServiceImpl implements AccountService {
     }
     // get require OTP config
     data.setRequireOtp(configEntity.isRequiredTrxOtp() ? 1 : 0);
-    // generate infoBip OTP
-    /**
-     * todo: call infoBip opt generation
-     */
+
+    // TODO generate infoBip OTP
+
     // generate JWT token
     String bakingLoginJwt = jwtTokenUtils.generateJwt(authentication);
     cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, CacheConstants.PGCache.PG1_LOGIN_KEY.concat(request.getLogin()), bakingLoginJwt);
