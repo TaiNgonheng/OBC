@@ -1,5 +1,11 @@
 package com.rhbgroup.dte.obc.acount.service;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyMap;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
+
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
@@ -10,6 +16,7 @@ import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,14 +24,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
-
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyMap;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest extends AbstractAccountTest {
@@ -41,8 +40,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock PGRestClient pgRestClient;
 
-  @Mock
-  AccountMapper accountMapper;
+  @Mock AccountMapper accountMapper;
 
   @BeforeEach
   void cleanUp() {
