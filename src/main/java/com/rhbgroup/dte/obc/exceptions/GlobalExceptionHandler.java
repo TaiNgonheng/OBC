@@ -9,6 +9,7 @@ import com.rhbgroup.dte.obc.model.ResponseWrapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -62,13 +63,37 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(BizException.class)
-  public ResponseEntity<ResponseWrapper> authenticationException(BizException ex) {
+  public ResponseEntity<ResponseWrapper> bizException(BizException ex) {
 
     ResponseStatus status =
         new ResponseStatus()
             .code(AppConstants.STATUS.ERROR)
             .errorCode(ex.getResponseMessage().getCode().toString())
             .errorMessage(ex.getResponseMessage().getMsg());
+
+    return new ResponseEntity<>(new ResponseWrapper().status(status), HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ResponseWrapper> argMissingException(MethodArgumentNotValidException ex) {
+
+    ResponseStatus status =
+        new ResponseStatus()
+            .code(AppConstants.STATUS.ERROR)
+            .errorCode(ResponseMessage.MANDATORY_FIELD_MISSING.getCode().toString())
+            .errorMessage(ResponseMessage.MANDATORY_FIELD_MISSING.getMsg());
+
+    return new ResponseEntity<>(new ResponseWrapper().status(status), HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ResponseWrapper> genericException(Exception ex) {
+
+    ResponseStatus status =
+        new ResponseStatus()
+            .code(AppConstants.STATUS.ERROR)
+            .errorCode(ResponseMessage.INTERNAL_SERVER_ERROR.getCode().toString())
+            .errorMessage(ResponseMessage.INTERNAL_SERVER_ERROR.getMsg());
 
     return new ResponseEntity<>(new ResponseWrapper().status(status), HttpStatus.BAD_REQUEST);
   }

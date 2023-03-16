@@ -15,12 +15,15 @@ import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.ExchangeAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +51,7 @@ public class UserExchangeServiceImpl implements UserExchangeService {
   public ExchangeAccountResponseAllOfData exchangeUser(UserModel userModel) {
 
     return Functions.of(userExchangeMapper::toEntity)
-        .andThen(checkUserExisting)
+        .andThen(getNewUserOrUpdatedUser)
         .andThen(userProfileRepository::save)
         .andThen(
             userProfileEntity ->
@@ -71,29 +74,38 @@ public class UserExchangeServiceImpl implements UserExchangeService {
         .apply(model);
   }
 
-  private final UnaryOperator<UserProfileEntity> checkUserExisting =
+  private final UnaryOperator<UserProfileEntity> getNewUserOrUpdatedUser =
       newUser -> {
         Optional<UserProfileEntity> userOptional =
             userProfileRepository.getByUsername(newUser.getUsername());
 
-        // Compare the existing password
-        // if the user already exist with username but not password
-        // allow to continue to update user password
         if (userOptional.isPresent()) {
-
           UserProfileEntity existingUser = userOptional.get();
-          boolean isMatched =
-              passwordEncoder.matches(newUser.getPassword(), existingUser.getPassword());
-          if (isMatched) {
-            throw new BizException(ResponseMessage.USER_ALREADY_EXIST);
-          } else {
-            // Update user credential
-            existingUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
-            return existingUser;
+          // Update user credential & mobile number
+          String newPassword = newUser.getPassword();
+          String newMobileNo = newUser.getMobileNo();
+          if (StringUtils.isNotBlank(newPassword)) {
+            existingUser.setPassword(passwordEncoder.encode(newPassword));
           }
+          if (StringUtils.isNotBlank(newMobileNo)) {
+            existingUser.setMobileNo(newMobileNo);
+          }
+          return existingUser;
         }
 
-        // Update user credential
+        // All fields will be mandatory when new user profile arrives
+        boolean isMissingRequiredField =
+            Stream.of(
+                    newUser.getUsername(),
+                    newUser.getPassword(),
+                    newUser.getCifNo(),
+                    newUser.getMobileNo())
+                .anyMatch(Objects::isNull);
+
+        if (isMissingRequiredField) {
+          throw new BizException(ResponseMessage.MANDATORY_FIELD_MISSING);
+        }
+
         newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
         return newUser;
       };
