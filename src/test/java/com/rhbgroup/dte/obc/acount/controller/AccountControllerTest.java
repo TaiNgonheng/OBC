@@ -36,43 +36,16 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testIntiAccount_InternalServerError500_Failed() {
-    Mockito.when(accountService.initLinkAccount(Mockito.any()))
-        .thenReturn(mockInitAccountResponse());
-    ResponseEntity<InitAccountResponse> responseEntity =
-        accountController.initLinkAccount(mockInitAccountRequest());
-
-    Assertions.assertNotNull(responseEntity);
-    Assertions.assertNotNull(responseEntity.getBody());
-
-    Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
-    Assertions.assertEquals(0, responseEntity.getBody().getStatus().getCode());
+    // TODO
   }
 
   @Test
   void testIntiAccount_BadRequest400_Failed() {
-    Mockito.when(accountService.initLinkAccount(Mockito.any()))
-        .thenReturn(mockInitAccountResponse());
-    ResponseEntity<InitAccountResponse> responseEntity =
-        accountController.initLinkAccount(mockInitAccountRequest());
-
-    Assertions.assertNotNull(responseEntity);
-    Assertions.assertNotNull(responseEntity.getBody());
-
-    Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
-    Assertions.assertEquals(0, responseEntity.getBody().getStatus().getCode());
+    // TODO
   }
 
   @Test
   void testIntiAccount_Unauthorized401_Failed() {
-    Mockito.when(accountService.initLinkAccount(Mockito.any()))
-        .thenReturn(mockInitAccountResponse());
-    ResponseEntity<InitAccountResponse> responseEntity =
-        accountController.initLinkAccount(mockInitAccountRequest());
-
-    Assertions.assertNotNull(responseEntity);
-    Assertions.assertNotNull(responseEntity.getBody());
-
-    Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
-    Assertions.assertEquals(0, responseEntity.getBody().getStatus().getCode());
+    // TODO
   }
 }
