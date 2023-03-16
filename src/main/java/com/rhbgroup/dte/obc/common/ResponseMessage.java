@@ -29,6 +29,7 @@ public enum ResponseMessage {
   // CDRB error messages
   NO_SUCH_USER_FOUND(100, "User not found."),
   USER_ALREADY_EXIST(101, "User already exist."),
+  NO_CONFIG_FOR_SERVICE_FOUND(102, "Configuration for service not found."),
 
   // Generic error message
   CONSTRAINT_VIOLATION_ERROR(300, "Constraint violation exception."),

@@ -2,7 +2,6 @@ package com.rhbgroup.dte.obc.common.util.impl;
 
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import javax.annotation.PostConstruct;
-import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
 import javax.cache.configuration.MutableConfiguration;
@@ -44,8 +43,7 @@ public class JCacheUtil implements CacheUtil {
 
   @Override
   public void addKey(String cacheName, String key, String value) {
-    Cache<String, String> cacheWithKey = cacheManager.getCache(cacheName);
-    cacheWithKey.put(key, value);
+    cacheManager.getCache(cacheName).put(key, value);
   }
 
   @Override

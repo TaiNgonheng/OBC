@@ -8,7 +8,6 @@ import com.rhbgroup.dte.obc.model.PGAuthResponse;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;

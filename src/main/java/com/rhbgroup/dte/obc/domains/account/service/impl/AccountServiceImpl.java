@@ -1,9 +1,10 @@
-package com.rhbgroup.dte.obc.domains.account.service;
+package com.rhbgroup.dte.obc.domains.account.service.impl;
 
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.enums.ServiceType;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
+import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.config.repository.ConfigRepository;
 import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
@@ -20,7 +21,6 @@ import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import javax.annotation.PostConstruct;
 import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +43,8 @@ public class AccountServiceImpl implements AccountService {
 
   private static final String KTC_STATUS = "FULL_KYC";
   private static final String PG1_CACHE_NAME = "PG1_CACHE";
+
+  private static final String PG1_LOGIN_KEY = "Pg1_Login_";
 
   @PostConstruct
   public void postConstruct() {
@@ -68,16 +70,14 @@ public class AccountServiceImpl implements AccountService {
     userModel.setPassword(request.getKey());
 
     Authentication authentication = userAuthService.authenticate(userModel);
-    String jwtKey = "Pg1_Login_".concat(request.getLogin());
+    String jwtKey = PG1_LOGIN_KEY.concat(request.getLogin());
     // validate pg1 jwt token
     String jwt = cacheUtil.getValueFromKey(PG1_CACHE_NAME, jwtKey);
+    ConfigEntity configEntity =
+        configRepository
+            .getByServiceName(ServiceType.PG1.getName())
+            .orElseThrow(() -> new BizException(ResponseMessage.NO_CONFIG_FOR_SERVICE_FOUND));
     if (jwt == null) {
-
-      ConfigEntity configEntity =
-          configRepository
-              .getByServiceName(ServiceType.PG1.getName())
-              .orElseThrow(() -> new BizException(ResponseMessage.ACCOUNT_ALREADY_LINKED));
-
       PGAuthRequest pgAuthRequest =
           new PGAuthRequest().username(configEntity.getLogin()).password(configEntity.getSecret());
 
@@ -85,8 +85,8 @@ public class AccountServiceImpl implements AccountService {
       if (pgAuthResponse == null) {
         throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
       }
-
-      cacheUtil.addKey(PG1_CACHE_NAME, jwtKey, pgAuthResponse.getIdToken());
+      jwt = pgAuthResponse.getIdToken();
+      cacheUtil.addKey(PG1_CACHE_NAME, jwtKey, jwt);
     }
     // validate pg1 profile
     Map<String, String> param = new HashMap<>();
@@ -109,10 +109,7 @@ public class AccountServiceImpl implements AccountService {
               : userProfile.getPhone());
     }
     // get require OTP config
-    Optional<ConfigEntity> configEntity =
-        configRepository.getByServiceName(ServiceType.INFO_BIP.getName());
-    data.setRequireOtp(configEntity.isPresent() && configEntity.get().isRequiredTrxOtp() ? 1 : 0);
-
+    data.setRequireOtp(configEntity.isRequiredTrxOtp() ? 1 : 0);
     // generate infoBip OTP
     // generate JWT token
     data.setAccessToken(jwtTokenUtils.generateJwt(authentication));
