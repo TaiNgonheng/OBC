@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.cache.expiry.Duration;
+
+import com.sun.xml.bind.v2.TODO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -43,12 +45,15 @@ public class AccountServiceImpl implements AccountService {
 
   private static final String KTC_STATUS = "FULL_KYC";
   private static final String PG1_CACHE_NAME = "PG1_CACHE";
-
+  private static final String BAKONG_LOGIN_CACHE_NAME = "BAKONG_LOGIN_CACHE";
   private static final String PG1_LOGIN_KEY = "Pg1_Login_";
+
+  private static final String BAKONG_LOGIN_KEY = "Bakong_Login_";
 
   @PostConstruct
   public void postConstruct() {
     cacheUtil.createCache(PG1_CACHE_NAME, Duration.ONE_MINUTE);
+    cacheUtil.createCache(BAKONG_LOGIN_CACHE_NAME, Duration.ONE_MINUTE);
   }
 
   @Override
@@ -70,14 +75,14 @@ public class AccountServiceImpl implements AccountService {
     userModel.setPassword(request.getKey());
 
     Authentication authentication = userAuthService.authenticate(userModel);
-    String jwtKey = PG1_LOGIN_KEY.concat(request.getLogin());
+    String pg1JwtKey = PG1_LOGIN_KEY.concat(request.getLogin());
     // validate pg1 jwt token
-    String jwt = cacheUtil.getValueFromKey(PG1_CACHE_NAME, jwtKey);
+    String pg1Jwt = cacheUtil.getValueFromKey(PG1_CACHE_NAME, pg1JwtKey);
     ConfigEntity configEntity =
         configRepository
             .getByServiceName(ServiceType.PG1.getName())
             .orElseThrow(() -> new BizException(ResponseMessage.NO_CONFIG_FOR_SERVICE_FOUND));
-    if (jwt == null) {
+    if (pg1Jwt == null) {
       PGAuthRequest pgAuthRequest =
           new PGAuthRequest().username(configEntity.getLogin()).password(configEntity.getSecret());
 
@@ -85,13 +90,13 @@ public class AccountServiceImpl implements AccountService {
       if (pgAuthResponse == null) {
         throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
       }
-      jwt = pgAuthResponse.getIdToken();
-      cacheUtil.addKey(PG1_CACHE_NAME, jwtKey, jwt);
+      pg1Jwt = pgAuthResponse.getIdToken();
+      cacheUtil.addKey(PG1_CACHE_NAME, pg1JwtKey, pg1Jwt);
     }
     // validate pg1 profile
     Map<String, String> param = new HashMap<>();
     param.put("account_id", userModel.getUsername());
-    PGProfileResponse userProfile = pgRestClient.getUserProfile(param, jwt);
+    PGProfileResponse userProfile = pgRestClient.getUserProfile(param, pg1Jwt);
     if (userProfile == null) {
       throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
@@ -111,8 +116,13 @@ public class AccountServiceImpl implements AccountService {
     // get require OTP config
     data.setRequireOtp(configEntity.isRequiredTrxOtp() ? 1 : 0);
     // generate infoBip OTP
+    /**
+     * todo: call infoBip opt generation
+     */
     // generate JWT token
-    data.setAccessToken(jwtTokenUtils.generateJwt(authentication));
+    String bakingLoginJwt = jwtTokenUtils.generateJwt(authentication);
+    cacheUtil.addKey(BAKONG_LOGIN_CACHE_NAME, BAKONG_LOGIN_KEY.concat(request.getLogin()), bakingLoginJwt);
+    data.setAccessToken(bakingLoginJwt);
     accountResponse.setStatus(new ResponseStatus().code(0));
     accountResponse.setData(data);
     return accountResponse;
