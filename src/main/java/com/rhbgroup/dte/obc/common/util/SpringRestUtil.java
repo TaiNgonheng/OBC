@@ -1,5 +1,10 @@
 package com.rhbgroup.dte.obc.common.util;
 
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Map;
+import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import org.codehaus.plexus.util.StringUtils;
@@ -13,22 +18,21 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Resource;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Map;
-
 @Component
 @Slf4j
 public class SpringRestUtil {
   @Resource private RestTemplate restTemplate;
 
-  public <T> T sendGet(String url, Map<String, String> parameters, Map<String, String> headers, ParameterizedTypeReference<T> typeReference)
+  public <T> T sendGet(
+      String url,
+      Map<String, String> parameters,
+      Map<String, String> headers,
+      ParameterizedTypeReference<T> typeReference)
       throws RestClientException {
 
     if (parameters != null && !parameters.isEmpty()) {
-      return sendRequest(buildUrlWithParams(url, parameters), HttpMethod.GET, headers, null, typeReference);
+      return sendRequest(
+          buildUrlWithParams(url, parameters), HttpMethod.GET, headers, null, typeReference);
     }
     return sendRequest(url, HttpMethod.GET, headers, null, typeReference);
   }

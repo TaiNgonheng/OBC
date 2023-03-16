@@ -12,9 +12,7 @@ import javax.cache.spi.CachingProvider;
 import org.springframework.stereotype.Service;
 
 @Service
-public class JcacheUtil implements CacheUtil {
-
-  private Cache<String, String> cache;
+public class JCacheUtil implements CacheUtil {
 
   private CacheManager cacheManager;
 
@@ -32,16 +30,6 @@ public class JcacheUtil implements CacheUtil {
   }
 
   @Override
-  public <T> T getCacheConfig() {
-    return null;
-  }
-
-  @Override
-  public void addKey(String cacheName, String key, String value) {
-    Cache<String, String> cache = cacheManager.getCache(cacheName);
-    cache.put(key, value);
-  }
-
   public void addKey(String key, String value) {}
 
   @Override
@@ -50,8 +38,18 @@ public class JcacheUtil implements CacheUtil {
   }
 
   @Override
+  public <T> T getCacheConfig() {
+    return null;
+  }
+
+  @Override
+  public void addKey(String cacheName, String key, String value) {
+    Cache<String, String> cacheWithKey = cacheManager.getCache(cacheName);
+    cacheWithKey.put(key, value);
+  }
+
+  @Override
   public String getValueFromKey(String cacheName, String key) {
-    Cache<String, String> cache = cacheManager.getCache(cacheName);
-    return cache.get(key);
+    return (String) cacheManager.getCache(cacheName).get(key);
   }
 }

@@ -3,9 +3,13 @@ description: Account model
 properties:
   id:
     type: integer
+  user:
+    $ref: '../user/UserModel.yml'
   bakongId:
     type: string
   accountId:
+    type: string
+  mobileNo:
     type: string
   active:
     type: boolean

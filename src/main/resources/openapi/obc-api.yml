@@ -47,6 +47,12 @@ components:
       $ref: './schemas/account/AccountModel.yml'
     UserModel:
       $ref: './schemas/user/UserModel.yml'
+    PGAuthRequest:
+      $ref: './schemas/pg/PGAuthRequest.yml'
+    PGAuthResponse:
+      $ref: './schemas/pg/PGAuthResponse.yml'
+    PGProfileResponse:
+      $ref: './schemas/pg/PGProfileResponse.yml'
 
   securitySchemes:
     bearerAuth:

@@ -1,0 +1,29 @@
+type: object
+description: Get PG1 profile response
+properties:
+  accountName:
+    type: string
+    example: devbkhppxxx
+  accountId:
+    type: string
+    example: evbkhppxxx@devb
+  name:
+    type: string
+    example: Dev Bank
+  bankName:
+    type: string
+    example: Dev Bank
+  email:
+    type: string
+  kycStatus:
+    type: string
+    example: FULL_KYC
+  accountStatus:
+    type: string
+    example: ACTIVATED
+  phone:
+    type: string
+  frozen:
+    type: boolean
+    example: false
+
