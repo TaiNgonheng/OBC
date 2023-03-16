@@ -109,7 +109,7 @@
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
-            <version>5.2.0</version>
+            <version>5.2.2</version>
         </dependency>
 
         <dependency>
