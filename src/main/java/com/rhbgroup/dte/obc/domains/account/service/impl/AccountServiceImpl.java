@@ -1,9 +1,10 @@
 package com.rhbgroup.dte.obc.domains.account.service.impl;
 
 import com.rhbgroup.dte.obc.common.ResponseMessage;
-import com.rhbgroup.dte.obc.common.enums.ServiceType;
+import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.common.constants.CacheConstants;
+import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
-import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.config.repository.ConfigRepository;
 import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
@@ -19,16 +20,15 @@ import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
-import java.util.HashMap;
-import java.util.Map;
-import javax.annotation.PostConstruct;
-import javax.cache.expiry.Duration;
-
-import com.sun.xml.bind.v2.TODO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import javax.cache.expiry.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -38,32 +38,15 @@ public class AccountServiceImpl implements AccountService {
   private final CacheUtil cacheUtil;
   private final ConfigRepository configRepository;
   private final UserAuthService userAuthService;
-
-  private final AccountMapper accountMapper;
-
   private final PGRestClient pgRestClient;
-
-  private static final String KTC_STATUS = "FULL_KYC";
-  private static final String PG1_CACHE_NAME = "PG1_CACHE";
-  private static final String BAKONG_LOGIN_CACHE_NAME = "BAKONG_LOGIN_CACHE";
-  private static final String PG1_LOGIN_KEY = "Pg1_Login_";
-
-  private static final String BAKONG_LOGIN_KEY = "Bakong_Login_";
 
   @PostConstruct
   public void postConstruct() {
-    cacheUtil.createCache(PG1_CACHE_NAME, Duration.ONE_MINUTE);
-    cacheUtil.createCache(BAKONG_LOGIN_CACHE_NAME, Duration.ONE_MINUTE);
+    cacheUtil.createCache(CacheConstants.PGCache.CACHE_NAME, Duration.ONE_MINUTE);
   }
 
   @Override
   public InitAccountResponse authenticate(InitAccountRequest request) {
-
-    //    return Functions.of(accountMapper::toModel)
-    //            .andThen(userAuthService::authenticate)
-    //            .andThen(accountMapper::toResponseWrapper)
-    //            .apply(request);
-
     return null;
   }
 
@@ -75,34 +58,32 @@ public class AccountServiceImpl implements AccountService {
     userModel.setPassword(request.getKey());
 
     Authentication authentication = userAuthService.authenticate(userModel);
-    String pg1JwtKey = PG1_LOGIN_KEY.concat(request.getLogin());
-    // validate pg1 jwt token
-    String pg1Jwt = cacheUtil.getValueFromKey(PG1_CACHE_NAME, pg1JwtKey);
+    String pgLoginKey = CacheConstants.PGCache.PG1_LOGIN_KEY.concat(request.getLogin());
+
+    // Validate pgToken token
+    String pgToken = cacheUtil.getValueFromKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey);
     ConfigEntity configEntity =
         configRepository
-            .getByServiceName(ServiceType.PG1.getName())
-            .orElseThrow(() -> new BizException(ResponseMessage.NO_CONFIG_FOR_SERVICE_FOUND));
-    if (pg1Jwt == null) {
+            .getByServiceName(AppConstants.ServiceType.PG1)
+            .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND));
+
+    if (pgToken == null) {
       PGAuthRequest pgAuthRequest =
           new PGAuthRequest().username(configEntity.getLogin()).password(configEntity.getSecret());
 
       PGAuthResponse pgAuthResponse = pgRestClient.login(pgAuthRequest);
-      if (pgAuthResponse == null) {
-        throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
-      }
-      pg1Jwt = pgAuthResponse.getIdToken();
-      cacheUtil.addKey(PG1_CACHE_NAME, pg1JwtKey, pg1Jwt);
-    }
-    // validate pg1 profile
-    Map<String, String> param = new HashMap<>();
-    param.put("account_id", userModel.getUsername());
-    PGProfileResponse userProfile = pgRestClient.getUserProfile(param, pg1Jwt);
-    if (userProfile == null) {
-      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+      cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey, pgAuthResponse.getIdToken());
+
+      pgToken = pgAuthResponse.getIdToken();
     }
 
-    if (!KTC_STATUS.equals(userProfile.getKycStatus())) {
-      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+    // Get PG user profile
+    Map<String, String> param = new HashMap<>();
+    param.put("account_id", userModel.getUsername());
+    PGProfileResponse userProfile = pgRestClient.getUserProfile(param, pgToken);
+
+    if (!KycStatusEnum.parse(userProfile.getKycStatus()).equals(KycStatusEnum.FULL_KYC)) {
+      throw new BizException(ResponseMessage.KYC_NOT_VERIFIED);
     }
 
     InitAccountResponseAllOfData data = new InitAccountResponseAllOfData();
@@ -121,7 +102,7 @@ public class AccountServiceImpl implements AccountService {
      */
     // generate JWT token
     String bakingLoginJwt = jwtTokenUtils.generateJwt(authentication);
-    cacheUtil.addKey(BAKONG_LOGIN_CACHE_NAME, BAKONG_LOGIN_KEY.concat(request.getLogin()), bakingLoginJwt);
+    cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, CacheConstants.PGCache.PG1_LOGIN_KEY.concat(request.getLogin()), bakingLoginJwt);
     data.setAccessToken(bakingLoginJwt);
     accountResponse.setStatus(new ResponseStatus().code(0));
     accountResponse.setData(data);

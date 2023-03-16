@@ -29,10 +29,13 @@ public class JCacheUtil implements CacheUtil {
   }
 
   @Override
-  public void addKey(String key, String value) {}
+  public void addKey(String key, String value) {
+    // Need implement
+  }
 
   @Override
   public String getValueFromKey(String key) {
+    // Need implement
     return null;
   }
 

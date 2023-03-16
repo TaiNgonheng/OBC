@@ -21,9 +21,25 @@ class AccountControllerTest extends AbstractAccountTest {
   @Mock AccountServiceImpl accountService;
 
   @Test
-  void testRestService() {
-    Mockito.when(accountService.initLinkAccount(Mockito.any())).thenReturn(mockInitAccountResponse());
-    ResponseEntity<InitAccountResponse> responseEntity = accountController.initLinkAccount(mockInitAccountRequest());
+  void testIntiAccount_Success2xx() {
+    Mockito.when(accountService.initLinkAccount(Mockito.any()))
+        .thenReturn(mockInitAccountResponse());
+    ResponseEntity<InitAccountResponse> responseEntity =
+        accountController.initLinkAccount(mockInitAccountRequest());
+
+    Assertions.assertNotNull(responseEntity);
+    Assertions.assertNotNull(responseEntity.getBody());
+
+    Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
+    Assertions.assertEquals(0, responseEntity.getBody().getStatus().getCode());
+  }
+
+  @Test
+  void testIntiAccount_Failed() {
+    Mockito.when(accountService.initLinkAccount(Mockito.any()))
+        .thenReturn(mockInitAccountResponse());
+    ResponseEntity<InitAccountResponse> responseEntity =
+        accountController.initLinkAccount(mockInitAccountRequest());
 
     Assertions.assertNotNull(responseEntity);
     Assertions.assertNotNull(responseEntity.getBody());

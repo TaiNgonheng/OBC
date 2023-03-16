@@ -29,11 +29,11 @@ public enum ResponseMessage {
   // CDRB error messages
   NO_SUCH_USER_FOUND(100, "User not found."),
   USER_ALREADY_EXIST(101, "User already exist."),
-  NO_CONFIG_FOR_SERVICE_FOUND(102, "Configuration for service not found."),
 
   // Generic error message
   CONSTRAINT_VIOLATION_ERROR(300, "Constraint violation exception."),
-  PG1_COMMUNICATION_FAILURE(301, "Failed to communicate with PG1 server"),
+  PG1_COMMUNICATION_FAILURE(301, "Failed to communicate with PG1 server."),
+  DATA_NOT_FOUND(302, "Data not found."),
   ;
 
   private final Integer code;

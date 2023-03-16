@@ -1,10 +1,12 @@
 package com.rhbgroup.dte.obc.common.util;
 
+import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.exceptions.BizException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
-import javax.annotation.Resource;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import org.codehaus.plexus.util.StringUtils;
@@ -20,8 +22,10 @@ import org.springframework.web.client.RestTemplate;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class SpringRestUtil {
-  @Resource private RestTemplate restTemplate;
+
+  private final RestTemplate restTemplate;
 
   public <T> T sendGet(
       String url,
@@ -45,13 +49,11 @@ public class SpringRestUtil {
     try {
       URIBuilder uriBuilder = new URIBuilder(url);
       uriBuilder.setCharset(StandardCharsets.UTF_8);
-
       for (Map.Entry<String, String> entrySet : parameters.entrySet()) {
         uriBuilder.addParameter(entrySet.getKey(), entrySet.getValue());
       }
 
       return uriBuilder.build().toString();
-
     } catch (URISyntaxException ex) {
       return null;
     }
@@ -83,10 +85,15 @@ public class SpringRestUtil {
       Map<String, String> header,
       Object body,
       ParameterizedTypeReference<T> parameterizedTypeReference) {
-    HttpEntity<Object> httpEntity = new HttpEntity<>(body, buildHeader(header));
-    ResponseEntity<T> response =
-        restTemplate.exchange(url, method, httpEntity, parameterizedTypeReference);
-    return response.getBody();
+
+    try {
+      HttpEntity<Object> httpEntity = new HttpEntity<>(body, buildHeader(header));
+      ResponseEntity<T> response =
+          restTemplate.exchange(url, method, httpEntity, parameterizedTypeReference);
+      return response.getBody();
+    } catch (Exception ex) {
+      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+    }
   }
 
   private HttpHeaders buildHeader(Map<String, String> headersMap) {

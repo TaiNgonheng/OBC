@@ -11,35 +11,35 @@ import org.springframework.security.core.Authentication;
 
 public abstract class AbstractAccountTest {
 
-    protected InitAccountRequest mockInitAccountRequest() {
-        return new InitAccountRequest()
-                .key("user")
-                .login("login")
-                .phoneNumber("95512345678")
-                .loginType(LoginTypeEnum.USER_PWD)
-                .bakongAccId("123xxx");
-    }
+  protected InitAccountRequest mockInitAccountRequest() {
+    return new InitAccountRequest()
+        .key("user")
+        .login("login")
+        .phoneNumber("95512345678")
+        .loginType(LoginTypeEnum.USER_PWD)
+        .bakongAccId("123xxx");
+  }
 
-    protected InitAccountResponse mockInitAccountResponse() {
-        return new InitAccountResponse()
-                .status(new ResponseStatus().code(0))
-                .data(new InitAccountResponseAllOfData().accessToken("access_token"));
-    }
+  protected InitAccountResponse mockInitAccountResponse() {
+    return new InitAccountResponse()
+        .status(new ResponseStatus().code(0))
+        .data(new InitAccountResponseAllOfData().accessToken("access_token"));
+  }
 
-    protected PGProfileResponse mockProfileResponse() {
-        return new PGProfileResponse()
-                .accountId("BankAccountId")
-                .accountName("test")
-                .accountId("123456xxx")
-                .kycStatus("FULL_KYC")
-                .phone("95500000000");
-    }
+  protected PGProfileResponse mockProfileResponse() {
+    return new PGProfileResponse()
+        .accountId("BankAccountId")
+        .accountName("test")
+        .accountId("123456xxx")
+        .kycStatus("FULL_KYC")
+        .phone("95500000000");
+  }
 
-    protected Authentication mockAuthentication() {
-        return new UsernamePasswordAuthenticationToken("test", "test");
-    }
+  protected Authentication mockAuthentication() {
+    return new UsernamePasswordAuthenticationToken("test", "test");
+  }
 
-    protected String mockJwtToken() {
-        return "header.payload.signature";
-    }
+  protected String mockJwtToken() {
+    return "header.payload.signature";
+  }
 }
