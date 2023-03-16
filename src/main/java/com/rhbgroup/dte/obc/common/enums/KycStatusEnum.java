@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum KycStatusEnum {
-
   FULL_KYC("FULL_KYC"),
   PARTIAL_KYC("PARTIAL_KYC"),
   REJECTED("REJECTED"),

@@ -5,11 +5,13 @@ import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
+import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.config.repository.ConfigRepository;
 import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
@@ -20,15 +22,14 @@ import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.PostConstruct;
+import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
-import javax.cache.expiry.Duration;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -38,6 +39,7 @@ public class AccountServiceImpl implements AccountService {
   private final CacheUtil cacheUtil;
   private final ConfigRepository configRepository;
   private final UserAuthService userAuthService;
+  private final AccountMapper accountMapper;
   private final PGRestClient pgRestClient;
 
   @PostConstruct
@@ -52,28 +54,25 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public InitAccountResponse initLinkAccount(InitAccountRequest request) {
-    InitAccountResponse accountResponse = new InitAccountResponse();
-    UserModel userModel = new UserModel();
-    userModel.setUsername(request.getLogin());
-    userModel.setPassword(request.getKey());
+    AccountModel accountModel = accountMapper.toModel(request);
+    UserModel userModel = accountModel.getUser();
 
     Authentication authentication = userAuthService.authenticate(userModel);
     String pgLoginKey = CacheConstants.PGCache.PG1_LOGIN_KEY.concat(request.getLogin());
 
     // Validate pgToken token
     String pgToken = cacheUtil.getValueFromKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey);
-    ConfigEntity configEntity =
-        configRepository
-            .getByServiceName(AppConstants.ServiceType.PG1)
-            .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND));
-
     if (pgToken == null) {
+      ConfigEntity pg1Config =
+          configRepository
+              .getByServiceName(AppConstants.ServiceType.PG1)
+              .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND));
+
       PGAuthRequest pgAuthRequest =
-          new PGAuthRequest().username(configEntity.getLogin()).password(configEntity.getSecret());
-
+          new PGAuthRequest().username(pg1Config.getLogin()).password(pg1Config.getSecret());
       PGAuthResponse pgAuthResponse = pgRestClient.login(pgAuthRequest);
-      cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey, pgAuthResponse.getIdToken());
 
+      cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey, pgAuthResponse.getIdToken());
       pgToken = pgAuthResponse.getIdToken();
     }
 
@@ -95,16 +94,22 @@ public class AccountServiceImpl implements AccountService {
               : userProfile.getPhone());
     }
     // get require OTP config
-    data.setRequireOtp(configEntity.isRequiredTrxOtp() ? 1 : 0);
+    ConfigEntity infoBipConfig =
+        configRepository
+            .getByServiceName(AppConstants.ServiceType.INFO_BIP)
+            .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND));
+    data.setRequireOtp(infoBipConfig.isRequiredTrxOtp() ? 1 : 0);
 
     // TODO generate infoBip OTP
 
     // generate JWT token
     String bakingLoginJwt = jwtTokenUtils.generateJwt(authentication);
-    cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, CacheConstants.PGCache.PG1_LOGIN_KEY.concat(request.getLogin()), bakingLoginJwt);
+    cacheUtil.addKey(
+        CacheConstants.PGCache.CACHE_NAME,
+        CacheConstants.PGCache.PG1_LOGIN_KEY.concat(request.getLogin()),
+        bakingLoginJwt);
     data.setAccessToken(bakingLoginJwt);
-    accountResponse.setStatus(new ResponseStatus().code(0));
-    accountResponse.setData(data);
-    return accountResponse;
+
+    return new InitAccountResponse().status(new ResponseStatus().code(0)).data(data);
   }
 }

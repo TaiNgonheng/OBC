@@ -36,8 +36,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testIntiAccount_Failed() {
-    Mockito.when(accountService.initLinkAccount(Mockito.any()))
-        .thenReturn(mockInitAccountResponse());
+    Mockito.when(accountService.initLinkAccount(Mockito.any())).thenThrow();
     ResponseEntity<InitAccountResponse> responseEntity =
         accountController.initLinkAccount(mockInitAccountRequest());
 
