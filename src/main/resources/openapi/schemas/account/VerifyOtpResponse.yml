@@ -1,0 +1,11 @@
+allOf:
+  - $ref: '../common/ResponseWrapper.yml'
+  - type: object
+    properties:
+      data:
+        type: object
+        discription: Verify Otp Response
+        properties:
+          isValid:
+            type: boolean
+            example: true
