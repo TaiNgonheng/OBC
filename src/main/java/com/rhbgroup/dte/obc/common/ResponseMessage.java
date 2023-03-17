@@ -28,11 +28,11 @@ public enum ResponseMessage {
   // CDRB error messages
   NO_SUCH_USER_FOUND(100, "User not found."),
   USER_ALREADY_EXIST(101, "User already exist."),
-  CONFIGURATION_DATA_INVALID(102, "Configuration data invalid."),
 
   // Generic error message
   CONSTRAINT_VIOLATION_ERROR(300, "Constraint violation exception."),
   DATA_NOT_FOUND(301, "Data not found."),
+  DATA_STRUCTURE_INVALID(302, "Data structure invalid."),
   ;
 
   private final Integer code;
