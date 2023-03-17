@@ -2,7 +2,6 @@ package com.rhbgroup.dte.obc.common.util.impl;
 
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import javax.annotation.PostConstruct;
-import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
 import javax.cache.configuration.MutableConfiguration;
@@ -12,9 +11,7 @@ import javax.cache.spi.CachingProvider;
 import org.springframework.stereotype.Service;
 
 @Service
-public class JcacheUtil implements CacheUtil {
-
-  private Cache<String, String> cache;
+public class JCacheUtil implements CacheUtil {
 
   private CacheManager cacheManager;
 
@@ -32,26 +29,28 @@ public class JcacheUtil implements CacheUtil {
   }
 
   @Override
+  public void addKey(String key, String value) {
+    // Need implement
+  }
+
+  @Override
+  public String getValueFromKey(String key) {
+    // Need implement
+    return null;
+  }
+
+  @Override
   public <T> T getCacheConfig() {
     return null;
   }
 
   @Override
   public void addKey(String cacheName, String key, String value) {
-    Cache<String, String> cache = cacheManager.getCache(cacheName);
-    cache.put(key, value);
-  }
-
-  public void addKey(String key, String value) {}
-
-  @Override
-  public String getValueFromKey(String key) {
-    return null;
+    cacheManager.getCache(cacheName).put(key, value);
   }
 
   @Override
   public String getValueFromKey(String cacheName, String key) {
-    Cache<String, String> cache = cacheManager.getCache(cacheName);
-    return cache.get(key);
+    return (String) cacheManager.getCache(cacheName).get(key);
   }
 }
