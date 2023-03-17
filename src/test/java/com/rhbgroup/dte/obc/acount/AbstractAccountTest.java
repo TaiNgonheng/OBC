@@ -13,11 +13,13 @@ import org.springframework.security.core.Authentication;
 
 public abstract class AbstractAccountTest {
 
+  protected static final String MOBILE_NUMBER = "95512345678";
+
   protected InitAccountRequest mockInitAccountRequest() {
     return new InitAccountRequest()
         .key("user")
         .login("login")
-        .phoneNumber("95512345678")
+        .phoneNumber(MOBILE_NUMBER)
         .loginType(LoginTypeEnum.USER_PWD)
         .bakongAccId("123xxx");
   }
@@ -28,13 +30,22 @@ public abstract class AbstractAccountTest {
         .data(new InitAccountResponseAllOfData().accessToken("access_token"));
   }
 
-  protected PGProfileResponse mockProfileResponse() {
+  protected PGProfileResponse mockProfileRequiredChangeMobile() {
     return new PGProfileResponse()
         .accountId("BankAccountId")
         .accountName("test")
         .accountId("123456xxx")
         .kycStatus("FULL_KYC")
         .phone("95500000000");
+  }
+
+  protected PGProfileResponse mockProfileNotRequiredChangeMobile() {
+    return new PGProfileResponse()
+        .accountId("BankAccountId")
+        .accountName("test")
+        .accountId("123456xxx")
+        .kycStatus("FULL_KYC")
+        .phone(MOBILE_NUMBER);
   }
 
   protected Authentication mockAuthentication() {
