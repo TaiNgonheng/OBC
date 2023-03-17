@@ -13,23 +13,11 @@ public class ConfigEntity {
   @GeneratedValue(strategy = GenerationType.SEQUENCE)
   private Long id;
 
-  @Column(name = "service_name", nullable = false)
-  private String serviceName;
+  @Column(name = "config_key", nullable = false)
+  private String configKey;
 
-  @Column(name = "login", nullable = false)
-  private String login;
-
-  @Column(name = "secret", nullable = false)
-  private String secret;
-
-  @Column(name = "token", nullable = false)
-  private String token;
-
-  @Column(name = "required_trx_otp", nullable = false)
-  private boolean requiredTrxOtp;
-
-  @Column(name = "transaction_config")
-  private String transactionConfig;
+  @Column(name = "config_value", nullable = false)
+  private String configValue;
 
   @Column(name = "created_date")
   private Instant createdDate;

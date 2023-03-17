@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
+import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.service.impl.AccountServiceImpl;
 import com.rhbgroup.dte.obc.domains.config.repository.ConfigRepository;
 import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
@@ -39,16 +40,19 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock PGRestClient pgRestClient;
 
+  @Mock AccountMapper accountMapper;
+
   @BeforeEach
   void cleanUp() {
-    reset(jwtTokenUtils, cacheUtil, configRepository, userAuthService, pgRestClient);
+    reset(jwtTokenUtils, cacheUtil, configRepository, userAuthService, pgRestClient, accountMapper);
   }
 
   @Test
-  void testInitLinkAccount() {
+  void testInitLinkAccount_Success_RequireChangePassword() {
     ConfigEntity configEntity = new ConfigEntity();
     configEntity.setRequiredTrxOtp(true);
 
+    when(accountMapper.toModel(any())).thenReturn(mockAccountModel());
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configRepository.getByServiceName(anyString())).thenReturn(Optional.of(configEntity));
@@ -60,5 +64,20 @@ class AccountServiceTest extends AbstractAccountTest {
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
     Assertions.assertEquals(1, response.getData().getRequireOtp());
     Assertions.assertEquals(1, response.getData().getRequireChangePhone());
+  }
+
+  @Test
+  void testInitLinkAccount_Success_NotRequireChangePassword() {
+    // TODO
+  }
+
+  @Test
+  void testInitLinkAccount_Failed_UserNotFound() {
+    // TODO
+  }
+
+  @Test
+  void testInitLinkAccount_Failed_3rdServiceUnavailable() {
+    // TODO
   }
 }

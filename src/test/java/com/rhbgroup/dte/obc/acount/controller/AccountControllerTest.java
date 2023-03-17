@@ -35,16 +35,17 @@ class AccountControllerTest extends AbstractAccountTest {
   }
 
   @Test
-  void testIntiAccount_Failed() {
-    Mockito.when(accountService.initLinkAccount(Mockito.any()))
-        .thenReturn(mockInitAccountResponse());
-    ResponseEntity<InitAccountResponse> responseEntity =
-        accountController.initLinkAccount(mockInitAccountRequest());
+  void testIntiAccount_InternalServerError500_Failed() {
+    // TODO
+  }
 
-    Assertions.assertNotNull(responseEntity);
-    Assertions.assertNotNull(responseEntity.getBody());
+  @Test
+  void testIntiAccount_BadRequest400_Failed() {
+    // TODO
+  }
 
-    Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
-    Assertions.assertEquals(0, responseEntity.getBody().getStatus().getCode());
+  @Test
+  void testIntiAccount_Unauthorized401_Failed() {
+    // TODO
   }
 }

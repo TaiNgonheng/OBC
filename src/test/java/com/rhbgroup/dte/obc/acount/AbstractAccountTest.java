@@ -1,11 +1,13 @@
 package com.rhbgroup.dte.obc.acount;
 
+import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.LoginTypeEnum;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
+import com.rhbgroup.dte.obc.model.UserModel;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
@@ -41,5 +43,9 @@ public abstract class AbstractAccountTest {
 
   protected String mockJwtToken() {
     return "header.payload.signature";
+  }
+
+  protected AccountModel mockAccountModel() {
+    return new AccountModel().user(new UserModel().username("test").password("test"));
   }
 }

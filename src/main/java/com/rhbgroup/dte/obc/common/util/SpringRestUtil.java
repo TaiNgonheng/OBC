@@ -6,10 +6,10 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
+import javax.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
-import org.codehaus.plexus.util.StringUtils;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,7 +28,7 @@ public class SpringRestUtil {
   private final RestTemplate restTemplate;
 
   public <T> T sendGet(
-      String url,
+      @NotBlank String url,
       Map<String, String> parameters,
       Map<String, String> headers,
       ParameterizedTypeReference<T> typeReference)
@@ -42,10 +42,6 @@ public class SpringRestUtil {
   }
 
   private String buildUrlWithParams(String url, Map<String, String> parameters) {
-
-    if (StringUtils.isEmpty(url)) {
-      return null;
-    }
     try {
       URIBuilder uriBuilder = new URIBuilder(url);
       uriBuilder.setCharset(StandardCharsets.UTF_8);

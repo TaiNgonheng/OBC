@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ConfigRepository extends JpaRepository<ConfigEntity, Long> {
-  Optional<ConfigEntity> getByServiceName(String serviceName);
+  Optional<ConfigEntity> getByConfigKey(String serviceName);
 }
