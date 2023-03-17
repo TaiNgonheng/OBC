@@ -95,6 +95,7 @@ public class GlobalExceptionHandler {
             .errorCode(ResponseMessage.INTERNAL_SERVER_ERROR.getCode().toString())
             .errorMessage(ResponseMessage.INTERNAL_SERVER_ERROR.getMsg());
 
-    return new ResponseEntity<>(new ResponseWrapper().status(status), HttpStatus.BAD_REQUEST);
+    return new ResponseEntity<>(
+        new ResponseWrapper().status(status), HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }

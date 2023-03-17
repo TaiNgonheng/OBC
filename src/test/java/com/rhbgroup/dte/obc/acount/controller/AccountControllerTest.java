@@ -1,51 +1,105 @@
 package com.rhbgroup.dte.obc.acount.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
-import com.rhbgroup.dte.obc.domains.account.controller.AccountController;
-import com.rhbgroup.dte.obc.domains.account.service.impl.AccountServiceImpl;
-import com.rhbgroup.dte.obc.model.InitAccountResponse;
-import org.junit.jupiter.api.Assertions;
+import com.rhbgroup.dte.obc.api.AccountApiController;
+import com.rhbgroup.dte.obc.api.AccountApiDelegate;
+import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.exceptions.GlobalExceptionHandler;
+import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
+import java.nio.charset.StandardCharsets;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(MockitoExtension.class)
 class AccountControllerTest extends AbstractAccountTest {
 
-  @InjectMocks AccountController accountController;
+  MockMvc mockMvc;
 
-  @Mock AccountServiceImpl accountService;
+  @Mock AccountApiDelegate accountApiDelegate;
 
-  @Test
-  void testIntiAccount_Success2xx() {
-    Mockito.when(accountService.initLinkAccount(Mockito.any()))
-        .thenReturn(mockInitAccountResponse());
-    ResponseEntity<InitAccountResponse> responseEntity =
-        accountController.initLinkAccount(mockInitAccountRequest());
+  @InjectMocks AccountApiController accountApiController;
 
-    Assertions.assertNotNull(responseEntity);
-    Assertions.assertNotNull(responseEntity.getBody());
+  ObjectMapper objectMapper = new ObjectMapper();
 
-    Assertions.assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
-    Assertions.assertEquals(0, responseEntity.getBody().getStatus().getCode());
+  @BeforeEach
+  void setup() {
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(accountApiController)
+            .setControllerAdvice(new GlobalExceptionHandler())
+            .build();
   }
 
   @Test
-  void testIntiAccount_InternalServerError500_Failed() {
-    // TODO
+  void testInitAccount_Success2xx() throws Exception {
+    Mockito.when(accountApiDelegate.initLinkAccount(Mockito.any()))
+        .thenReturn(ResponseEntity.ok(mockInitAccountResponse()));
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/init-link-account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8)
+                .content(objectMapper.writeValueAsBytes(mockInitAccountRequest())))
+        .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.data").exists());
   }
 
   @Test
-  void testIntiAccount_BadRequest400_Failed() {
-    // TODO
+  void testInitAccount_Failed_500() throws Exception {
+    Mockito.when(accountApiDelegate.initLinkAccount(Mockito.any()))
+        .thenThrow(new RuntimeException());
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/init-link-account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8)
+                .content(objectMapper.writeValueAsBytes(mockInitAccountRequest())))
+        .andExpect(MockMvcResultMatchers.status().is5xxServerError())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists());
   }
 
   @Test
-  void testIntiAccount_Unauthorized401_Failed() {
-    // TODO
+  void testInitAccount_Failed_Unauthorized_401() throws Exception {
+    Mockito.when(accountApiDelegate.initLinkAccount(Mockito.any()))
+        .thenThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/init-link-account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8)
+                .content(objectMapper.writeValueAsBytes(mockInitAccountRequest())))
+        .andExpect(MockMvcResultMatchers.status().isUnauthorized())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists());
+  }
+
+  @Test
+  void testInitAccount_Failed_Unauthorized_400() throws Exception {
+    Mockito.when(accountApiDelegate.initLinkAccount(Mockito.any()))
+        .thenThrow(new BizException(ResponseMessage.DATA_NOT_FOUND));
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/init-link-account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8)
+                .content(objectMapper.writeValueAsBytes(mockInitAccountRequest())))
+        .andExpect(MockMvcResultMatchers.status().isBadRequest())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists());
   }
 }

@@ -50,12 +50,12 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testInitLinkAccount_Success_RequireChangePassword() {
     ConfigEntity configEntity = new ConfigEntity();
-    configEntity.setRequiredTrxOtp(true);
+    //    configEntity.setConfigValue();
 
     when(accountMapper.toModel(any())).thenReturn(mockAccountModel());
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(configRepository.getByServiceName(anyString())).thenReturn(Optional.of(configEntity));
+    when(configRepository.getByConfigKey(anyString())).thenReturn(Optional.of(configEntity));
     when(pgRestClient.getUserProfile(anyMap(), anyString())).thenReturn(mockProfileResponse());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 

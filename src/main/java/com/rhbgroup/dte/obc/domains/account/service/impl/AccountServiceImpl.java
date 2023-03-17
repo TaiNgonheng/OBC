@@ -2,14 +2,13 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
-import com.rhbgroup.dte.obc.common.constants.services.CommonServiceConstants;
+import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
 import com.rhbgroup.dte.obc.common.constants.services.Pg1Constants;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
-import com.rhbgroup.dte.obc.domains.config.repository.ConfigRepository;
-import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
+import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.AccountModel;
@@ -29,7 +28,6 @@ import javax.annotation.PostConstruct;
 import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -39,8 +37,8 @@ import org.springframework.stereotype.Service;
 public class AccountServiceImpl implements AccountService {
   private final JwtTokenUtils jwtTokenUtils;
   private final CacheUtil cacheUtil;
-  private final ConfigRepository configRepository;
   private final UserAuthService userAuthService;
+  private final ConfigService configService;
   private final AccountMapper accountMapper;
   private final PGRestClient pgRestClient;
 
@@ -65,22 +63,12 @@ public class AccountServiceImpl implements AccountService {
     // Validate pgToken token
     String pgToken = cacheUtil.getValueFromKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey);
     if (pgToken == null) {
-      ConfigEntity pg1Config =
-          configRepository
-              .getByConfigKey(Pg1Constants.PG1_ACOUNT_KEY)
-              .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND));
-      String username;
-      String password;
-      try {
-        JSONObject pg1AccountData = new JSONObject(pg1Config.getConfigValue());
-        username = (String)pg1AccountData.get(Pg1Constants.PG1_DATA_USERNAME_KEY);
-        password = (String)pg1AccountData.get(Pg1Constants.PG1_DATA_PASSWORD_KEY);
-      }catch (Exception e){
-        throw new BizException(ResponseMessage.CONFIGURATION_DATA_INVALID);
-      }
 
-      PGAuthRequest pgAuthRequest =
-          new PGAuthRequest().username(username).password(password);
+      ConfigService pg1Config = this.configService.loadJSONValue(Pg1Constants.PG1_ACOUNT_KEY);
+      String username = pg1Config.getValue(Pg1Constants.PG1_DATA_USERNAME_KEY, String.class);
+      String password = pg1Config.getValue(Pg1Constants.PG1_DATA_PASSWORD_KEY, String.class);
+
+      PGAuthRequest pgAuthRequest = new PGAuthRequest().username(username).password(password);
       PGAuthResponse pgAuthResponse = pgRestClient.login(pgAuthRequest);
 
       cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey, pgAuthResponse.getIdToken());
@@ -105,18 +93,10 @@ public class AccountServiceImpl implements AccountService {
               : userProfile.getPhone());
     }
     // get require OTP config
-    ConfigEntity requireOtpConfig =
-        configRepository
-            .getByConfigKey(CommonServiceConstants.REQUIRED_INIT_ACCOUNT_OTP_KEY)
-            .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND));
-    Integer requireOtpValue;
-    try {
-      JSONObject requireOtpValueData = new JSONObject(requireOtpConfig.getConfigValue());
-      requireOtpValue = (Integer) requireOtpValueData.get(CommonServiceConstants.REQUIRED_INIT_ACCOUNT_OTP_VALUE_KEY);
-    }catch (Exception e){
-      throw new BizException(ResponseMessage.CONFIGURATION_DATA_INVALID);
-    }
-    data.setRequireOtp(requireOtpValue);
+    Integer otpEnabled =
+        configService.getByConfigKey(
+            ConfigConstants.REQUIRED_INIT_ACCOUNT_OTP_KEY, ConfigConstants.VALUE, Integer.class);
+    data.setRequireOtp(otpEnabled);
 
     // TODO generate infoBip OTP
 
