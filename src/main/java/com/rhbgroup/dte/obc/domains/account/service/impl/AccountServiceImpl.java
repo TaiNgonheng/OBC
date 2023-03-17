@@ -3,7 +3,6 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
-import com.rhbgroup.dte.obc.common.constants.services.Pg1Constants;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
@@ -62,11 +61,15 @@ public class AccountServiceImpl implements AccountService {
 
     // Validate pgToken token
     String pgToken = cacheUtil.getValueFromKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey);
+
     if (pgToken == null) {
 
-      ConfigService pg1Config = this.configService.loadJSONValue(Pg1Constants.PG1_ACOUNT_KEY);
-      String username = pg1Config.getValue(Pg1Constants.PG1_DATA_USERNAME_KEY, String.class);
-      String password = pg1Config.getValue(Pg1Constants.PG1_DATA_PASSWORD_KEY, String.class);
+      ConfigService pg1Config =
+          this.configService.loadJSONValue(ConfigConstants.PGConfig.PG1_ACCOUNT_KEY);
+      String username =
+          pg1Config.getValue(ConfigConstants.PGConfig.PG1_DATA_USERNAME_KEY, String.class);
+      String password =
+          pg1Config.getValue(ConfigConstants.PGConfig.PG1_DATA_PASSWORD_KEY, String.class);
 
       PGAuthRequest pgAuthRequest = new PGAuthRequest().username(username).password(password);
       PGAuthResponse pgAuthResponse = pgRestClient.login(pgAuthRequest);
