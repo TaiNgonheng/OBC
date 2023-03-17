@@ -41,10 +41,4 @@ public class AppConstants {
     public static final String UNLINKED = "UNLINKED";
     public static final String LINKED = "LINKED";
   }
-
-  @UtilityClass
-  public class ServiceType {
-    public static final String PG1 = "PG1";
-    public static final String INFO_BIP = "INFO_BIP";
-  }
 }

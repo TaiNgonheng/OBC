@@ -1,8 +1,9 @@
 package com.rhbgroup.dte.obc.domains.account.service.impl;
 
 import com.rhbgroup.dte.obc.common.ResponseMessage;
-import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
+import com.rhbgroup.dte.obc.common.constants.services.CommonServiceConstants;
+import com.rhbgroup.dte.obc.common.constants.services.Pg1Constants;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
@@ -28,6 +29,7 @@ import javax.annotation.PostConstruct;
 import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -65,11 +67,20 @@ public class AccountServiceImpl implements AccountService {
     if (pgToken == null) {
       ConfigEntity pg1Config =
           configRepository
-              .getByServiceName(AppConstants.ServiceType.PG1)
+              .getByConfigKey(Pg1Constants.PG1_ACOUNT_KEY)
               .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND));
+      String username;
+      String password;
+      try {
+        JSONObject pg1AccountData = new JSONObject(pg1Config.getConfigValue());
+        username = (String)pg1AccountData.get(Pg1Constants.PG1_DATA_USERNAME_KEY);
+        password = (String)pg1AccountData.get(Pg1Constants.PG1_DATA_PASSWORD_KEY);
+      }catch (Exception e){
+        throw new BizException(ResponseMessage.CONFIGURATION_DATA_INVALID);
+      }
 
       PGAuthRequest pgAuthRequest =
-          new PGAuthRequest().username(pg1Config.getLogin()).password(pg1Config.getSecret());
+          new PGAuthRequest().username(username).password(password);
       PGAuthResponse pgAuthResponse = pgRestClient.login(pgAuthRequest);
 
       cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey, pgAuthResponse.getIdToken());
@@ -94,11 +105,18 @@ public class AccountServiceImpl implements AccountService {
               : userProfile.getPhone());
     }
     // get require OTP config
-    ConfigEntity infoBipConfig =
+    ConfigEntity requireOtpConfig =
         configRepository
-            .getByServiceName(AppConstants.ServiceType.INFO_BIP)
+            .getByConfigKey(CommonServiceConstants.REQUIRED_INIT_ACCOUNT_OTP_KEY)
             .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND));
-    data.setRequireOtp(infoBipConfig.isRequiredTrxOtp() ? 1 : 0);
+    Integer requireOtpValue;
+    try {
+      JSONObject requireOtpValueData = new JSONObject(requireOtpConfig.getConfigValue());
+      requireOtpValue = (Integer) requireOtpValueData.get(CommonServiceConstants.REQUIRED_INIT_ACCOUNT_OTP_VALUE_KEY);
+    }catch (Exception e){
+      throw new BizException(ResponseMessage.CONFIGURATION_DATA_INVALID);
+    }
+    data.setRequireOtp(requireOtpValue);
 
     // TODO generate infoBip OTP
 
