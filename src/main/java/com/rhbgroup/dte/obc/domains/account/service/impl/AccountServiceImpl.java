@@ -12,15 +12,7 @@ import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
-import com.rhbgroup.dte.obc.model.AccountModel;
-import com.rhbgroup.dte.obc.model.InitAccountRequest;
-import com.rhbgroup.dte.obc.model.InitAccountResponse;
-import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
-import com.rhbgroup.dte.obc.model.PGAuthRequest;
-import com.rhbgroup.dte.obc.model.PGAuthResponse;
-import com.rhbgroup.dte.obc.model.PGProfileResponse;
-import com.rhbgroup.dte.obc.model.ResponseStatus;
-import com.rhbgroup.dte.obc.model.UserModel;
+import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.HashMap;
@@ -107,5 +99,13 @@ public class AccountServiceImpl implements AccountService {
     // generate JWT token
     data.setAccessToken(jwtTokenUtils.generateJwt(authentication));
     return new InitAccountResponse().status(new ResponseStatus().code(0)).data(data);
+  }
+
+  @Override
+  public VerifyOtpResponse verifyOtp (VerifyOtpRequest request) {
+    // TODO check infoBip OTP
+    VerifyOtpResponseAllOfData data = new VerifyOtpResponseAllOfData();
+    //validate infoBip response
+    return new VerifyOtpResponse().status(new ResponseStatus().code(0)).data(data);
   }
 }
