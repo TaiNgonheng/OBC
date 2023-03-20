@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
-import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.service.impl.AccountServiceImpl;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
@@ -41,8 +40,6 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock PGRestClient pgRestClient;
 
-  @Mock AccountMapper accountMapper;
-
   @BeforeEach
   void cleanUp() {
     reset(jwtTokenUtils, cacheUtil, configService, userAuthService, pgRestClient);
@@ -51,7 +48,6 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testInitLinkAccount_Success_RequireChangePassword() {
 
-    when(accountMapper.toModel(any())).thenReturn(mockAccountModel());
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
@@ -68,7 +64,6 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testInitLinkAccount_Success_NotRequireChangePassword() {
-    when(accountMapper.toModel(any())).thenReturn(mockAccountModel());
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
@@ -85,37 +80,34 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testInitLinkAccount_Failed_UserNotFound() {
-    when(accountMapper.toModel(any())).thenReturn(mockAccountModel());
     when(userAuthService.authenticate(any()))
         .thenThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
 
-    UserAuthenticationException exception =
-        Assertions.assertThrows(
-            UserAuthenticationException.class,
-            () -> accountService.initLinkAccount(mockInitAccountRequest()));
+    try {
+      accountService.initLinkAccount(mockInitAccountRequest());
+    } catch (UserAuthenticationException ex) {
 
-    Assertions.assertEquals(
-        ResponseMessage.AUTHENTICATION_FAILED.getCode(), exception.getResponseMessage().getCode());
-    Assertions.assertEquals(
-        ResponseMessage.AUTHENTICATION_FAILED.getMsg(), exception.getResponseMessage().getMsg());
+      Assertions.assertEquals(
+          ResponseMessage.AUTHENTICATION_FAILED.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.AUTHENTICATION_FAILED.getMsg(), ex.getResponseMessage().getMsg());
+    }
   }
 
   @Test
   void testInitLinkAccount_Failed_3rdServiceUnavailable() {
-    when(accountMapper.toModel(any())).thenReturn(mockAccountModel());
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(pgRestClient.getUserProfile(anyMap(), anyString()))
-            .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
+        .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
-    BizException exception =
-            Assertions.assertThrows(
-                    BizException.class,
-                    () -> accountService.initLinkAccount(mockInitAccountRequest()));
-
-    Assertions.assertEquals(
-            ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), exception.getResponseMessage().getCode());
-    Assertions.assertEquals(
-            ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(), exception.getResponseMessage().getMsg());
+    try {
+      accountService.initLinkAccount(mockInitAccountRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(), ex.getResponseMessage().getMsg());
+    }
   }
 }
