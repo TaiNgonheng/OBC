@@ -5,7 +5,9 @@ import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
+import com.rhbgroup.dte.obc.common.util.ObcStringUtils;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
+import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapperImpl;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
@@ -27,6 +29,7 @@ import javax.annotation.PostConstruct;
 import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -38,8 +41,9 @@ public class AccountServiceImpl implements AccountService {
   private final CacheUtil cacheUtil;
   private final UserAuthService userAuthService;
   private final ConfigService configService;
-  private final AccountMapper accountMapper;
   private final PGRestClient pgRestClient;
+
+  private final AccountMapper accountMapper = new AccountMapperImpl();
 
   @PostConstruct
   public void postConstruct() {
@@ -62,7 +66,7 @@ public class AccountServiceImpl implements AccountService {
     // Validate pgToken token
     String pgToken = cacheUtil.getValueFromKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey);
 
-    if (pgToken == null) {
+    if (StringUtils.isBlank(pgToken) || jwtTokenUtils.isExtTokenExpired(pgToken)) {
 
       ConfigService pg1Config =
           this.configService.loadJSONValue(ConfigConstants.PGConfig.PG1_ACCOUNT_KEY);
@@ -90,10 +94,7 @@ public class AccountServiceImpl implements AccountService {
     InitAccountResponseAllOfData data = new InitAccountResponseAllOfData();
     if (!userProfile.getPhone().equals(request.getPhoneNumber())) {
       data.setRequireChangePhone(1);
-      data.setLast3DigitsPhone(
-          userProfile.getPhone().length() > 3
-              ? userProfile.getPhone().substring(userProfile.getPhone().length() - 3)
-              : userProfile.getPhone());
+      data.setLast3DigitsPhone(ObcStringUtils.getLast3DigitsPhone(userProfile.getPhone()));
     }
     // get require OTP config
     Integer otpEnabled =
@@ -104,13 +105,7 @@ public class AccountServiceImpl implements AccountService {
     // TODO generate infoBip OTP
 
     // generate JWT token
-    String bakingLoginJwt = jwtTokenUtils.generateJwt(authentication);
-    cacheUtil.addKey(
-        CacheConstants.PGCache.CACHE_NAME,
-        CacheConstants.PGCache.PG1_LOGIN_KEY.concat(request.getLogin()),
-        bakingLoginJwt);
-    data.setAccessToken(bakingLoginJwt);
-
+    data.setAccessToken(jwtTokenUtils.generateJwt(authentication));
     return new InitAccountResponse().status(new ResponseStatus().code(0)).data(data);
   }
 }
