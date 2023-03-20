@@ -102,10 +102,12 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
-  public VerifyOtpResponse verifyOtp (VerifyOtpRequest request) {
+  public VerifyOtpResponse verifyOtp(VerifyOtpRequest request) {
+    InfoBipVerifyOtpResponse infoBipVerifyOtpResponse = new InfoBipVerifyOtpResponse();
     // TODO check infoBip OTP
-    VerifyOtpResponseAllOfData data = new VerifyOtpResponseAllOfData();
-    //validate infoBip response
+    // TODO check OTP expired
+    // validate infoBip response
+    VerifyOtpResponseAllOfData data = new VerifyOtpResponseAllOfData().isValid(infoBipVerifyOtpResponse.getVerified()? true : false);
     return new VerifyOtpResponse().status(new ResponseStatus().code(0)).data(data);
   }
 }
