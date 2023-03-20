@@ -11,5 +11,5 @@ public interface AccountService {
 
   InitAccountResponse initLinkAccount(InitAccountRequest request);
 
-  VerifyOtpResponse verifyOtp (VerifyOtpRequest request);
+  VerifyOtpResponse verifyOtp(VerifyOtpRequest request);
 }

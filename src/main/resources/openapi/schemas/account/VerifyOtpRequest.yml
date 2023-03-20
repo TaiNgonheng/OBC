@@ -2,4 +2,4 @@ type: object
 properties:
   otpCode:
     type: string
-    example: 000000
+    example: 1234

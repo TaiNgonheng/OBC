@@ -24,6 +24,8 @@ public class AccountController implements AccountApiDelegate {
 
   @Override
   public ResponseEntity<VerifyOtpResponse> verifyOtp(VerifyOtpRequest verifyOtpRequest) {
-    return Functions.of(accountService::verifyOtp).andThen(ResponseEntity::ok).apply(verifyOtpRequest);
+    return Functions.of(accountService::verifyOtp)
+        .andThen(ResponseEntity::ok)
+        .apply(verifyOtpRequest);
   }
 }
