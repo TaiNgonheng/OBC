@@ -29,6 +29,7 @@ import javax.annotation.PostConstruct;
 import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -65,7 +66,7 @@ public class AccountServiceImpl implements AccountService {
     // Validate pgToken token
     String pgToken = cacheUtil.getValueFromKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey);
 
-    if (pgToken == null) {
+    if (StringUtils.isBlank(pgToken) || jwtTokenUtils.isExtTokenExpired(pgToken)) {
 
       ConfigService pg1Config =
           this.configService.loadJSONValue(ConfigConstants.PGConfig.PG1_ACCOUNT_KEY);
