@@ -105,13 +105,7 @@ public class AccountServiceImpl implements AccountService {
     // TODO generate infoBip OTP
 
     // generate JWT token
-    String bakingLoginJwt = jwtTokenUtils.generateJwt(authentication);
-    cacheUtil.addKey(
-        CacheConstants.PGCache.CACHE_NAME,
-        CacheConstants.PGCache.PG1_LOGIN_KEY.concat(request.getLogin()),
-        bakingLoginJwt);
-    data.setAccessToken(bakingLoginJwt);
-
+    data.setAccessToken(jwtTokenUtils.generateJwt(authentication));
     return new InitAccountResponse().status(new ResponseStatus().code(0)).data(data);
   }
 }
