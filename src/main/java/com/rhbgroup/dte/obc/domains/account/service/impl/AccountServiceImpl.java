@@ -7,6 +7,7 @@ import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.common.util.ObcStringUtils;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
+import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapperImpl;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
@@ -39,8 +40,9 @@ public class AccountServiceImpl implements AccountService {
   private final CacheUtil cacheUtil;
   private final UserAuthService userAuthService;
   private final ConfigService configService;
-  private final AccountMapper accountMapper;
   private final PGRestClient pgRestClient;
+
+  private final AccountMapper accountMapper = new AccountMapperImpl();
 
   @PostConstruct
   public void postConstruct() {
