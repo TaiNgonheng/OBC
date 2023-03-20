@@ -1,0 +1,10 @@
+type: object
+description: PG1 authentication request
+required:
+  - username
+  - password
+properties:
+  username:
+    type: string
+  password:
+    type: string

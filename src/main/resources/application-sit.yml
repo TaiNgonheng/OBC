@@ -45,3 +45,5 @@ server:
 app:
   jwt-secret: my-secret
   jwt-ttl: 300
+  rest:
+    pg1-url: ${PG1_BASE_URL:localhost}
