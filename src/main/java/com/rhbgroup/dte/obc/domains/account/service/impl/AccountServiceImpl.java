@@ -15,6 +15,7 @@ import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.AccountModel;
+import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
@@ -22,6 +23,9 @@ import com.rhbgroup.dte.obc.model.PGAuthRequest;
 import com.rhbgroup.dte.obc.model.PGAuthResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
+import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
+import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
+import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Collections;
@@ -57,7 +61,7 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public InitAccountResponse initLinkAccount(InitAccountRequest request) {
 
-    // Generate PG token
+    // Generate OBC token
     String token =
         Functions.of(accountMapper::toModel)
             .andThen(AccountModel::getUser)
@@ -67,7 +71,7 @@ public class AccountServiceImpl implements AccountService {
 
     String pgLoginKey = CacheConstants.PGCache.PG1_LOGIN_KEY.concat(request.getLogin());
 
-    // Get PG user profile and build response
+    // Get PG user profile, trigger OTP and build response
     return Functions.of(cacheUtil::getValueFromKey)
         .andThen(cacheValue -> generateKey(cacheValue, pgLoginKey))
         .andThen(
@@ -103,18 +107,6 @@ public class AccountServiceImpl implements AccountService {
     return new InitAccountResponse().status(new ResponseStatus().code(0)).data(data);
   }
 
-  @Override
-  public VerifyOtpResponse verifyOtp(VerifyOtpRequest request) {
-    InfoBipVerifyOtpResponse infoBipVerifyOtpResponse = new InfoBipVerifyOtpResponse();
-    // TODO check infoBip OTP
-    // TODO check OTP expired
-    // validate infoBip response
-    VerifyOtpResponseAllOfData data =
-        new VerifyOtpResponseAllOfData()
-            .isValid(infoBipVerifyOtpResponse.getVerified() ? true : false);
-    return new VerifyOtpResponse().status(new ResponseStatus().code(0)).data(data);
-  }
-
   private String generateKey(String pgToken, String pgLoginKey) {
     // Validate pgToken token
     if (StringUtils.isNotBlank(pgToken) && !jwtTokenUtils.isExtTokenExpired(pgToken)) {
@@ -148,5 +140,17 @@ public class AccountServiceImpl implements AccountService {
         .equals(AccountStatusEnum.DEACTIVATED)) {
       throw new BizException(ResponseMessage.ACCOUNT_DEACTIVATED);
     }
+  }
+
+  @Override
+  public VerifyOtpResponse verifyOtp(VerifyOtpRequest request) {
+    InfoBipVerifyOtpResponse infoBipVerifyOtpResponse = new InfoBipVerifyOtpResponse();
+    // TODO check infoBip OTP
+    // TODO check OTP expired
+    // validate infoBip response
+    VerifyOtpResponseAllOfData data =
+        new VerifyOtpResponseAllOfData()
+            .isValid(infoBipVerifyOtpResponse.getVerified() ? true : false);
+    return new VerifyOtpResponse().status(new ResponseStatus().code(0)).data(data);
   }
 }
