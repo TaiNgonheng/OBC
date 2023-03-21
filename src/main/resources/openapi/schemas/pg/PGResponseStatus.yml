@@ -1,0 +1,11 @@
+type: object
+properties:
+  code:
+    type: integer
+    example: 0
+  errorCode:
+    type: string
+  error:
+    type: string
+  warning:
+    type: string

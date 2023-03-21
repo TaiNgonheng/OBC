@@ -1,7 +1,7 @@
 package com.rhbgroup.dte.obc.acount.service;
 
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
@@ -51,7 +51,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    when(pgRestClient.getUserProfile(anyMap(), anyString()))
+    when(pgRestClient.getUserProfile(anyList(), anyString()))
         .thenReturn(mockProfileRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
@@ -67,7 +67,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    when(pgRestClient.getUserProfile(anyMap(), anyString()))
+    when(pgRestClient.getUserProfile(anyList(), anyString()))
         .thenReturn(mockProfileNotRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
@@ -98,7 +98,7 @@ class AccountServiceTest extends AbstractAccountTest {
   void testInitLinkAccount_Failed_3rdServiceUnavailable() {
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(pgRestClient.getUserProfile(anyMap(), anyString()))
+    when(pgRestClient.getUserProfile(anyList(), anyString()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {

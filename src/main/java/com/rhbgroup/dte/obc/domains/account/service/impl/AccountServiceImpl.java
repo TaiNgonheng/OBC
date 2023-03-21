@@ -17,14 +17,13 @@ import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGAuthRequest;
-import com.rhbgroup.dte.obc.model.PGAuthResponse;
+import com.rhbgroup.dte.obc.model.PGAuthResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 import javax.annotation.PostConstruct;
 import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
@@ -67,25 +66,24 @@ public class AccountServiceImpl implements AccountService {
     String pgToken = cacheUtil.getValueFromKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey);
 
     if (StringUtils.isBlank(pgToken) || jwtTokenUtils.isExtTokenExpired(pgToken)) {
-
       ConfigService pg1Config =
           this.configService.loadJSONValue(ConfigConstants.PGConfig.PG1_ACCOUNT_KEY);
+
       String username =
           pg1Config.getValue(ConfigConstants.PGConfig.PG1_DATA_USERNAME_KEY, String.class);
       String password =
           pg1Config.getValue(ConfigConstants.PGConfig.PG1_DATA_PASSWORD_KEY, String.class);
 
       PGAuthRequest pgAuthRequest = new PGAuthRequest().username(username).password(password);
-      PGAuthResponse pgAuthResponse = pgRestClient.login(pgAuthRequest);
+      PGAuthResponseAllOfData pgAuthResponse = pgRestClient.login(pgAuthRequest);
 
       cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey, pgAuthResponse.getIdToken());
       pgToken = pgAuthResponse.getIdToken();
     }
 
     // Get PG user profile
-    Map<String, String> param = new HashMap<>();
-    param.put("account_id", userModel.getUsername());
-    PGProfileResponse userProfile = pgRestClient.getUserProfile(param, pgToken);
+    PGProfileResponse userProfile =
+        pgRestClient.getUserProfile(Collections.singletonList(request.getBakongAccId()), pgToken);
 
     if (!KycStatusEnum.parse(userProfile.getKycStatus()).equals(KycStatusEnum.FULL_KYC)) {
       throw new BizException(ResponseMessage.KYC_NOT_VERIFIED);
