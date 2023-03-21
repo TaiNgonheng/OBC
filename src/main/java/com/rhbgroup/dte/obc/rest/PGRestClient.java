@@ -58,7 +58,7 @@ public class PGRestClient {
             header,
             ParameterizedTypeReference.forType(PGProfileResponse.class));
 
-    if (null == responseObject) {
+    if (null == responseObject || responseObject.getAccountId() == null) {
       throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
 
