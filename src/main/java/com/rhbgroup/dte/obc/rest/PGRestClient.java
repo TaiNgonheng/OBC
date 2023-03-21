@@ -59,7 +59,7 @@ public class PGRestClient {
             ParameterizedTypeReference.forType(PGProfileResponse.class));
 
     if (null == responseObject || responseObject.getAccountId() == null) {
-      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+      throw new BizException(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS);
     }
 
     return responseObject;
