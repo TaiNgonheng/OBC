@@ -5,6 +5,7 @@ import com.rhbgroup.dte.obc.exceptions.BizException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,11 @@ public class SpringRestUtil {
           buildUrlWithParams(url, parameters), HttpMethod.GET, headers, null, typeReference);
     }
     return sendRequest(url, HttpMethod.GET, headers, null, typeReference);
+  }
+
+  public String withPathParams(String url, List<String> pathParams) {
+    String paths = pathParams.stream().reduce((s1, s2) -> s1.concat("/").concat(s2)).orElse("");
+    return url + paths;
   }
 
   private String buildUrlWithParams(String url, Map<String, String> parameters) {
