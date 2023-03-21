@@ -1,4 +1,4 @@
-#init-link-account:
+#/init-link-account:
 post:
   tags:
     - Account

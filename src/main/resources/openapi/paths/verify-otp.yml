@@ -1,12 +1,12 @@
-#verify-otp:
+#/verify-otp:
 post:
   tags:
     - Account
-  summary: verify infoBip Otp
-  description: Link CASA between NBC and GoWave
+  summary: Verify user entered OTP via InfoBip
+  description: Verify user entered OTP via InfoBip
   operationId: verifyOtp
   requestBody:
-    description: OTP
+    description: OTP verify request
     content:
       application/json:
         schema:

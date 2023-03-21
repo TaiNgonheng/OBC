@@ -4,7 +4,7 @@ allOf:
     properties:
       data:
         type: object
-        discription: Verify Otp Response
+        description: Verify OTP Response
         properties:
           isValid:
             type: boolean

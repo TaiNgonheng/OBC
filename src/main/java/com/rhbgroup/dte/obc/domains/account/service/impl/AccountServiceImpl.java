@@ -107,7 +107,9 @@ public class AccountServiceImpl implements AccountService {
     // TODO check infoBip OTP
     // TODO check OTP expired
     // validate infoBip response
-    VerifyOtpResponseAllOfData data = new VerifyOtpResponseAllOfData().isValid(infoBipVerifyOtpResponse.getVerified()? true : false);
+    VerifyOtpResponseAllOfData data =
+        new VerifyOtpResponseAllOfData()
+            .isValid(infoBipVerifyOtpResponse.getVerified() ? true : false);
     return new VerifyOtpResponse().status(new ResponseStatus().code(0)).data(data);
   }
 }
