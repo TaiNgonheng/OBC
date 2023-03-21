@@ -47,3 +47,4 @@ app:
   jwt-ttl: 300
   rest:
     pg1-url: ${PG1_BASE_URL:localhost}
+    cdrb-url: ${CDRB_BASE_URL:localhost}

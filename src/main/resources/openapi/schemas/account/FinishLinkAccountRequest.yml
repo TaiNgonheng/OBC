@@ -1,0 +1,5 @@
+type: object
+properties:
+  accNumber:
+    type: string
+    example: 123456

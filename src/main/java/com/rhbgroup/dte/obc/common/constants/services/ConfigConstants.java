@@ -25,4 +25,10 @@ public class ConfigConstants {
   public static class InfoBip {
     private InfoBip() {}
   }
+
+  public static class CDRB {
+    private CDRB() {}
+
+    public static final String CDRB_CREDENTIAL_KEY = "CDRB_CREDENTIAL";
+  }
 }
