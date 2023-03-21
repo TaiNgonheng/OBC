@@ -25,13 +25,12 @@ public abstract class AbstractAccountTest {
 
   protected VerifyOtpResponse mockVerifyOtpResponse() {
     return new VerifyOtpResponse()
-            .status(new ResponseStatus().code(0))
-            .data(new VerifyOtpResponseAllOfData().isValid(true));
+        .status(new ResponseStatus().code(0))
+        .data(new VerifyOtpResponseAllOfData().isValid(true));
   }
 
   protected VerifyOtpRequest mockVerifyOtpRequest() {
-    return new VerifyOtpRequest()
-            .otpCode("000000");
+    return new VerifyOtpRequest().otpCode("000000");
   }
 
   protected PGProfileResponse mockProfileRequiredChangeMobile() {
