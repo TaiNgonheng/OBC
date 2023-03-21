@@ -29,22 +29,6 @@ public class JCacheUtil implements CacheUtil {
   }
 
   @Override
-  public void addKey(String key, String value) {
-    // Need implement
-  }
-
-  @Override
-  public String getValueFromKey(String key) {
-    // Need implement
-    return null;
-  }
-
-  @Override
-  public <T> T getCacheConfig() {
-    return null;
-  }
-
-  @Override
   public void addKey(String cacheName, String key, String value) {
     cacheManager.getCache(cacheName).put(key, value);
   }
