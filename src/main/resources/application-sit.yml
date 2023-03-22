@@ -22,7 +22,7 @@ spring:
     clean-on-validation-error: true
 
   jackson:
-    default-property-inclusion: NON_NULL
+    default-property-inclusion: ALWAYS
 
   application:
     name: ${APP_NAME:obc-sit}

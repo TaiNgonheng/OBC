@@ -63,6 +63,43 @@ class AccountServiceTest extends AbstractAccountTest {
   }
 
   @Test
+  void testInitLinkAccount_Failed_AccountNotFullyKYC() {
+
+    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
+    when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
+    when(pgRestClient.getUserProfile(anyList(), anyString())).thenReturn(mockProfileNotFullyKyc());
+    when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
+
+    try {
+      accountService.initLinkAccount(mockInitAccountRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.KYC_NOT_VERIFIED.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.KYC_NOT_VERIFIED.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testInitLinkAccount_Failed_AccountNotActive() {
+
+    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
+    when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
+    when(pgRestClient.getUserProfile(anyList(), anyString()))
+        .thenReturn(mockProfileUserDeactivated());
+    when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
+
+    try {
+      accountService.initLinkAccount(mockInitAccountRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.ACCOUNT_DEACTIVATED.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.ACCOUNT_DEACTIVATED.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
   void testInitLinkAccount_Success_NotRequireChangePassword() {
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
