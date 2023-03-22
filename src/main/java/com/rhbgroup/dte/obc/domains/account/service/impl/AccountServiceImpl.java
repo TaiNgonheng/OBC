@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.domains.account.service.impl;
 
+import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
@@ -21,16 +22,16 @@ import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGAuthRequest;
 import com.rhbgroup.dte.obc.model.PGAuthResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
-import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
-import java.util.Collections;
-import javax.annotation.PostConstruct;
-import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import javax.cache.expiry.Duration;
+import java.util.Collections;
 
 @Service
 @Slf4j
@@ -100,7 +101,7 @@ public class AccountServiceImpl implements AccountService {
             ConfigConstants.REQUIRED_INIT_ACCOUNT_OTP_KEY, ConfigConstants.VALUE, Integer.class);
     data.setRequireOtp(otpEnabled);
 
-    return new InitAccountResponse().status(new ResponseStatus().code(0)).data(data);
+    return new InitAccountResponse().status(ResponseHandler.ok()).data(data);
   }
 
   private String generateKey(String pgToken, String pgLoginKey) {

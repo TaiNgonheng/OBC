@@ -1,12 +1,11 @@
 package com.rhbgroup.dte.obc.domains.user.mapper;
 
-import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
 import com.rhbgroup.dte.obc.model.ExchangeAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.GWAuthenticationRequest;
 import com.rhbgroup.dte.obc.model.GWAuthenticationResponse;
 import com.rhbgroup.dte.obc.model.GWAuthenticationResponseAllOfData;
-import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.UserExchangeRequest;
 import com.rhbgroup.dte.obc.model.UserExchangeResponse;
 import com.rhbgroup.dte.obc.model.UserModel;
@@ -34,14 +33,12 @@ public interface UserExchangeMapper {
   }
 
   default UserExchangeResponse toResponse(ExchangeAccountResponseAllOfData data) {
-    return new UserExchangeResponse()
-        .status(new ResponseStatus().code(AppConstants.STATUS.SUCCESS))
-        .data(data);
+    return new UserExchangeResponse().status(ResponseHandler.ok()).data(data);
   }
 
   default GWAuthenticationResponse toAuthResponse(String token) {
     return new GWAuthenticationResponse()
-        .status(new ResponseStatus().code(AppConstants.STATUS.SUCCESS))
+        .status(ResponseHandler.ok())
         .data(new GWAuthenticationResponseAllOfData().token(token));
   }
 
