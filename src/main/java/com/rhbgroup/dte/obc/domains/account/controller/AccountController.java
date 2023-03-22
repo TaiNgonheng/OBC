@@ -3,6 +3,8 @@ package com.rhbgroup.dte.obc.domains.account.controller;
 import com.rhbgroup.dte.obc.api.AccountApiDelegate;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
+import com.rhbgroup.dte.obc.model.AuthenticationRequest;
+import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,5 +20,10 @@ public class AccountController implements AccountApiDelegate {
   @Override
   public ResponseEntity<InitAccountResponse> initLinkAccount(InitAccountRequest request) {
     return Functions.of(accountService::initLinkAccount).andThen(ResponseEntity::ok).apply(request);
+  }
+
+  @Override
+  public ResponseEntity<AuthenticationResponse> authenticate(AuthenticationRequest request) {
+    return Functions.of(accountService::authenticate).andThen(ResponseEntity::ok).apply(request);
   }
 }

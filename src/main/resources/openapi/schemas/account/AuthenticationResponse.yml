@@ -1,0 +1,14 @@
+allOf:
+  - $ref: '../common/ResponseWrapper.yml'
+  - type: object
+    properties:
+      data:
+        type: object
+        description: Authentication response
+        properties:
+          accessToken:
+            type: string
+            example: header.payload.signature
+          requireChangePassword:
+            type: boolean
+            example: false

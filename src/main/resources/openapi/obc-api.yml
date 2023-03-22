@@ -20,6 +20,8 @@ servers: # context path - /api/v1
 paths:
   /init-link-account:
     $ref: './paths/init-link-account.yml'
+  /authenticate:
+    $ref: './paths/authenticate.yml'
   /gw/user-exchange:
     $ref: './paths/user-exchange.yml'
   /gw/login:
@@ -35,6 +37,10 @@ components:
       $ref: './schemas/account/InitAccountRequest.yml'
     InitAccountResponse:
       $ref: './schemas/account/InitAccountResponse.yml'
+    AuthenticationRequest:
+      $ref: './schemas/account/AuthenticationRequest.yml'
+    AuthenticationResponse:
+      $ref: './schemas/account/AuthenticationResponse.yml'
     ExchangeAccountRequest:
       $ref: './schemas/user/UserExchangeRequest.yml'
     ExchangeAccountResponse:

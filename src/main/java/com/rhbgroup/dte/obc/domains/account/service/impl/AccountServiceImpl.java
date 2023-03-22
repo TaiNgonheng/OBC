@@ -16,6 +16,8 @@ import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.AccountModel;
+import com.rhbgroup.dte.obc.model.AuthenticationRequest;
+import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
@@ -50,8 +52,12 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
-  public InitAccountResponse authenticate(InitAccountRequest request) {
-    return null;
+  public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    return Functions.of(accountMapper::toUserModel)
+        .andThen(userAuthService::authenticate)
+        .andThen(jwtTokenUtils::generateJwt)
+        .andThen(accountMapper::toAuthResponse)
+        .apply(request);
   }
 
   @Override
