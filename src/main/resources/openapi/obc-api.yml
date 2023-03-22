@@ -67,6 +67,9 @@ components:
       $ref: './schemas/pg/PGProfileResponse.yml'
     InfoBipVerifyOtpResponse:
       $ref: './schemas/infoBip/InfoBipVerifyOtpResponse.yml'
+    CdrbGetHmsKeyResponse:
+      $ref: './schemas/cdrb/CdrbGetHmsKeyResponse.yml'
+
   securitySchemes:
     bearerAuth:
       type: http

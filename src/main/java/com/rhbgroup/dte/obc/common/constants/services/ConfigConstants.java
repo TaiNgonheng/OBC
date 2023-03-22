@@ -29,6 +29,10 @@ public class ConfigConstants {
   public static class CDRB {
     private CDRB() {}
 
-    public static final String CDRB_CREDENTIAL_KEY = "CDRB_CREDENTIAL";
+    public static final String CDRB_CREDENTIAL_KEY = "CDRB_ACCOUNT";
+    public static final String CDRB_URL_KEY = "CDRB_URL";
+    public static final String CDRB_GET_HSM_KEY_PATH = "/auth/hsm-key";
+    public static final String CDRB_API_KEY = "x-api-key";
+    public static final String CDRB_API_KEY_VALUE = "NQrIN7HPBt141uX5yw2SZ4NigpagyHkZ8cG9b2rf";
   }
 }

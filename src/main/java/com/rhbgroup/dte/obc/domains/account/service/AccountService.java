@@ -1,7 +1,11 @@
 package com.rhbgroup.dte.obc.domains.account.service;
 
+import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
+import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
+import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 
 public interface AccountService {
 
@@ -11,5 +15,6 @@ public interface AccountService {
 
   VerifyOtpResponse verifyOtp(VerifyOtpRequest request);
 
-  FinishLinkAccountResponse finishLinkAccount(String authorization, FinishLinkAccountRequest request);
+  FinishLinkAccountResponse finishLinkAccount(
+      String authorization, FinishLinkAccountRequest request);
 }

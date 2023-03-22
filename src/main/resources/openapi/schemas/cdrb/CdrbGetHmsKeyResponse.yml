@@ -1,0 +1,5 @@
+type: object
+description: Get CDRB Hms Key
+properties:
+  zpk:
+    type: string
