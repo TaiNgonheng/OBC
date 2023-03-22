@@ -10,11 +10,11 @@ allOf:
             type: string
             example: jwt_token
           requireOtp:
-            type: integer
-            example: 1
+            type: boolean
+            example: false
           requireChangePhone:
-            type: integer
-            example: 0
+            type: boolean
+            example: false
           last3DigitsPhone:
             type: string
             example: 123
