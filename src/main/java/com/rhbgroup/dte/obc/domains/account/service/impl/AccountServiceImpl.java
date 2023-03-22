@@ -24,14 +24,13 @@ import com.rhbgroup.dte.obc.model.PGAuthResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import java.util.Collections;
+import javax.annotation.PostConstruct;
+import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
-import javax.cache.expiry.Duration;
-import java.util.Collections;
 
 @Service
 @Slf4j
