@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.domains.account.service.impl;
 
+import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
@@ -95,16 +96,18 @@ public class AccountServiceImpl implements AccountService {
     data.setAccessToken(jwtToken);
 
     if (!userProfile.getPhone().equals(request.getPhoneNumber())) {
-      data.setRequireChangePhone(1);
+      data.setRequireChangePhone(true);
       data.setLast3DigitsPhone(ObcStringUtils.getLast3DigitsPhone(userProfile.getPhone()));
+    } else {
+      data.setRequireChangePhone(false);
     }
     // get require OTP config
     Integer otpEnabled =
         configService.getByConfigKey(
             ConfigConstants.REQUIRED_INIT_ACCOUNT_OTP_KEY, ConfigConstants.VALUE, Integer.class);
-    data.setRequireOtp(otpEnabled);
+    data.setRequireOtp(otpEnabled == 1);
 
-    return new InitAccountResponse().status(new ResponseStatus().code(0)).data(data);
+    return new InitAccountResponse().status(ResponseHandler.ok()).data(data);
   }
 
   private String generateKey(String pgToken, String pgLoginKey) {
