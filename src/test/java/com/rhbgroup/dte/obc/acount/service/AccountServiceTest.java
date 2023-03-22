@@ -58,8 +58,8 @@ class AccountServiceTest extends AbstractAccountTest {
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
-    Assertions.assertEquals(1, response.getData().getRequireOtp());
-    Assertions.assertEquals(1, response.getData().getRequireChangePhone());
+    Assertions.assertEquals(true, response.getData().getRequireOtp());
+    Assertions.assertEquals(true, response.getData().getRequireChangePhone());
   }
 
   @Test
@@ -111,7 +111,7 @@ class AccountServiceTest extends AbstractAccountTest {
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
-    Assertions.assertEquals(1, response.getData().getRequireOtp());
+    Assertions.assertEquals(true, response.getData().getRequireOtp());
     Assertions.assertNull(response.getData().getRequireChangePhone());
   }
 
