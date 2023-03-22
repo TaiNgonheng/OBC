@@ -1,5 +1,7 @@
 package com.rhbgroup.dte.obc.acount;
 
+import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
+import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
@@ -8,6 +10,9 @@ import com.rhbgroup.dte.obc.model.LoginTypeEnum;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.UserModel;
+import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
+import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
+import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
@@ -30,13 +35,44 @@ public abstract class AbstractAccountTest {
         .data(new InitAccountResponseAllOfData().accessToken("access_token"));
   }
 
+  protected VerifyOtpResponse mockVerifyOtpResponse() {
+    return new VerifyOtpResponse()
+        .status(new ResponseStatus().code(0))
+        .data(new VerifyOtpResponseAllOfData().isValid(true));
+  }
+
+  protected VerifyOtpRequest mockVerifyOtpRequest() {
+    return new VerifyOtpRequest().otpCode("000000");
+  }
+
   protected PGProfileResponse mockProfileRequiredChangeMobile() {
     return new PGProfileResponse()
         .accountId("BankAccountId")
         .accountName("test")
         .accountId("123456xxx")
-        .kycStatus("FULL_KYC")
-        .phone("95500000000");
+        .kycStatus(KycStatusEnum.FULL_KYC.getName())
+        .phone("95500000000")
+        .accountStatus(AccountStatusEnum.ACTIVATED.getStatus());
+  }
+
+  protected PGProfileResponse mockProfileNotFullyKyc() {
+    return new PGProfileResponse()
+        .accountId("BankAccountId")
+        .accountName("test")
+        .accountId("123456xxx")
+        .kycStatus(KycStatusEnum.PARTIAL_KYC.getName())
+        .phone("95500000000")
+        .accountStatus(AccountStatusEnum.ACTIVATED.getStatus());
+  }
+
+  protected PGProfileResponse mockProfileUserDeactivated() {
+    return new PGProfileResponse()
+        .accountId("BankAccountId")
+        .accountName("test")
+        .accountId("123456xxx")
+        .kycStatus(KycStatusEnum.FULL_KYC.getName())
+        .phone("95500000000")
+        .accountStatus(AccountStatusEnum.DEACTIVATED.getStatus());
   }
 
   protected PGProfileResponse mockProfileNotRequiredChangeMobile() {
@@ -44,8 +80,9 @@ public abstract class AbstractAccountTest {
         .accountId("BankAccountId")
         .accountName("test")
         .accountId("123456xxx")
-        .kycStatus("FULL_KYC")
-        .phone(MOBILE_NUMBER);
+        .kycStatus(KycStatusEnum.FULL_KYC.getName())
+        .phone(MOBILE_NUMBER)
+        .accountStatus(AccountStatusEnum.ACTIVATED.getStatus());
   }
 
   protected Authentication mockAuthentication() {

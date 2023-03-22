@@ -1,7 +1,7 @@
 package com.rhbgroup.dte.obc.acount.service;
 
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
@@ -51,15 +51,52 @@ class AccountServiceTest extends AbstractAccountTest {
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    when(pgRestClient.getUserProfile(anyMap(), anyString()))
+    when(pgRestClient.getUserProfile(anyList(), anyString()))
         .thenReturn(mockProfileRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
-    Assertions.assertEquals(1, response.getData().getRequireOtp());
-    Assertions.assertEquals(1, response.getData().getRequireChangePhone());
+    Assertions.assertEquals(true, response.getData().getRequireOtp());
+    Assertions.assertEquals(true, response.getData().getRequireChangePhone());
+  }
+
+  @Test
+  void testInitLinkAccount_Failed_AccountNotFullyKYC() {
+
+    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
+    when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
+    when(pgRestClient.getUserProfile(anyList(), anyString())).thenReturn(mockProfileNotFullyKyc());
+    when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
+
+    try {
+      accountService.initLinkAccount(mockInitAccountRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.KYC_NOT_VERIFIED.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.KYC_NOT_VERIFIED.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testInitLinkAccount_Failed_AccountNotActive() {
+
+    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
+    when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
+    when(pgRestClient.getUserProfile(anyList(), anyString()))
+        .thenReturn(mockProfileUserDeactivated());
+    when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
+
+    try {
+      accountService.initLinkAccount(mockInitAccountRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.ACCOUNT_DEACTIVATED.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.ACCOUNT_DEACTIVATED.getMsg(), ex.getResponseMessage().getMsg());
+    }
   }
 
   @Test
@@ -67,15 +104,15 @@ class AccountServiceTest extends AbstractAccountTest {
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    when(pgRestClient.getUserProfile(anyMap(), anyString()))
+    when(pgRestClient.getUserProfile(anyList(), anyString()))
         .thenReturn(mockProfileNotRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
-    Assertions.assertEquals(1, response.getData().getRequireOtp());
-    Assertions.assertNull(response.getData().getRequireChangePhone());
+    Assertions.assertEquals(true, response.getData().getRequireOtp());
+    Assertions.assertFalse(response.getData().getRequireChangePhone());
   }
 
   @Test
@@ -98,7 +135,7 @@ class AccountServiceTest extends AbstractAccountTest {
   void testInitLinkAccount_Failed_3rdServiceUnavailable() {
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(pgRestClient.getUserProfile(anyMap(), anyString()))
+    when(pgRestClient.getUserProfile(anyList(), anyString()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {
