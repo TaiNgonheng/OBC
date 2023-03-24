@@ -20,4 +20,5 @@ properties:
     example: john@email.com
   phoneNumber:
     type: string
-    example: '855123456789'
+    regex: ^855\d{8,9}$
+    example: '85512345678'

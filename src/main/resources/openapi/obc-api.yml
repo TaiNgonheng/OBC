@@ -20,6 +20,8 @@ servers: # context path - /api/v1
 paths:
   /init-link-account:
     $ref: './paths/init-link-account.yml'
+  /verify-otp:
+    $ref: './paths/verify-otp.yml'
   /authenticate:
     $ref: './paths/authenticate.yml'
   /gw/user-exchange:
@@ -37,6 +39,10 @@ components:
       $ref: './schemas/account/InitAccountRequest.yml'
     InitAccountResponse:
       $ref: './schemas/account/InitAccountResponse.yml'
+    VerifyOtpRequest:
+      $ref: './schemas/account/VerifyOtpRequest.yml'
+    VerifyOtpResponse:
+      $ref: './schemas/account/VerifyOtpResponse.yml'
     AuthenticationRequest:
       $ref: './schemas/account/AuthenticationRequest.yml'
     AuthenticationResponse:
@@ -59,7 +65,8 @@ components:
       $ref: './schemas/pg/PGAuthResponse.yml'
     PGProfileResponse:
       $ref: './schemas/pg/PGProfileResponse.yml'
-
+    InfoBipVerifyOtpResponse:
+      $ref: './schemas/infoBip/InfoBipVerifyOtpResponse.yml'
   securitySchemes:
     bearerAuth:
       type: http
