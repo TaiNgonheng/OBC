@@ -1,0 +1,6 @@
+type: object
+description: InfoBip verify OTP request
+properties:
+  pin:
+    type: string
+    example: 1234

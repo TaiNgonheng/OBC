@@ -2,17 +2,7 @@ package com.rhbgroup.dte.obc.acount;
 
 import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
-import com.rhbgroup.dte.obc.model.AccountModel;
-import com.rhbgroup.dte.obc.model.InitAccountRequest;
-import com.rhbgroup.dte.obc.model.InitAccountResponse;
-import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
-import com.rhbgroup.dte.obc.model.LoginTypeEnum;
-import com.rhbgroup.dte.obc.model.PGProfileResponse;
-import com.rhbgroup.dte.obc.model.ResponseStatus;
-import com.rhbgroup.dte.obc.model.UserModel;
-import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
-import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
-import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
+import com.rhbgroup.dte.obc.model.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
@@ -34,7 +24,6 @@ public abstract class AbstractAccountTest {
         .status(new ResponseStatus().code(0))
         .data(new InitAccountResponseAllOfData().accessToken("access_token"));
   }
-
   protected VerifyOtpResponse mockVerifyOtpResponse() {
     return new VerifyOtpResponse()
         .status(new ResponseStatus().code(0))
@@ -83,6 +72,14 @@ public abstract class AbstractAccountTest {
         .kycStatus(KycStatusEnum.FULL_KYC.getName())
         .phone(MOBILE_NUMBER)
         .accountStatus(AccountStatusEnum.ACTIVATED.getStatus());
+  }
+
+  protected InfoBipVerifyOtpResponse mockInfoBipVerifyOtpResponse() {
+    return new InfoBipVerifyOtpResponse()
+            .pinId("pinId")
+            .msisdn("msisdn")
+            .attemptsRemaining(1)
+            .verified(true);
   }
 
   protected Authentication mockAuthentication() {

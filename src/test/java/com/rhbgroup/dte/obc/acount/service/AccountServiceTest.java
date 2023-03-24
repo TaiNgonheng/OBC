@@ -15,6 +15,8 @@ import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
+import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
+import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import org.junit.jupiter.api.Assertions;
@@ -40,9 +42,12 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock PGRestClient pgRestClient;
 
+  @Mock
+  InfoBipRestClient infoBipRestClient;
+
   @BeforeEach
   void cleanUp() {
-    reset(jwtTokenUtils, cacheUtil, configService, userAuthService, pgRestClient);
+    reset(jwtTokenUtils, cacheUtil, configService, userAuthService, pgRestClient,infoBipRestClient);
   }
 
   @Test
@@ -145,6 +150,62 @@ class AccountServiceTest extends AbstractAccountTest {
           ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
       Assertions.assertEquals(
           ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testInitLinkAccount_Failed_InfoBipServiceUnavailable() {
+    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
+    when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
+    when(pgRestClient.getUserProfile(anyList(), anyString()));
+    when(infoBipRestClient.sendOtp(anyString(), anyString()))
+            .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
+
+    try {
+      accountService.initLinkAccount(mockInitAccountRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+              ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+              ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testVerifiOTP_Success_IsValid_True() {
+    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
+    when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString()))
+            .thenReturn(true);
+
+    VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
+    Assertions.assertEquals(0, response.getStatus().getCode());
+    Assertions.assertEquals(response.getData().getIsValid(), true);
+  }
+
+  @Test
+  void testVerifiOTP_Success_IsValid_False() {
+    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
+    when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString()))
+            .thenReturn(true);
+
+    VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
+    Assertions.assertEquals(0, response.getStatus().getCode());
+    Assertions.assertEquals(response.getData().getIsValid(), false);
+  }
+
+  @Test
+  void testVerifiOTP_Failed_InfoBipServiceUnavailable() {
+    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
+    when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString()))
+            .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
+
+    try {
+      accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+              ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+              ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 }

@@ -24,5 +24,17 @@ public class ConfigConstants {
 
   public static class InfoBip {
     private InfoBip() {}
+
+    public static final String INFO_BIP_URL_KEY = "INFO_BIP_URL";
+    public static final String INFO_BIP_APP_ID_KEY = "INFO_BIP_APP_ID";
+    public static final String INFO_BIP_ACCOUNT = "INFO_BIP_ACCOUNT";
+    public static final String INFO_BIP_OTP_MESSAGE_ID_KEY = "INFO_BIP_OTP_MESSAGE_ID";
+    public static final String INFO_BIP_SEND_OTP_PATH = "/2fa/2/pin";
+    public static final String INFO_BIP_VERIFY_OTP_API_PATH = "/2fa/2/pin/{pinId}/verify";
+    public static final String INFO_BIP_LOGIN_API_PATH = "/auth/1/oauth2/token";
+    public static final String INFO_BIP_SENDER_NAME = "obc";
+    public static final String INFO_BIP_CLIENT_ID_KEY = "client_id";
+    public static final String INFO_BIP_CLIENT_SECRET_KEY = "client_secret";
+    public static final String INFO_BIP_GRANT_TYPE_KEY = "grant_type";
   }
 }

@@ -1,0 +1,11 @@
+type: object
+description: InfoBip send OTP request
+properties:
+  applicationId:
+    type: string
+  messageId:
+    type: string
+  from:
+    type: string
+  to:
+    type: string

@@ -105,7 +105,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOtp_Success2xx() throws Exception {
-    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any()))
+    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any(), Mockito.any()))
         .thenReturn(ResponseEntity.ok(mockVerifyOtpResponse()));
     mockMvc
         .perform(
@@ -119,8 +119,22 @@ class AccountControllerTest extends AbstractAccountTest {
   }
 
   @Test
+  void testVerifyOtp_Failed_Unauthorized_400() throws Exception {
+    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any(), Mockito.any()))
+            .thenThrow(new UserAuthenticationException(ResponseMessage.DATA_NOT_FOUND));
+
+    mockMvc
+            .perform(
+                    MockMvcRequestBuilders.post("/verify-otp")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .characterEncoding(StandardCharsets.UTF_8)
+                            .content(objectMapper.writeValueAsBytes(mockVerifyOtpRequest())))
+            .andExpect(MockMvcResultMatchers.status().isBadRequest())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists());
+  }
+  @Test
   void testVerifyOtp_Failed_Unauthorized_401() throws Exception {
-    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any()))
+    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any(), Mockito.any()))
         .thenThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
 
     mockMvc
@@ -135,7 +149,8 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOtp_Failed_500() throws Exception {
-    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any())).thenThrow(new RuntimeException());
+    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any(), Mockito.any()))
+        .thenThrow(new RuntimeException());
 
     mockMvc
         .perform(
