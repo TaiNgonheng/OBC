@@ -1,16 +1,16 @@
-#/init-link-account:
+#/verify-otp:
 post:
   tags:
     - Account
-  summary: Initialize CASA linking account
-  description: Link CASA between NBC and GoWave
-  operationId: initLinkAccount
+  summary: Verify user entered OTP via InfoBip
+  description: Verify user entered OTP via InfoBip
+  operationId: verifyOtp
   requestBody:
-    description: Create account
+    description: OTP verify request
     content:
       application/json:
         schema:
-          $ref: '../schemas/account/InitAccountRequest.yml'
+          $ref: '../schemas/account/VerifyOtpRequest.yml'
     required: true
   responses:
     '200':
@@ -18,7 +18,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../schemas/account/InitAccountResponse.yml'
+            $ref: '../schemas/account/VerifyOtpResponse.yml'
     '400':
       description: Bad Request
     '401':

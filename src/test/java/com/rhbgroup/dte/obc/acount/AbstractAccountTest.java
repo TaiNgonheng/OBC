@@ -10,6 +10,9 @@ import com.rhbgroup.dte.obc.model.LoginTypeEnum;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.UserModel;
+import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
+import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
+import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
@@ -30,6 +33,16 @@ public abstract class AbstractAccountTest {
     return new InitAccountResponse()
         .status(new ResponseStatus().code(0))
         .data(new InitAccountResponseAllOfData().accessToken("access_token"));
+  }
+
+  protected VerifyOtpResponse mockVerifyOtpResponse() {
+    return new VerifyOtpResponse()
+        .status(new ResponseStatus().code(0))
+        .data(new VerifyOtpResponseAllOfData().isValid(true));
+  }
+
+  protected VerifyOtpRequest mockVerifyOtpRequest() {
+    return new VerifyOtpRequest().otpCode("000000");
   }
 
   protected PGProfileResponse mockProfileRequiredChangeMobile() {

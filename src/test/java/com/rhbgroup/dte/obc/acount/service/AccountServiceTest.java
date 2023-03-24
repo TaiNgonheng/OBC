@@ -112,7 +112,7 @@ class AccountServiceTest extends AbstractAccountTest {
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
     Assertions.assertEquals(true, response.getData().getRequireOtp());
-    Assertions.assertNull(response.getData().getRequireChangePhone());
+    Assertions.assertFalse(response.getData().getRequireChangePhone());
   }
 
   @Test
