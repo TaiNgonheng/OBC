@@ -1,5 +1,11 @@
 package com.rhbgroup.dte.obc.acount.service;
 
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
+
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
@@ -23,12 +29,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest extends AbstractAccountTest {
@@ -74,13 +74,14 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
 
     ConfigServiceImpl configServiceMock = new ConfigServiceImpl(null);
-    configServiceMock.setJsonValue(new JSONObject().put("username", "username").put("password", "password"));
+    configServiceMock.setJsonValue(
+        new JSONObject().put("username", "username").put("password", "password"));
 
     when(configService.loadJSONValue(anyString())).thenReturn(configServiceMock);
     when(pgRestClient.login(any())).thenReturn(mockPGAuthResponse());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
     when(pgRestClient.getUserProfile(anyList(), anyString()))
-            .thenReturn(mockProfileRequiredChangeMobile());
+        .thenReturn(mockProfileRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());

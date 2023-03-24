@@ -13,7 +13,6 @@ import com.rhbgroup.dte.obc.model.LoginTypeEnum;
 import com.rhbgroup.dte.obc.model.PGAuthResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
-import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
@@ -97,12 +96,12 @@ public abstract class AbstractAccountTest {
 
   protected PGProfileResponse mockProfileNotRequiredChangeMobile() {
     return new PGProfileResponse()
-            .accountId("BankAccountId")
-            .accountName("test")
-            .accountId("123456xxx")
-            .kycStatus(KycStatusEnum.FULL_KYC.getName())
-            .phone(MOBILE_NUMBER)
-            .accountStatus(AccountStatusEnum.ACTIVATED.getStatus());
+        .accountId("BankAccountId")
+        .accountName("test")
+        .accountId("123456xxx")
+        .kycStatus(KycStatusEnum.FULL_KYC.getName())
+        .phone(MOBILE_NUMBER)
+        .accountStatus(AccountStatusEnum.ACTIVATED.getStatus());
   }
 
   protected PGAuthResponseAllOfData mockPGAuthResponse() {
@@ -116,5 +115,4 @@ public abstract class AbstractAccountTest {
   protected String mockJwtToken() {
     return "header.payload.signature";
   }
-
 }
