@@ -53,6 +53,10 @@ components:
       $ref: './schemas/pg/PGAuthResponse.yml'
     PGProfileResponse:
       $ref: './schemas/pg/PGProfileResponse.yml'
+    CDRBLoginRequest:
+      $ref: './schemas/cdrb/CDRBLoginRequest.yml'
+    CDRBLoginResponse:
+      $ref: './schemas/cdrb/CDRBLoginResponse.yml'
 
   securitySchemes:
     bearerAuth:

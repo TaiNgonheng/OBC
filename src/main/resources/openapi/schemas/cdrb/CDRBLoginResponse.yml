@@ -1,0 +1,6 @@
+type: object
+description: CDRB login response
+properties:
+  token:
+    type: string
+    example: header.payload.signature

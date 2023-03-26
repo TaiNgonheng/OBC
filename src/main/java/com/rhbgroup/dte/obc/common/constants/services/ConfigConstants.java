@@ -4,25 +4,18 @@ public class ConfigConstants {
 
   private ConfigConstants() {}
 
-  // Generic values
+  // Json values
   public static final String VALUE = "value";
-  public static final String DATA = "data";
+  public static final String PASSWORD = "password";
+  public static final String USERNAME = "username";
+  public static final String SECRET = "secretKey";
+  public static final String IV = "iv";
 
-  // Service keys
+  // Service Keys
   public static final String REQUIRED_INIT_ACCOUNT_OTP_KEY = "REQUIRED_INIT_ACCOUNT_OTP";
-
-  public static class PGConfig {
-    private PGConfig() {}
-
-    public static final String PG1_ACCOUNT_KEY = "PG1_ACCOUNT";
-    public static final String PG1_URL_KEY = "PG1_URL";
-
-    // JSON values
-    public static final String PG1_DATA_PASSWORD_KEY = "password";
-    public static final String PG1_DATA_USERNAME_KEY = "username";
-  }
-
-  public static class InfoBip {
-    private InfoBip() {}
-  }
+  public static final String PG1_ACCOUNT_KEY = "PG1_ACCOUNT";
+  public static final String PG1_URL_KEY = "PG1_URL";
+  public static final String CDRB_URL_KEY = "CDRB_URL";
+  public static final String CDRB_ACCOUNT = "CDRB_ACCOUNT";
+  public static final String HSM_ZMK_KEY = "HSM_ZMK_KEY";
 }
