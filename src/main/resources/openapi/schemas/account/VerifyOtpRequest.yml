@@ -1,4 +1,6 @@
 type: object
+required:
+  - otpCode
 properties:
   otpCode:
     type: string
