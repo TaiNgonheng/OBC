@@ -3,6 +3,7 @@ package com.rhbgroup.dte.obc.rest;
 import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
 import com.rhbgroup.dte.obc.common.util.SpringRestUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.AESCryptoUtil;
+import com.rhbgroup.dte.obc.common.util.crypto.CryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.TripleDESCryptoUtil;
 import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.core.ParameterizedTypeReference;
@@ -78,21 +81,29 @@ public class CDRBRestClient {
             aesKey,
             Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)));
 
+    String passwordHex = CryptoUtil.encodeHexString(passwordDecrypted);
+
     // Split password
-    String[] passwordSplits = splitPassword(new String(passwordDecrypted, StandardCharsets.UTF_8));
+    String[] passwordSplits = splitPassword(passwordHex);
 
     // Decrypt zpk using hsmZmkKey
     String decryptedZpk = decryptZpk(getHsmKey(), hsmZmkKey);
 
     String passwordEnc1 =
         new String(
-            TripleDESCryptoUtil.encrypt(passwordSplits[0], decryptedZpk, zmkIv),
+            TripleDESCryptoUtil.encrypt(
+                CryptoUtil.decodeHex(passwordSplits[0]),
+                CryptoUtil.decodeHex(decryptedZpk),
+                CryptoUtil.decodeHex(zmkIv)),
             StandardCharsets.UTF_8);
 
     String passwordEnc2 =
         passwordSplits[1] != null
             ? new String(
-                TripleDESCryptoUtil.encrypt(passwordSplits[1], decryptedZpk, zmkIv),
+                TripleDESCryptoUtil.encrypt(
+                    CryptoUtil.decodeHex(passwordSplits[1]),
+                    CryptoUtil.decodeHex(decryptedZpk),
+                    CryptoUtil.decodeHex(zmkIv)),
                 StandardCharsets.UTF_8)
             : null;
 
@@ -114,9 +125,14 @@ public class CDRBRestClient {
   }
 
   private String decryptZpk(String hsmKey, String hsmZmkKey) {
-    return new String(
-        TripleDESCryptoUtil.decrypt(hsmKey.getBytes(StandardCharsets.UTF_8), hsmZmkKey, zmkIv),
-        StandardCharsets.UTF_8);
+    try {
+      return CryptoUtil.encodeHexString(TripleDESCryptoUtil.decrypt(
+          Hex.decodeHex(hsmKey),
+          doMagic(hsmZmkKey),
+          Hex.decodeHex(zmkIv)));
+    } catch (DecoderException ex) {
+      return null;
+    }
   }
 
   private String[] splitPassword(String password) {
@@ -129,8 +145,8 @@ public class CDRBRestClient {
     }
 
     int halfLength = passLength / 2;
-    String pass1 = password.substring(0, halfLength - 1);
-    String pass2 = password.substring(halfLength, passLength - 1);
+    String pass1 = password.substring(0, halfLength);
+    String pass2 = password.substring(halfLength, passLength);
     passwordSplit[0] = pass1;
     passwordSplit[1] = pass2;
 
@@ -158,5 +174,11 @@ public class CDRBRestClient {
     header.put("Content-Type", MediaType.APPLICATION_JSON_VALUE);
 
     return header;
+  }
+
+  private byte[] doMagic(String key) throws DecoderException {
+    String first2Bytes = key.substring(0, 16);
+    key += first2Bytes;
+    return Hex.decodeHex(key);
   }
 }

@@ -9,9 +9,11 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class AESCryptoUtil {
+public class AESCryptoUtil extends CryptoUtil {
 
-  private AESCryptoUtil() {}
+  private AESCryptoUtil() {
+    super();
+  }
 
   private static final String ALGORITHM = "AES/CBC/NoPadding";
   private static final String KEY_ALGORITHM = "AES";
@@ -26,8 +28,7 @@ public class AESCryptoUtil {
     try {
       Cipher cipher = Cipher.getInstance(ALGORITHM);
       cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
-      return cipher.doFinal(
-          CryptoPadding.pad(data.getBytes(StandardCharsets.UTF_8), cipher.getBlockSize()));
+      return cipher.doFinal(pad(data.getBytes(StandardCharsets.UTF_8), cipher.getBlockSize()));
 
     } catch (Exception ex) {
       return new byte[0];
@@ -45,7 +46,7 @@ public class AESCryptoUtil {
       cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec);
       byte[] decryptedBytes = cipher.doFinal(data);
 
-      return CryptoPadding.unPad(decryptedBytes);
+      return unPad(decryptedBytes);
 
     } catch (Exception ex) {
       return new byte[0];
