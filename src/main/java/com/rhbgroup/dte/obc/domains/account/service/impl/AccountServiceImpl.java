@@ -38,6 +38,7 @@ import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -53,6 +54,12 @@ public class AccountServiceImpl implements AccountService {
   private final CDRBRestClient cdrbRestClient;
 
   private final AccountMapper accountMapper = new AccountMapperImpl();
+
+  @Value("${obc.pg1.username}")
+  protected String pg1Username;
+
+  @Value("${obc.pg1.password}")
+  protected String pg1Password;
 
   @PostConstruct
   public void postConstruct() {
@@ -120,10 +127,6 @@ public class AccountServiceImpl implements AccountService {
     if (StringUtils.isNotBlank(pgToken) && !jwtTokenUtils.isExtTokenExpired(pgToken)) {
       return pgToken;
     }
-    ConfigService configInstance = configService.loadJSONValue(ConfigConstants.PG1_ACCOUNT);
-
-    String username = configInstance.getValue(ConfigConstants.USERNAME, String.class);
-    String password = configInstance.getValue(ConfigConstants.PASSWORD, String.class);
 
     return Functions.of(pgRestClient::login)
         .andThen(PGAuthResponseAllOfData::getIdToken)
@@ -131,7 +134,7 @@ public class AccountServiceImpl implements AccountService {
             Functions.peek(
                 idToken ->
                     cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey, idToken)))
-        .apply(new PGAuthRequest().username(username).password(password));
+        .apply(new PGAuthRequest().username(pg1Username).password(pg1Password));
   }
 
   private void validateAccount(PGProfileResponse userProfile) {
