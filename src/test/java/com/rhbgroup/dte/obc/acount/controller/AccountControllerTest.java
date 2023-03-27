@@ -102,4 +102,48 @@ class AccountControllerTest extends AbstractAccountTest {
         .andExpect(MockMvcResultMatchers.status().isBadRequest())
         .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists());
   }
+
+  @Test
+  void testVerifyOtp_Success2xx() throws Exception {
+    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any()))
+        .thenReturn(ResponseEntity.ok(mockVerifyOtpResponse()));
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8)
+                .content(objectMapper.writeValueAsBytes(mockVerifyOtpRequest())))
+        .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.data").exists());
+  }
+
+  @Test
+  void testVerifyOtp_Failed_Unauthorized_401() throws Exception {
+    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any()))
+        .thenThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8)
+                .content(objectMapper.writeValueAsBytes(mockVerifyOtpRequest())))
+        .andExpect(MockMvcResultMatchers.status().isUnauthorized())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists());
+  }
+
+  @Test
+  void testVerifyOtp_Failed_500() throws Exception {
+    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any())).thenThrow(new RuntimeException());
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8)
+                .content(objectMapper.writeValueAsBytes(mockVerifyOtpRequest())))
+        .andExpect(MockMvcResultMatchers.status().is5xxServerError())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists());
+  }
 }

@@ -20,6 +20,8 @@ servers: # context path - /api/v1
 paths:
   /init-link-account:
     $ref: './paths/init-link-account.yml'
+  /verify-otp:
+    $ref: './paths/verify-otp.yml'
   /account-detail:
     $ref: './paths/account-detail.yml'
   /gw/user-exchange:
@@ -37,6 +39,10 @@ components:
       $ref: './schemas/account/InitAccountRequest.yml'
     InitAccountResponse:
       $ref: './schemas/account/InitAccountResponse.yml'
+    VerifyOtpRequest:
+      $ref: './schemas/account/VerifyOtpRequest.yml'
+    VerifyOtpResponse:
+      $ref: './schemas/account/VerifyOtpResponse.yml'
     GetAccountDetailRequest:
       $ref: './schemas/account/GetAccountDetailRequest.yml'
     GetAccountDetailResponse:
@@ -59,6 +65,8 @@ components:
       $ref: './schemas/pg/PGAuthResponse.yml'
     PGProfileResponse:
       $ref: './schemas/pg/PGProfileResponse.yml'
+    InfoBipVerifyOtpResponse:
+      $ref: './schemas/infoBip/InfoBipVerifyOtpResponse.yml'
     CDRBLoginRequest:
       $ref: './schemas/cdrb/CDRBLoginRequest.yml'
     CDRBLoginResponse:
