@@ -36,6 +36,17 @@ server:
   servlet:
     context-path: ${SERVER_CONTEXT_PATH:/api/v1}
 
-app:
-  jwt-secret: my-secret
-  jwt-ttl: 300
+obc:
+  security:
+    jwt-secret: ${JWT_SECRET:my-secret}
+    jwt-ttl: ${JWT_TTL:300}
+  pg1:
+    username: ${PG1_USERNAME:soap_user}
+    password: ${PG1_PASSWORD:+66xZ_feBcRpYP9e}
+  cdrb:
+    username: ${CDRB_USERNAME:cdrb}
+    password: ${CDRB_PASSWORD:cdrb_password}
+  infobip:
+    appId: ${INFOBIP_APP_ID:appId}
+    username: ${INFOBIP_USERNAME:inforbip}
+    password: ${INFOBIP_PASSWORD:infobip_password}
