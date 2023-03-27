@@ -41,12 +41,15 @@ obc:
     jwt-secret: ${JWT_SECRET:my-secret}
     jwt-ttl: ${JWT_TTL:300}
   pg1:
+    url: ${PG1_URL:http://10.202.38.27}
     username: ${PG1_USERNAME:soap_user}
     password: ${PG1_PASSWORD:+66xZ_feBcRpYP9e}
   cdrb:
+    url: ${CDRB_URL:https://api.dev.cdrb.link}
     username: ${CDRB_USERNAME:cdrb}
     password: ${CDRB_PASSWORD:cdrb_password}
   infobip:
+    url: ${INFOBIP_URL:https://9rmmnv.api.infobip.com}
     appId: ${INFOBIP_APP_ID:appId}
     username: ${INFOBIP_USERNAME:inforbip}
     password: ${INFOBIP_PASSWORD:infobip_password}
