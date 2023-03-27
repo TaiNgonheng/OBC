@@ -1,0 +1,5 @@
+type: object
+properties:
+  zpk:
+    type: string
+    example: CE2A8D0559D8D131E2A7D175B8B8953C

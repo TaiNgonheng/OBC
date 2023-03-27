@@ -4,14 +4,20 @@ import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
 import com.rhbgroup.dte.obc.common.util.SpringRestUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.AESCryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.TripleDESCryptoUtil;
+import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
+import com.rhbgroup.dte.obc.model.CDRBGetHsmKeyResponse;
 import com.rhbgroup.dte.obc.model.CDRBLoginRequest;
 import com.rhbgroup.dte.obc.model.CDRBLoginResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -27,41 +33,74 @@ public class CDRBRestClient {
 
   private String username;
   private String encPassword;
-  private String hsmZmkKey;
-  private String secretKey;
+  private String aesKey;
+  private String aesIv;
+
   private String zmkIv;
   private String baseUrl;
+  private String hsmZmkKey;
 
   @PostConstruct
-  private void initConfigValues() {
-    ConfigService cdrbAccount = configService.loadJSONValue(ConfigConstants.CDRB_ACCOUNT);
-    username = cdrbAccount.getStringValue(ConfigConstants.USERNAME);
-    encPassword = cdrbAccount.getStringValue(ConfigConstants.PASSWORD);
-    hsmZmkKey = cdrbAccount.getStringValue(ConfigConstants.HSM_ZMK_KEY);
-    secretKey = cdrbAccount.getStringValue(ConfigConstants.SECRET);
-    zmkIv = cdrbAccount.getStringValue(ConfigConstants.IV);
+  private void initConfigValues() throws JSONException {
+    baseUrl = configService.getByConfigKey(ConfigConstants.CDRB_URL, ConfigConstants.VALUE);
 
-    baseUrl = configService.getByConfigKey(ConfigConstants.CDRB_URL_KEY, ConfigConstants.VALUE);
+    List<ConfigEntity> cdrbConfigs = configService.findByServicePrefix("CDRB_");
+    ConfigEntity cdrbAccount =
+        configService.filterByServiceKey(cdrbConfigs, ConfigConstants.CDRB_ACCOUNT);
+    JSONObject cdrbAccountJson = new JSONObject(cdrbAccount.getConfigValue());
+
+    username = cdrbAccountJson.getString(ConfigConstants.USERNAME);
+    encPassword = cdrbAccountJson.getString(ConfigConstants.PASSWORD);
+    aesKey = cdrbAccountJson.getString(ConfigConstants.AES_KEY);
+    aesIv = cdrbAccountJson.getString(ConfigConstants.AES_IV);
+
+    hsmZmkKey =
+        new JSONObject(
+                configService
+                    .filterByServiceKey(cdrbConfigs, ConfigConstants.CDRB_HSM_ZMK)
+                    .getConfigValue())
+            .getString(ConfigConstants.VALUE);
+
+    zmkIv =
+        new JSONObject(
+                configService
+                    .filterByServiceKey(cdrbConfigs, ConfigConstants.CDRB_HSM_IV)
+                    .getConfigValue())
+            .getString(ConfigConstants.VALUE);
   }
 
   public CDRBLoginResponse login() {
 
-    byte[] password =
-        AESCryptoUtil.decrypt(encPassword.getBytes(StandardCharsets.UTF_8), secretKey, zmkIv.getBytes());
-    byte[] decryptedHsmKey =
-        AESCryptoUtil.decrypt(getHsmKey().getBytes(StandardCharsets.UTF_8), secretKey, hsmZmkKey.getBytes());
+    // Decrypted stored password using AES
+    byte[] passwordDecrypted =
+        AESCryptoUtil.decrypt(
+            Base64.getDecoder().decode(encPassword.getBytes(StandardCharsets.UTF_8)),
+            aesKey,
+            aesIv.getBytes(StandardCharsets.UTF_8));
+
+    // Split password
+    String[] passwordSplits = splitPassword(new String(passwordDecrypted, StandardCharsets.UTF_8));
+
+    // Decrypt zpk using hsmZmkKey
+    String decryptedZpk = decryptZpk(getHsmKey(), hsmZmkKey);
+
     String passwordEnc1 =
         new String(
-            TripleDESCryptoUtil.encrypt(
-                new String(password, StandardCharsets.UTF_8),
-                new String(decryptedHsmKey, StandardCharsets.UTF_8),
-                hsmZmkKey),
+            TripleDESCryptoUtil.encrypt(passwordSplits[0], decryptedZpk, zmkIv),
             StandardCharsets.UTF_8);
+
+    String passwordEnc2 =
+        passwordSplits[1] != null
+            ? new String(
+                TripleDESCryptoUtil.encrypt(passwordSplits[1], decryptedZpk, zmkIv),
+                StandardCharsets.UTF_8)
+            : null;
 
     String pathUrl = baseUrl.concat("/auth/channel/obc/login");
 
     CDRBLoginRequest loginRequest =
-        new CDRBLoginRequest().username(username).encPwd1(passwordEnc1).encPwd2(passwordEnc1);
+        new CDRBLoginRequest().username(username).encPwd1(passwordEnc1).encPwd2(passwordEnc2);
+
     CDRBLoginResponse loginResponse =
         restUtil.sendPost(
             pathUrl,
@@ -74,14 +113,27 @@ public class CDRBRestClient {
     return loginResponse;
   }
 
+  private String decryptZpk(String hsmKey, String hsmZmkKey) {
+    return new String(TripleDESCryptoUtil.encrypt(hsmKey, hsmKey, zmkIv), StandardCharsets.UTF_8);
+  }
+
+  private String[] splitPassword(String password) {
+    return new String[0];
+  }
+
   private void validateResponseStatus(CDRBLoginResponse loginResponse) {
     // Implementation
   }
 
   private String getHsmKey() {
     String pathUrl = baseUrl.concat("/auth/hsm-key");
-    return restUtil.sendGet(
-        pathUrl, buildHeader(), ParameterizedTypeReference.forType(String.class));
+    CDRBGetHsmKeyResponse hsmKeyResponse =
+        restUtil.sendGet(
+            pathUrl,
+            buildHeader(),
+            ParameterizedTypeReference.forType(CDRBGetHsmKeyResponse.class));
+
+    return hsmKeyResponse.getZpk();
   }
 
   private Map<String, String> buildHeader() {

@@ -5,6 +5,7 @@ import com.rhbgroup.dte.obc.domains.config.repository.ConfigRepository;
 import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +35,8 @@ public class ConfigServiceImpl implements ConfigService {
   public String getByConfigKey(String configKey, String valueKey) {
 
     try {
-      JSONObject configValue = new JSONObject(findByConfigKey(configKey).getConfigValue());
+      String configJson = findByConfigKey(configKey).getConfigValue();
+      JSONObject configValue = new JSONObject(configJson);
       return configValue.getString(valueKey);
 
     } catch (Exception e) {
@@ -74,6 +76,19 @@ public class ConfigServiceImpl implements ConfigService {
     } catch (JSONException e) {
       throw new BizException(ResponseMessage.DATA_STRUCTURE_INVALID);
     }
+  }
+
+  @Override
+  public List<ConfigEntity> findByServicePrefix(String prefix) {
+    return configRepository.findByConfigKeyIgnoreCaseStartingWith(prefix);
+  }
+
+  @Override
+  public ConfigEntity filterByServiceKey(List<ConfigEntity> configEntities, String key) {
+    return configEntities.stream()
+        .filter(configEntity -> configEntity.getConfigKey().equals(key))
+        .findFirst()
+        .orElse(new ConfigEntity());
   }
 
   private ConfigEntity findByConfigKey(String configKey) {

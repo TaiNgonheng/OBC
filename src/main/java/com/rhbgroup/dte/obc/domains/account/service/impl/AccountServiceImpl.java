@@ -110,7 +110,7 @@ public class AccountServiceImpl implements AccountService {
     if (StringUtils.isNotBlank(pgToken) && !jwtTokenUtils.isExtTokenExpired(pgToken)) {
       return pgToken;
     }
-    ConfigService configInstance = configService.loadJSONValue(ConfigConstants.PG1_ACCOUNT_KEY);
+    ConfigService configInstance = configService.loadJSONValue(ConfigConstants.PG1_ACCOUNT);
 
     String username = configInstance.getValue(ConfigConstants.USERNAME, String.class);
     String password = configInstance.getValue(ConfigConstants.PASSWORD, String.class);

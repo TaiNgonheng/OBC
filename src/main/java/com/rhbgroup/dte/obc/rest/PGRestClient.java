@@ -30,8 +30,7 @@ public class PGRestClient {
   @PostConstruct
   private void loadConfiguration() {
     pg1BaseUrl =
-        configService.getByConfigKey(
-            ConfigConstants.PG1_URL_KEY, ConfigConstants.VALUE, String.class);
+        configService.getByConfigKey(ConfigConstants.PG1_URL, ConfigConstants.VALUE, String.class);
   }
 
   public PGAuthResponseAllOfData login(PGAuthRequest authRequest) {

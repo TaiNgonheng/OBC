@@ -20,6 +20,8 @@ servers: # context path - /api/v1
 paths:
   /init-link-account:
     $ref: './paths/init-link-account.yml'
+  /account-detail:
+    $ref: './paths/account-detail.yml'
   /gw/user-exchange:
     $ref: './paths/user-exchange.yml'
   /gw/login:
@@ -35,6 +37,10 @@ components:
       $ref: './schemas/account/InitAccountRequest.yml'
     InitAccountResponse:
       $ref: './schemas/account/InitAccountResponse.yml'
+    GetAccountDetailRequest:
+      $ref: './schemas/account/GetAccountDetailRequest.yml'
+    GetAccountDetailResponse:
+      $ref: './schemas/account/GetAccountDetailResponse.yml'
     ExchangeAccountRequest:
       $ref: './schemas/user/UserExchangeRequest.yml'
     ExchangeAccountResponse:
@@ -57,6 +63,8 @@ components:
       $ref: './schemas/cdrb/CDRBLoginRequest.yml'
     CDRBLoginResponse:
       $ref: './schemas/cdrb/CDRBLoginResponse.yml'
+    CDRBGetHsmKeyResponse:
+      $ref: './schemas/cdrb/CDRBGetHsmKeyResponse.yml'
 
   securitySchemes:
     bearerAuth:
