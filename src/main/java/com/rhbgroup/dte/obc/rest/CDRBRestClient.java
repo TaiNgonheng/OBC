@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.rest;
 
+import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
 import com.rhbgroup.dte.obc.common.util.SpringRestUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.AESCryptoUtil;
@@ -7,7 +8,7 @@ import com.rhbgroup.dte.obc.common.util.crypto.CryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.TripleDESCryptoUtil;
 import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
-import com.rhbgroup.dte.obc.model.CDRBGetHsmKeyResponse;
+import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.CDRBLoginRequest;
 import com.rhbgroup.dte.obc.model.CDRBLoginResponse;
 import java.nio.charset.StandardCharsets;
@@ -81,30 +82,30 @@ public class CDRBRestClient {
             aesKey,
             Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)));
 
-    String passwordHex = CryptoUtil.encodeHexString(passwordDecrypted);
+    String passwordStr = new String(passwordDecrypted, StandardCharsets.UTF_8);
 
     // Split password
-    String[] passwordSplits = splitPassword(passwordHex);
+    String[] passwordSplits = splitPassword(passwordStr);
 
     // Decrypt zpk using hsmZmkKey
     String decryptedZpk = decryptZpk(getHsmKey(), hsmZmkKey);
 
     String passwordEnc1 =
-        new String(
-            TripleDESCryptoUtil.encrypt(
-                CryptoUtil.decodeHex(passwordSplits[0]),
-                CryptoUtil.decodeHex(decryptedZpk),
-                CryptoUtil.decodeHex(zmkIv)),
-            StandardCharsets.UTF_8);
+        CryptoUtil.encodeHexString(
+                TripleDESCryptoUtil.encrypt(
+                    padRight(passwordSplits[0]),
+                    doMagic(decryptedZpk),
+                    CryptoUtil.decodeHex(zmkIv)))
+            .toUpperCase();
 
     String passwordEnc2 =
         passwordSplits[1] != null
-            ? new String(
-                TripleDESCryptoUtil.encrypt(
-                    CryptoUtil.decodeHex(passwordSplits[1]),
-                    CryptoUtil.decodeHex(decryptedZpk),
-                    CryptoUtil.decodeHex(zmkIv)),
-                StandardCharsets.UTF_8)
+            ? CryptoUtil.encodeHexString(
+                    TripleDESCryptoUtil.encrypt(
+                        CryptoUtil.decodeHex(passwordSplits[1]),
+                        CryptoUtil.decodeHex(decryptedZpk),
+                        CryptoUtil.decodeHex(zmkIv)))
+                .toUpperCase()
             : null;
 
     String pathUrl = baseUrl.concat("/auth/channel/obc/login");
@@ -124,14 +125,24 @@ public class CDRBRestClient {
     return loginResponse;
   }
 
+  private byte[] padRight(String passwordSplit) {
+    StringBuilder hexString =
+        new StringBuilder(
+            CryptoUtil.encodeHexString(passwordSplit.getBytes(StandardCharsets.UTF_8)));
+    while (hexString.length() < 32) {
+      hexString.append("F");
+    }
+
+    return CryptoUtil.decodeHex(hexString.toString());
+  }
+
   private String decryptZpk(String hsmKey, String hsmZmkKey) {
     try {
-      return CryptoUtil.encodeHexString(TripleDESCryptoUtil.decrypt(
-          Hex.decodeHex(hsmKey),
-          doMagic(hsmZmkKey),
-          Hex.decodeHex(zmkIv)));
+      return CryptoUtil.encodeHexString(
+          TripleDESCryptoUtil.decrypt(
+              Hex.decodeHex(hsmKey), doMagic(hsmZmkKey), Hex.decodeHex(zmkIv)));
     } catch (DecoderException ex) {
-      return null;
+      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -158,14 +169,15 @@ public class CDRBRestClient {
   }
 
   private String getHsmKey() {
-    String pathUrl = baseUrl.concat("/auth/hsm-key");
-    CDRBGetHsmKeyResponse hsmKeyResponse =
-        restUtil.sendGet(
-            pathUrl,
-            buildHeader(),
-            ParameterizedTypeReference.forType(CDRBGetHsmKeyResponse.class));
-
-    return hsmKeyResponse.getZpk();
+    //    String pathUrl = baseUrl.concat("/auth/hsm-key");
+    //    CDRBGetHsmKeyResponse hsmKeyResponse =
+    //        restUtil.sendGet(
+    //            pathUrl,
+    //            buildHeader(),
+    //            ParameterizedTypeReference.forType(CDRBGetHsmKeyResponse.class));
+    //
+    //    return hsmKeyResponse.getZpk();
+    return "5497B691458FC1CD31A16116701F57F8";
   }
 
   private Map<String, String> buildHeader() {
@@ -176,9 +188,13 @@ public class CDRBRestClient {
     return header;
   }
 
-  private byte[] doMagic(String key) throws DecoderException {
-    String first2Bytes = key.substring(0, 16);
-    key += first2Bytes;
-    return Hex.decodeHex(key);
+  private byte[] doMagic(String key) {
+    try {
+      String first2Bytes = key.substring(0, 16);
+      key += first2Bytes;
+      return Hex.decodeHex(key);
+    } catch (DecoderException ex) {
+      return new byte[0];
+    }
   }
 }

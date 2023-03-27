@@ -1,10 +1,7 @@
 package com.rhbgroup.dte.obc.common.util.crypto;
 
 import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.binary.Hex;
-
-import java.nio.charset.StandardCharsets;
 
 public abstract class CryptoUtil {
 
