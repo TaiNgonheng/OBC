@@ -2,6 +2,7 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
 import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
@@ -43,6 +44,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
+
   private final JwtTokenUtils jwtTokenUtils;
   private final CacheUtil cacheUtil;
   private final UserAuthService userAuthService;
@@ -60,6 +62,11 @@ public class AccountServiceImpl implements AccountService {
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
     return Functions.of(accountMapper::toUserModel)
         .andThen(userAuthService::authenticate)
+        .andThen(
+            Functions.peek(
+                authContext ->
+                    userAuthService.checkUserRole(
+                        authContext, Collections.singletonList(AppConstants.ROLE.APP_USER))))
         .andThen(jwtTokenUtils::generateJwt)
         .andThen(accountMapper::toAuthResponse)
         .apply(request);

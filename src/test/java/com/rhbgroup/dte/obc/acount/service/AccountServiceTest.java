@@ -3,6 +3,7 @@ package com.rhbgroup.dte.obc.acount.service;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
@@ -195,6 +196,23 @@ class AccountServiceTest extends AbstractAccountTest {
   void testAuthenticate_Failed_Unauthorized() {
     when(userAuthService.authenticate(any()))
         .thenThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
+
+    try {
+      accountService.authenticate(mockAuthenticationRequest());
+    } catch (UserAuthenticationException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.AUTHENTICATION_FAILED.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.AUTHENTICATION_FAILED.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testAuthenticate_Failed_Unauthorized_ROLE_NOT_PERMITTED() {
+    when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
+    doThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED))
+        .when(userAuthService)
+        .checkUserRole(any(), anyList());
 
     try {
       accountService.authenticate(mockAuthenticationRequest());
