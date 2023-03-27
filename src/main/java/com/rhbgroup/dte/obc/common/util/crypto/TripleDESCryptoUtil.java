@@ -9,8 +9,8 @@ public class TripleDESCryptoUtil {
 
   private TripleDESCryptoUtil() {}
 
-  private static final String ALGORITHM = "TripleDES/CBC/PKCS5Padding";
-  private static final String KEY_ALGORITHM = "TripleDES";
+  private static final String ALGORITHM = "DESede/CBC/NoPadding";
+  private static final String KEY_ALGORITHM = "DESede";
 
   public static byte[] encrypt(String data, String secretKey, String iv) {
     try {

@@ -13,8 +13,8 @@ class TripleDESTest {
   @BeforeEach
   public void setUp() {
     // Initialize the secret key and initialization vector
-    secretKey = "123456789012345678901234";
-    iv = "12345678";
+    secretKey = "123456789012345678901234"; // 24 bytes
+    iv = "00000000"; // 8 bytes
   }
 
   @Test

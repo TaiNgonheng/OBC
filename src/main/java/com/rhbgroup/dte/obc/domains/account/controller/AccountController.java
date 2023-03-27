@@ -3,6 +3,8 @@ package com.rhbgroup.dte.obc.domains.account.controller;
 import com.rhbgroup.dte.obc.api.AccountApiDelegate;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
+import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
@@ -27,5 +29,13 @@ public class AccountController implements AccountApiDelegate {
     return Functions.of(accountService::verifyOtp)
         .andThen(ResponseEntity::ok)
         .apply(verifyOtpRequest);
+  }
+
+  @Override
+  public ResponseEntity<GetAccountDetailResponse> getAccountDetail(
+      GetAccountDetailRequest getAccountDetailRequest) {
+    return Functions.of(accountService::getAccountDetail)
+        .andThen(ResponseEntity::ok)
+        .apply(getAccountDetailRequest);
   }
 }

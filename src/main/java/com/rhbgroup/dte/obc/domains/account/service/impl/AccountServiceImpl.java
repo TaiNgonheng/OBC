@@ -16,6 +16,8 @@ import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.AccountModel;
+import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
@@ -27,6 +29,7 @@ import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
+import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Collections;
@@ -41,11 +44,13 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
+
   private final JwtTokenUtils jwtTokenUtils;
   private final CacheUtil cacheUtil;
   private final UserAuthService userAuthService;
   private final ConfigService configService;
   private final PGRestClient pgRestClient;
+  private final CDRBRestClient cdrbRestClient;
 
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
@@ -151,5 +156,11 @@ public class AccountServiceImpl implements AccountService {
     VerifyOtpResponseAllOfData data =
         new VerifyOtpResponseAllOfData().isValid(infoBipVerifyOtpResponse.getVerified());
     return new VerifyOtpResponse().status(new ResponseStatus().code(0)).data(data);
+  }
+
+  @Override
+  public GetAccountDetailResponse getAccountDetail(GetAccountDetailRequest request) {
+    cdrbRestClient.login();
+    return new GetAccountDetailResponse();
   }
 }

@@ -76,7 +76,7 @@ public class CDRBRestClient {
         AESCryptoUtil.decrypt(
             Base64.getDecoder().decode(encPassword.getBytes(StandardCharsets.UTF_8)),
             aesKey,
-            aesIv.getBytes(StandardCharsets.UTF_8));
+            Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)));
 
     // Split password
     String[] passwordSplits = splitPassword(new String(passwordDecrypted, StandardCharsets.UTF_8));
@@ -114,11 +114,27 @@ public class CDRBRestClient {
   }
 
   private String decryptZpk(String hsmKey, String hsmZmkKey) {
-    return new String(TripleDESCryptoUtil.encrypt(hsmKey, hsmKey, zmkIv), StandardCharsets.UTF_8);
+    return new String(
+        TripleDESCryptoUtil.decrypt(hsmKey.getBytes(StandardCharsets.UTF_8), hsmZmkKey, zmkIv),
+        StandardCharsets.UTF_8);
   }
 
   private String[] splitPassword(String password) {
-    return new String[0];
+    String[] passwordSplit = new String[2];
+    int passLength = password.length();
+
+    if (passLength <= 12) {
+      passwordSplit[0] = password;
+      return passwordSplit;
+    }
+
+    int halfLength = passLength / 2;
+    String pass1 = password.substring(0, halfLength - 1);
+    String pass2 = password.substring(halfLength, passLength - 1);
+    passwordSplit[0] = pass1;
+    passwordSplit[1] = pass2;
+
+    return passwordSplit;
   }
 
   private void validateResponseStatus(CDRBLoginResponse loginResponse) {
