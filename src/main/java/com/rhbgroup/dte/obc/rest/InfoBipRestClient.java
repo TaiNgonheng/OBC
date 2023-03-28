@@ -3,25 +3,30 @@ package com.rhbgroup.dte.obc.rest;
 import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
 import com.rhbgroup.dte.obc.common.util.SpringRestUtil;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
-import com.rhbgroup.dte.obc.model.*;
-import java.util.HashMap;
-import java.util.Map;
-import javax.annotation.PostConstruct;
+import com.rhbgroup.dte.obc.model.InfoBipLoginResponse;
+import com.rhbgroup.dte.obc.model.InfoBipSendOtpRequest;
+import com.rhbgroup.dte.obc.model.InfoBipSendOtpResponse;
+import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpRequest;
+import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 
+import javax.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 @RequiredArgsConstructor
 public class InfoBipRestClient {
+
   private final SpringRestUtil restUtil;
   private final ConfigService configService;
+
   private String infoBipBaseUrl;
   private String infoBipAppId;
   private String infoBipOtpMessageId;
-  private String infoBipUserName;
-  private String infoBipPassword;
 
   @PostConstruct
   private void loadConfiguration() {

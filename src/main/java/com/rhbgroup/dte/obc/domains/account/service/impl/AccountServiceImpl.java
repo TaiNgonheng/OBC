@@ -15,13 +15,22 @@ import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
-import com.rhbgroup.dte.obc.model.*;
+import com.rhbgroup.dte.obc.model.AccountModel;
+import com.rhbgroup.dte.obc.model.InfoBipLoginResponse;
+import com.rhbgroup.dte.obc.model.InfoBipSendOtpResponse;
+import com.rhbgroup.dte.obc.model.InitAccountRequest;
+import com.rhbgroup.dte.obc.model.InitAccountResponse;
+import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
+import com.rhbgroup.dte.obc.model.PGAuthRequest;
+import com.rhbgroup.dte.obc.model.PGAuthResponseAllOfData;
+import com.rhbgroup.dte.obc.model.PGProfileResponse;
+import com.rhbgroup.dte.obc.model.ResponseStatus;
+import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
+import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
+import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
-import java.util.Collections;
-import javax.annotation.PostConstruct;
-import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +38,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+
+import javax.annotation.PostConstruct;
+import javax.cache.expiry.Duration;
+import java.util.Collections;
 
 @Service
 @Slf4j
