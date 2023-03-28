@@ -13,4 +13,5 @@ properties:
   key:
     type: string
     description: A hash password in SHA256
+    regex: ^[a-fA-F0-9]{64}$
     example: sha256_password
