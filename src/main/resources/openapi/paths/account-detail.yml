@@ -6,6 +6,8 @@ post:
   summary: Get CDRB account detail
   description: Get CDRB account detail
   operationId: getAccountDetail
+  security:
+    - bearerAuth: [ ]
   requestBody:
     description: Request to get CDRB account detail
     content:

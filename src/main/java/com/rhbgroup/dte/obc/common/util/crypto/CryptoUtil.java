@@ -3,11 +3,11 @@ package com.rhbgroup.dte.obc.common.util.crypto;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
-public abstract class CryptoUtil {
+public class CryptoUtil {
 
   protected CryptoUtil() {}
 
-  protected static byte[] pad(byte[] data, int blockSize) {
+  public static byte[] pad(byte[] data, int blockSize) {
     int paddingLength = blockSize - (data.length % blockSize);
     byte[] paddedData = new byte[data.length + paddingLength];
     System.arraycopy(data, 0, paddedData, 0, data.length);
@@ -17,7 +17,7 @@ public abstract class CryptoUtil {
     return paddedData;
   }
 
-  protected static byte[] unPad(byte[] paddedData) {
+  public static byte[] unPad(byte[] paddedData) {
     int paddingLength = paddedData[paddedData.length - 1];
     byte[] unPaddedData = new byte[paddedData.length - paddingLength];
     System.arraycopy(paddedData, 0, unPaddedData, 0, unPaddedData.length);

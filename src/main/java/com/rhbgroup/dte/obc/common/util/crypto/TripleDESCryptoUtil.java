@@ -6,9 +6,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class TripleDESCryptoUtil extends CryptoUtil {
 
-  private TripleDESCryptoUtil() {
-    super();
-  }
+  private TripleDESCryptoUtil() {}
 
   private static final String ALGORITHM = "DESede/CBC/NoPadding";
   private static final String KEY_ALGORITHM = "DESede";

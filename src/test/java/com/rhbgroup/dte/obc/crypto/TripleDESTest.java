@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.crypto;
 
+import com.rhbgroup.dte.obc.common.util.crypto.CryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.TripleDESCryptoUtil;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.codec.DecoderException;
@@ -13,20 +14,20 @@ class TripleDESTest {
   private byte[] secretKey;
   private byte[] iv;
 
-  private static final String KEY_HEX = "5497B691458FC1CD31A16116701F57F8";
-  private static final String IV_HEX = "0000000000000000";
+  private String KEY_HEX = "5497B691458FC1CD31A16116701F57F8"; // Secret key in HEX
+  private static final String IV_HEX = "0000000000000000"; // IV in HEX
+  private static final Integer TRIPLE_DES_CIPHER_BLOCK_SIZE = 16;
 
   @BeforeEach
   public void setUp() throws DecoderException {
-    // Initialize the secret key and initialization vector
-    secretKey = doMagic(KEY_HEX);
+    secretKey = doMagic();
     iv = Hex.decodeHex(IV_HEX); // 8 bytes
   }
 
-  private byte[] doMagic(String key) throws DecoderException {
-    String first2Bytes = KEY_HEX.substring(0, 16);
-    key += first2Bytes;
-    return Hex.decodeHex(key);
+  private byte[] doMagic() throws DecoderException {
+    String first2Bytes = KEY_HEX.substring(0, TRIPLE_DES_CIPHER_BLOCK_SIZE);
+    KEY_HEX += first2Bytes;
+    return Hex.decodeHex(KEY_HEX);
   }
 
   @Test
@@ -34,11 +35,14 @@ class TripleDESTest {
     // Test encryption and decryption of a message
     String message = "Hello, world!";
     byte[] encrypted =
-        TripleDESCryptoUtil.encrypt(message.getBytes(StandardCharsets.UTF_8), secretKey, iv);
+        TripleDESCryptoUtil.encrypt(
+            CryptoUtil.pad(message.getBytes(StandardCharsets.UTF_8), TRIPLE_DES_CIPHER_BLOCK_SIZE),
+            secretKey,
+            iv);
     byte[] decrypted = TripleDESCryptoUtil.decrypt(encrypted, secretKey, iv);
     Assertions.assertNotNull(decrypted);
 
-    String decryptedMessage = new String(decrypted);
+    String decryptedMessage = new String(CryptoUtil.unPad(decrypted));
     Assertions.assertEquals(message, decryptedMessage);
   }
 
@@ -47,11 +51,15 @@ class TripleDESTest {
     // Test encryption and decryption of a message with padding
     String message = "This is a longer message.";
     byte[] encrypted =
-        TripleDESCryptoUtil.encrypt(message.getBytes(StandardCharsets.UTF_8), secretKey, iv);
+        TripleDESCryptoUtil.encrypt(
+            CryptoUtil.pad(message.getBytes(StandardCharsets.UTF_8), TRIPLE_DES_CIPHER_BLOCK_SIZE),
+            secretKey,
+            iv);
+
     byte[] decrypted = TripleDESCryptoUtil.decrypt(encrypted, secretKey, iv);
     Assertions.assertNotNull(decrypted);
 
-    String decryptedMessage = new String(decrypted);
+    String decryptedMessage = new String(CryptoUtil.unPad(decrypted));
     Assertions.assertEquals(message, decryptedMessage);
   }
 

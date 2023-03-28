@@ -11,7 +11,7 @@ class AESCryptoUtilTest {
 
   @Test
   void testEncryptAndDecrypt() {
-    String data = "This is a secret message.";
+    String data = "power@ranger";
     String secretKey = "1234567812345678";
     byte[] iv = AESCryptoUtil.getRandomIv(16);
 

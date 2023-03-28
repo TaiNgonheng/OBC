@@ -9,6 +9,7 @@ import com.rhbgroup.dte.obc.common.util.crypto.TripleDESCryptoUtil;
 import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.model.CDRBGetHsmKeyResponse;
 import com.rhbgroup.dte.obc.model.CDRBLoginRequest;
 import com.rhbgroup.dte.obc.model.CDRBLoginResponse;
 import java.nio.charset.StandardCharsets;
@@ -94,7 +95,7 @@ public class CDRBRestClient {
         CryptoUtil.encodeHexString(
                 TripleDESCryptoUtil.encrypt(
                     padRight(passwordSplits[0]),
-                    doMagic(decryptedZpk),
+                    addKeyPadding(decryptedZpk),
                     CryptoUtil.decodeHex(zmkIv)))
             .toUpperCase();
 
@@ -106,23 +107,18 @@ public class CDRBRestClient {
                         CryptoUtil.decodeHex(decryptedZpk),
                         CryptoUtil.decodeHex(zmkIv)))
                 .toUpperCase()
-            : null;
+            : passwordEnc1;
 
     String pathUrl = baseUrl.concat("/auth/channel/obc/login");
 
     CDRBLoginRequest loginRequest =
         new CDRBLoginRequest().username(username).encPwd1(passwordEnc1).encPwd2(passwordEnc2);
 
-    CDRBLoginResponse loginResponse =
-        restUtil.sendPost(
-            pathUrl,
-            buildHeader(),
-            loginRequest,
-            ParameterizedTypeReference.forType(CDRBLoginResponse.class));
-
-    validateResponseStatus(loginResponse);
-
-    return loginResponse;
+    return restUtil.sendPost(
+        pathUrl,
+        buildHeader(),
+        loginRequest,
+        ParameterizedTypeReference.forType(CDRBLoginResponse.class));
   }
 
   private byte[] padRight(String passwordSplit) {
@@ -140,7 +136,7 @@ public class CDRBRestClient {
     try {
       return CryptoUtil.encodeHexString(
           TripleDESCryptoUtil.decrypt(
-              Hex.decodeHex(hsmKey), doMagic(hsmZmkKey), Hex.decodeHex(zmkIv)));
+              Hex.decodeHex(hsmKey), addKeyPadding(hsmZmkKey), Hex.decodeHex(zmkIv)));
     } catch (DecoderException ex) {
       throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
@@ -164,20 +160,15 @@ public class CDRBRestClient {
     return passwordSplit;
   }
 
-  private void validateResponseStatus(CDRBLoginResponse loginResponse) {
-    // Implementation
-  }
-
   private String getHsmKey() {
-    //    String pathUrl = baseUrl.concat("/auth/hsm-key");
-    //    CDRBGetHsmKeyResponse hsmKeyResponse =
-    //        restUtil.sendGet(
-    //            pathUrl,
-    //            buildHeader(),
-    //            ParameterizedTypeReference.forType(CDRBGetHsmKeyResponse.class));
-    //
-    //    return hsmKeyResponse.getZpk();
-    return "5497B691458FC1CD31A16116701F57F8";
+    String pathUrl = baseUrl.concat("/auth/hsm-key");
+    CDRBGetHsmKeyResponse hsmKeyResponse =
+        restUtil.sendGet(
+            pathUrl,
+            buildHeader(),
+            ParameterizedTypeReference.forType(CDRBGetHsmKeyResponse.class));
+
+    return hsmKeyResponse.getZpk();
   }
 
   private Map<String, String> buildHeader() {
@@ -188,11 +179,12 @@ public class CDRBRestClient {
     return header;
   }
 
-  private byte[] doMagic(String key) {
+  private byte[] addKeyPadding(String key) {
     try {
       String first2Bytes = key.substring(0, 16);
       key += first2Bytes;
       return Hex.decodeHex(key);
+
     } catch (DecoderException ex) {
       return new byte[0];
     }
