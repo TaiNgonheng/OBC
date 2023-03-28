@@ -8,7 +8,6 @@ import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.GlobalExceptionHandler;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
-import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,12 +15,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.nio.charset.StandardCharsets;
+
+import static org.mockito.Mockito.reset;
 
 @ExtendWith(MockitoExtension.class)
 class AccountControllerTest extends AbstractAccountTest {
@@ -40,6 +44,8 @@ class AccountControllerTest extends AbstractAccountTest {
         MockMvcBuilders.standaloneSetup(accountApiController)
             .setControllerAdvice(new GlobalExceptionHandler())
             .build();
+
+    reset(accountApiDelegate);
   }
 
   @Test
@@ -110,6 +116,7 @@ class AccountControllerTest extends AbstractAccountTest {
     mockMvc
         .perform(
             MockMvcRequestBuilders.post("/verify-otp")
+                .header(HttpHeaders.AUTHORIZATION, mockBearerString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsBytes(mockVerifyOtpRequest())))
@@ -119,13 +126,14 @@ class AccountControllerTest extends AbstractAccountTest {
   }
 
   @Test
-  void testVerifyOtp_Failed_Unauthorized_400() throws Exception {
+  void testVerifyOtp_Failed_DataNotFound_400() throws Exception {
     Mockito.when(accountApiDelegate.verifyOtp(Mockito.any(), Mockito.any()))
-        .thenThrow(new UserAuthenticationException(ResponseMessage.DATA_NOT_FOUND));
+        .thenThrow(new BizException(ResponseMessage.DATA_NOT_FOUND));
 
     mockMvc
         .perform(
             MockMvcRequestBuilders.post("/verify-otp")
+                .header(HttpHeaders.AUTHORIZATION, mockBearerString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsBytes(mockVerifyOtpRequest())))
@@ -141,6 +149,7 @@ class AccountControllerTest extends AbstractAccountTest {
     mockMvc
         .perform(
             MockMvcRequestBuilders.post("/verify-otp")
+                .header(HttpHeaders.AUTHORIZATION, mockBearerString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsBytes(mockVerifyOtpRequest())))
@@ -156,6 +165,7 @@ class AccountControllerTest extends AbstractAccountTest {
     mockMvc
         .perform(
             MockMvcRequestBuilders.post("/verify-otp")
+                .header(HttpHeaders.AUTHORIZATION, mockBearerString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsBytes(mockVerifyOtpRequest())))

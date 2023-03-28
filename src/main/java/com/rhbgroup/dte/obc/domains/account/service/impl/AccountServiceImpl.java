@@ -80,10 +80,12 @@ public class AccountServiceImpl implements AccountService {
                 pgRestClient.getUserProfile(
                     Collections.singletonList(request.getBakongAccId()), jwtToken))
         .andThen(Functions.peek(this::validateAccount))
-        .andThen(Functions.peek(userProfile -> {
-          if(userProfile.getPhone().equals(request.getPhoneNumber()))
-          triggerOTP(userProfile, request.getLogin());
-        }))
+        .andThen(
+            Functions.peek(
+                userProfile -> {
+                  if (userProfile.getPhone().equals(request.getPhoneNumber()))
+                    triggerOTP(userProfile, request.getLogin());
+                }))
         .andThen(profileResponse -> buildResponse(request, profileResponse, token))
         .apply(CacheConstants.PGCache.CACHE_NAME, pgLoginKey);
   }
@@ -145,37 +147,46 @@ public class AccountServiceImpl implements AccountService {
     }
   }
 
-  private String getInfoBipToken(String username){
+  private String getInfoBipToken(String username) {
     String infoBipLoginKey = CacheConstants.InfoBipCache.INFOBIP_LOGIN_KEY.concat(username);
-    String infoBipToken = cacheUtil.getValueFromKey(CacheConstants.InfoBipCache.CACHE_NAME, infoBipLoginKey);
+    String infoBipToken =
+        cacheUtil.getValueFromKey(CacheConstants.InfoBipCache.CACHE_NAME, infoBipLoginKey);
     if (StringUtils.isNotBlank(infoBipToken) && !jwtTokenUtils.isExtTokenExpired(infoBipToken)) {
       return infoBipToken;
     }
     ConfigService configServiceInstance =
-            configService.loadJSONValue(ConfigConstants.InfoBip.INFO_BIP_ACCOUNT);
+        configService.loadJSONValue(ConfigConstants.InfoBip.INFO_BIP_ACCOUNT);
     return Functions.of(infoBipRestClient::login)
-            .andThen(InfoBipLoginResponse::getAccessToken)
-            .andThen(
-                    Functions.peek(
-                            idToken ->
-                                    cacheUtil.addKey(CacheConstants.InfoBipCache.CACHE_NAME, infoBipLoginKey, idToken)))
-            .apply(getInfoBipRequest(configServiceInstance));
+        .andThen(InfoBipLoginResponse::getAccessToken)
+        .andThen(
+            Functions.peek(
+                idToken ->
+                    cacheUtil.addKey(
+                        CacheConstants.InfoBipCache.CACHE_NAME, infoBipLoginKey, idToken)))
+        .apply(getInfoBipRequest(configServiceInstance));
   }
 
-  private MultiValueMap<String, String> getInfoBipRequest(ConfigService configServiceInstance){
+  private MultiValueMap<String, String> getInfoBipRequest(ConfigService configServiceInstance) {
     MultiValueMap<String, String> request = new LinkedMultiValueMap<>();
-    request.add(ConfigConstants.InfoBip.INFO_BIP_CLIENT_ID_KEY,configServiceInstance.getValue(
+    request.add(
+        ConfigConstants.InfoBip.INFO_BIP_CLIENT_ID_KEY,
+        configServiceInstance.getValue(
             ConfigConstants.InfoBip.INFO_BIP_CLIENT_ID_KEY, String.class));
-    request.add(ConfigConstants.InfoBip.INFO_BIP_CLIENT_SECRET_KEY,configServiceInstance.getValue(
+    request.add(
+        ConfigConstants.InfoBip.INFO_BIP_CLIENT_SECRET_KEY,
+        configServiceInstance.getValue(
             ConfigConstants.InfoBip.INFO_BIP_CLIENT_SECRET_KEY, String.class));
-    request.add(ConfigConstants.InfoBip.INFO_BIP_GRANT_TYPE_KEY,configServiceInstance.getValue(
+    request.add(
+        ConfigConstants.InfoBip.INFO_BIP_GRANT_TYPE_KEY,
+        configServiceInstance.getValue(
             ConfigConstants.InfoBip.INFO_BIP_GRANT_TYPE_KEY, String.class));
     return request;
   }
 
   @Override
   public VerifyOtpResponse verifyOtp(String authorization, VerifyOtpRequest request) {
-    String username = jwtTokenUtils.getUsernameFromJwtToken(jwtTokenUtils.extractJwt(authorization));
+    String username =
+        jwtTokenUtils.getUsernameFromJwtToken(jwtTokenUtils.extractJwt(authorization));
     // validate infoBip response
     String pinId =
         cacheUtil.getValueFromKey(

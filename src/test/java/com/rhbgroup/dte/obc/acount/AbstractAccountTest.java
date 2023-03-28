@@ -3,8 +3,11 @@ package com.rhbgroup.dte.obc.acount;
 import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.model.*;
+import org.codehaus.plexus.util.Base64;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+
+import java.nio.charset.StandardCharsets;
 
 public abstract class AbstractAccountTest {
 
@@ -77,10 +80,15 @@ public abstract class AbstractAccountTest {
 
   protected InfoBipVerifyOtpResponse mockInfoBipVerifyOtpResponse() {
     return new InfoBipVerifyOtpResponse()
-            .pinId("pinId")
-            .msisdn("msisdn")
-            .attemptsRemaining(1)
-            .verified(true);
+        .pinId("pinId")
+        .msisdn("msisdn")
+        .attemptsRemaining(1)
+        .verified(true);
+  }
+
+  protected InfoBipSendOtpResponse mockInfoBipSendOtpResponse() {
+    return new InfoBipSendOtpResponse()
+        .pinId("pinId");
   }
 
   protected Authentication mockAuthentication() {
@@ -91,7 +99,7 @@ public abstract class AbstractAccountTest {
     return "header.payload.signature";
   }
 
-  protected AccountModel mockAccountModel() {
-    return new AccountModel().user(new UserModel().username("test").password("test"));
+  protected String mockBearerString() {
+    return "Bearer ".concat(new String(Base64.encodeBase64("bearerToken".getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
   }
 }

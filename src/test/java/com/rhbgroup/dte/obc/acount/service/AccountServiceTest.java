@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.domains.account.service.impl.AccountServiceImpl;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
@@ -46,7 +47,8 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @BeforeEach
   void cleanUp() {
-    reset(jwtTokenUtils, cacheUtil, configService, userAuthService, pgRestClient,infoBipRestClient);
+    reset(
+        jwtTokenUtils, cacheUtil, configService, userAuthService, pgRestClient, infoBipRestClient);
   }
 
   @Test
@@ -111,6 +113,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(pgRestClient.getUserProfile(anyList(), anyString()))
         .thenReturn(mockProfileNotRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
+    when(infoBipRestClient.sendOtp(anyString(), anyString())).thenReturn(mockInfoBipSendOtpResponse());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
@@ -156,7 +159,7 @@ class AccountServiceTest extends AbstractAccountTest {
   void testInitLinkAccount_Failed_InfoBipServiceUnavailable() {
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(pgRestClient.getUserProfile(anyList(), anyString()));
+    when(pgRestClient.getUserProfile(anyList(), anyString())).thenReturn(mockProfileNotRequiredChangeMobile());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
@@ -171,27 +174,33 @@ class AccountServiceTest extends AbstractAccountTest {
   }
 
   @Test
-  void testVerifiOTP_Success_IsValid_True() {
+  void testVerifyOTP_Success_IsValid_True() {
+    when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString())).thenReturn(true);
 
     VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
-    Assertions.assertEquals(0, response.getStatus().getCode());
-    Assertions.assertEquals(response.getData().getIsValid(), true);
+    Assertions.assertEquals(AppConstants.STATUS.SUCCESS, response.getStatus().getCode());
+    Assertions.assertTrue(response.getData().getIsValid());
   }
 
   @Test
-  void testVerifiOTP_Success_IsValid_False() {
+  void testVerifyOTP_Success_IsValid_False() {
+    when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
-    when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString())).thenReturn(true);
+    when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString())).thenReturn(false);
 
     VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
-    Assertions.assertEquals(0, response.getStatus().getCode());
-    Assertions.assertEquals(response.getData().getIsValid(), false);
+    Assertions.assertEquals(AppConstants.STATUS.SUCCESS, response.getStatus().getCode());
+    Assertions.assertFalse(response.getData().getIsValid());
   }
 
   @Test
-  void testVerifiOTP_Failed_InfoBipServiceUnavailable() {
+  void testVerifyOTP_Failed_InfoBipServiceUnavailable() {
+    when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));

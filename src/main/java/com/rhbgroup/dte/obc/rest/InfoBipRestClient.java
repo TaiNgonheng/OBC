@@ -42,10 +42,10 @@ public class InfoBipRestClient {
     Map<String, String> headers = new HashMap<>();
     headers.put("Content-Type", "application/x-www-form-urlencoded");
     return restUtil.sendPost(
-            infoBipBaseUrl.concat(ConfigConstants.InfoBip.INFO_BIP_LOGIN_API_PATH),
-            headers,
-            request,
-            ParameterizedTypeReference.forType(InfoBipLoginResponse.class));
+        infoBipBaseUrl.concat(ConfigConstants.InfoBip.INFO_BIP_LOGIN_API_PATH),
+        headers,
+        request,
+        ParameterizedTypeReference.forType(InfoBipLoginResponse.class));
   }
 
   public InfoBipSendOtpResponse sendOtp(String phone, String token) {
