@@ -1,5 +1,55 @@
 spring:
-  profiles:
-    active: sit
-  main:
-    allow-circular-references: true
+  jpa:
+    properties:
+      dialect: org.hibernate.dialect.MySQL5Dialect
+    generate-ddl: false
+    show-sql: true
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:33068}/obc?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=false
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:1qaz!QAZ}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimumIdle: ${SPRING_HIKARI_MIN_IDLE:2}
+      maximumPoolSize: ${SPRING_HIKARI_MAX_POOL_SIZE:20}
+      idleTimeout: ${SPRING_HIKARI_IDLE_TIMEOUT:120000}
+      connectionTimeout: ${SPRING_HIKARI_CONNECTION_TIMEOUT:300000}
+      leakDetectionThreshold: ${SPRING_HIKARI_LEAK_DETECTION_THRESHOLD:300000}
+
+  flyway:
+    locations: classpath:sql/ddl,classpath:sql/dml
+    clean-on-validation-error: true
+
+  jackson:
+    default-property-inclusion: ALWAYS
+
+  application:
+    name: ${APP_NAME:obc-sit}
+
+logging:
+  level:
+    web: debug
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: ${SERVER_CONTEXT_PATH:/api/v1}
+
+obc:
+  security:
+    jwt-secret: ${JWT_SECRET:my-secret}
+    jwt-ttl: ${JWT_TTL:300}
+  pg1:
+    url: ${PG1_URL:http://10.202.38.27}
+    username: ${PG1_USERNAME:soap_user}
+    password: ${PG1_PASSWORD:+66xZ_feBcRpYP9e}
+  cdrb:
+    url: ${CDRB_URL:https://api.dev.cdrb.link}
+    username: ${CDRB_USERNAME:cdrb}
+    password: ${CDRB_PASSWORD:cdrb_password}
+  infobip:
+    url: ${INFOBIP_URL:https://9rmmnv.api.infobip.com}
+    appId: ${INFOBIP_APP_ID:appId}
+    username: ${INFOBIP_USERNAME:inforbip}
+    password: ${INFOBIP_PASSWORD:infobip_password}

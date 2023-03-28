@@ -25,6 +25,7 @@ import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -33,6 +34,7 @@ import org.springframework.util.MultiValueMap;
 @Slf4j
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
+
   private final JwtTokenUtils jwtTokenUtils;
   private final CacheUtil cacheUtil;
   private final UserAuthService userAuthService;
@@ -40,6 +42,12 @@ public class AccountServiceImpl implements AccountService {
   private final PGRestClient pgRestClient;
   private final InfoBipRestClient infoBipRestClient;
   private final AccountMapper accountMapper = new AccountMapperImpl();
+
+  @Value("${obc.pg1.username}")
+  protected String pg1Username;
+
+  @Value("${obc.pg1.password}")
+  protected String pg1Password;
 
   @PostConstruct
   public void postConstruct() {
@@ -116,15 +124,6 @@ public class AccountServiceImpl implements AccountService {
     if (StringUtils.isNotBlank(pgToken) && !jwtTokenUtils.isExtTokenExpired(pgToken)) {
       return pgToken;
     }
-    ConfigService configServiceInstance =
-        configService.loadJSONValue(ConfigConstants.PGConfig.PG1_ACCOUNT_KEY);
-
-    String username =
-        configServiceInstance.getValue(
-            ConfigConstants.PGConfig.PG1_DATA_USERNAME_KEY, String.class);
-    String password =
-        configServiceInstance.getValue(
-            ConfigConstants.PGConfig.PG1_DATA_PASSWORD_KEY, String.class);
 
     return Functions.of(pgRestClient::login)
         .andThen(PGAuthResponseAllOfData::getIdToken)
@@ -132,7 +131,7 @@ public class AccountServiceImpl implements AccountService {
             Functions.peek(
                 idToken ->
                     cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey, idToken)))
-        .apply(new PGAuthRequest().username(username).password(password));
+        .apply(new PGAuthRequest().username(pg1Username).password(pg1Password));
   }
 
   private void validateAccount(PGProfileResponse userProfile) {
