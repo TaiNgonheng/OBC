@@ -22,6 +22,7 @@ public class InfoBipRestClient {
   private String infoBipOtpMessageId;
   private String infoBipUserName;
   private String infoBipPassword;
+
   @PostConstruct
   private void loadConfiguration() {
     infoBipBaseUrl =
@@ -46,6 +47,7 @@ public class InfoBipRestClient {
             request,
             ParameterizedTypeReference.forType(InfoBipLoginResponse.class));
   }
+
   public InfoBipSendOtpResponse sendOtp(String phone, String token) {
     Map<String, String> headers = new HashMap<>();
     headers.put("Authorization", "Bearer ".concat(token));
@@ -70,7 +72,7 @@ public class InfoBipRestClient {
             infoBipBaseUrl.concat(ConfigConstants.InfoBip.INFO_BIP_VERIFY_OTP_API_PATH),
             pathParams,
             null,
-                headers,
+            headers,
             new InfoBipVerifyOtpRequest().pin(otp),
             ParameterizedTypeReference.forType(InfoBipVerifyOtpResponse.class));
     return verifyOtpResponse.getVerified();

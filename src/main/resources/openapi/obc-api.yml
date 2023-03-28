@@ -67,8 +67,6 @@ components:
       $ref: './schemas/infoBip/InfoBipVerifyOtpRequest.yml'
     InfoBipVerifyOtpResponse:
       $ref: './schemas/infoBip/InfoBipVerifyOtpResponse.yml'
-    InfoBipLoginRequest:
-      $ref: './schemas/infoBip/InfoBipLoginRequest.yml'
     InfoBipLoginResponse:
       $ref: './schemas/infoBip/InfoBipLoginResponse.yml'
   securitySchemes:

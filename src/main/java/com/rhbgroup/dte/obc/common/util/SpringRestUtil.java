@@ -2,15 +2,12 @@ package com.rhbgroup.dte.obc.common.util;
 
 import com.hazelcast.internal.util.MapUtil;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
-import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

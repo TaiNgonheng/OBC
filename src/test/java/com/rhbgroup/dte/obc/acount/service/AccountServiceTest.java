@@ -42,8 +42,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock PGRestClient pgRestClient;
 
-  @Mock
-  InfoBipRestClient infoBipRestClient;
+  @Mock InfoBipRestClient infoBipRestClient;
 
   @BeforeEach
   void cleanUp() {
@@ -159,23 +158,22 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(pgRestClient.getUserProfile(anyList(), anyString()));
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
-            .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
+        .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {
       accountService.initLinkAccount(mockInitAccountRequest());
     } catch (BizException ex) {
       Assertions.assertEquals(
-              ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
+          ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
       Assertions.assertEquals(
-              ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(), ex.getResponseMessage().getMsg());
+          ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 
   @Test
   void testVerifiOTP_Success_IsValid_True() {
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
-    when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString()))
-            .thenReturn(true);
+    when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString())).thenReturn(true);
 
     VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
@@ -185,8 +183,7 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testVerifiOTP_Success_IsValid_False() {
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
-    when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString()))
-            .thenReturn(true);
+    when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString())).thenReturn(true);
 
     VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
@@ -197,15 +194,15 @@ class AccountServiceTest extends AbstractAccountTest {
   void testVerifiOTP_Failed_InfoBipServiceUnavailable() {
     when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString()))
-            .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
+        .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {
       accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
     } catch (BizException ex) {
       Assertions.assertEquals(
-              ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
+          ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
       Assertions.assertEquals(
-              ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(), ex.getResponseMessage().getMsg());
+          ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 }

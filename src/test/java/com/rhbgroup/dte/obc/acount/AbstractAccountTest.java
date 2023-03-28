@@ -24,6 +24,7 @@ public abstract class AbstractAccountTest {
         .status(new ResponseStatus().code(0))
         .data(new InitAccountResponseAllOfData().accessToken("access_token"));
   }
+
   protected VerifyOtpResponse mockVerifyOtpResponse() {
     return new VerifyOtpResponse()
         .status(new ResponseStatus().code(0))

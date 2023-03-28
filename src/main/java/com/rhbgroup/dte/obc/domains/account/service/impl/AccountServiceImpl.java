@@ -22,8 +22,6 @@ import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Collections;
 import javax.annotation.PostConstruct;
 import javax.cache.expiry.Duration;
-
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
