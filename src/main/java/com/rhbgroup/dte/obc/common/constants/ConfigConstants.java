@@ -1,4 +1,4 @@
-package com.rhbgroup.dte.obc.common.constants.services;
+package com.rhbgroup.dte.obc.common.constants;
 
 public class ConfigConstants {
 

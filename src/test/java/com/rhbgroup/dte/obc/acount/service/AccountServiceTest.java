@@ -3,19 +3,19 @@ package com.rhbgroup.dte.obc.acount.service;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
-import com.rhbgroup.dte.obc.common.constants.AppConstants;
-import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.domains.account.service.impl.AccountServiceImpl;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
-import com.rhbgroup.dte.obc.domains.config.service.impl.ConfigServiceImpl;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
+import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
@@ -24,8 +24,6 @@ import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +47,8 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock InfoBipRestClient infoBipRestClient;
 
+  @Mock UserProfileService userProfileService;
+
   @BeforeEach
   void cleanUp() {
     reset(jwtTokenUtils, configService, userAuthService, pgRestClient, infoBipRestClient);
@@ -59,10 +59,12 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
+    doNothing().when(userProfileService).updateBakongId(anyString(), anyString());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
+
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
     Assertions.assertEquals(true, response.getData().getRequireOtp());
@@ -70,20 +72,12 @@ class AccountServiceTest extends AbstractAccountTest {
   }
 
   @Test
-  void testInitLinkAccount_Success_ValueInCacheHasBeenExpired() throws JSONException {
+  void testInitLinkAccount_Success_ValueInCacheHasBeenExpired() {
 
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(null);
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-
-    ConfigServiceImpl configServiceMock = new ConfigServiceImpl(null);
-    configServiceMock.setJsonValue(
-        new JSONObject().put("username", "username").put("password", "password"));
-
-    when(configService.loadJSONValue(anyString())).thenReturn(configServiceMock);
-    when(pgRestClient.login(any())).thenReturn(mockPGAuthResponse());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    when(pgRestClient.getUserProfile(anyList(), anyString()))
-        .thenReturn(mockProfileRequiredChangeMobile());
+    doNothing().when(userProfileService).updateBakongId(anyString(), anyString());
+    when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
@@ -132,6 +126,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
+    doNothing().when(userProfileService).updateBakongId(anyString(), anyString());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
@@ -180,7 +175,8 @@ class AccountServiceTest extends AbstractAccountTest {
   void testInitLinkAccount_Failed_InfoBipServiceUnavailable() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
-    when(infoBipRestClient.sendOtp(anyString(), anyString()))
+    lenient()
+        .when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {

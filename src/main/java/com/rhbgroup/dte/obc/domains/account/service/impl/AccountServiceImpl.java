@@ -1,10 +1,8 @@
 package com.rhbgroup.dte.obc.domains.account.service.impl;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
-import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
-import com.rhbgroup.dte.obc.common.constants.CacheConstants;
-import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
+import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapperImpl;
@@ -12,10 +10,10 @@ import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
+import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
-import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
@@ -38,10 +36,9 @@ public class AccountServiceImpl implements AccountService {
 
   private final ConfigService configService;
   private final UserAuthService userAuthService;
-
   private final PGRestClient pgRestClient;
   private final InfoBipRestClient infoBipRestClient;
-
+  private final UserProfileService userProfileService;
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
   @Override
@@ -75,12 +72,18 @@ public class AccountServiceImpl implements AccountService {
         .andThen(
             Functions.peek(
                 userProfile -> {
-                  if (userProfile.getPhone().equals(request.getPhoneNumber()))
+                  if (userProfile.getPhone().equals(request.getPhoneNumber())) {
                     infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin());
+                  }
                 }))
         .andThen(
+            Functions.peek(
+                userProfile ->
+                    userProfileService.updateBakongId(
+                        request.getLogin(), userProfile.getAccountId())))
+        .andThen(
             profileResponse -> {
-              int otpEnabled =
+              Integer otpEnabled =
                   configService.getByConfigKey(
                       ConfigConstants.REQUIRED_INIT_ACCOUNT_OTP_KEY,
                       ConfigConstants.VALUE,
