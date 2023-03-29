@@ -125,7 +125,7 @@ public class SpringRestUtil {
       ParameterizedTypeReference<T> typeReference)
       throws RestClientException {
     return sendRequest(
-        buildUrlWithPathsAndParams(url, paths, null),
+        buildUrlWithPathsAndParams(url, paths, parameters),
         HttpMethod.POST,
         headers,
         body,

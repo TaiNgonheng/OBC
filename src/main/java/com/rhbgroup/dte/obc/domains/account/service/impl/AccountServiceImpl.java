@@ -10,6 +10,7 @@ import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
+import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
@@ -35,10 +36,9 @@ public class AccountServiceImpl implements AccountService {
 
   private final ConfigService configService;
   private final UserAuthService userAuthService;
-
   private final PGRestClient pgRestClient;
   private final InfoBipRestClient infoBipRestClient;
-
+  private final UserProfileService userProfileService;
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
   @Override
@@ -75,6 +75,9 @@ public class AccountServiceImpl implements AccountService {
                   if (userProfile.getPhone().equals(request.getPhoneNumber()))
                     infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin());
                 }))
+        .andThen(Functions.peek(userProfile -> {
+            userProfileService.addBakongId(request.getLogin(), userProfile.getAccountId());
+        }))
         .andThen(
             profileResponse -> {
               int otpEnabled =
