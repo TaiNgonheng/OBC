@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.domains.config.repository.entity;
 
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import java.time.Instant;
 import javax.persistence.*;
 import lombok.Getter;
@@ -16,7 +17,8 @@ public class ConfigEntity {
   @Column(name = "config_key", nullable = false)
   private String configKey;
 
-  @Column(name = "config_value", nullable = false)
+  @Column(name = "config_value", columnDefinition = "json", nullable = false)
+  @JsonRawValue
   private String configValue;
 
   @Column(name = "created_date")

@@ -7,4 +7,6 @@ public interface ConfigService {
   ConfigService loadJSONValue(String configKey);
 
   <T> T getValue(String valueKey, Class<T> clazz);
+
+  <T> T getByConfigKey(String configKey, Class<T> clazz);
 }

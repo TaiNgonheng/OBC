@@ -1,0 +1,6 @@
+type: object
+properties:
+  pgpKeyPath:
+    type: string
+  pgpPassphrase:
+    type: string
