@@ -9,6 +9,4 @@ import org.springframework.stereotype.Repository;
 public interface UserProfileRepository extends JpaRepository<UserProfileEntity, Long> {
 
   Optional<UserProfileEntity> getByUsername(String username);
-
-  Optional<UserProfileEntity> getByUsernameAndPassword(String username, String password);
 }
