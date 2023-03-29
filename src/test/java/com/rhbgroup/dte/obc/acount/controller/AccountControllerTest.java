@@ -1,5 +1,7 @@
 package com.rhbgroup.dte.obc.acount.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.reset;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -180,13 +182,14 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOtp_Failed_TokenExpired_401() throws Exception {
-    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any()))
+    Mockito.when(accountApiDelegate.verifyOtp(anyString(), any()))
         .thenThrow(new UserAuthenticationException(ResponseMessage.SESSION_EXPIRED));
 
     MockHttpServletResponse response =
         mockMvc
             .perform(
                 MockMvcRequestBuilders.post("/verify-otp")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
                     .contentType(MediaType.APPLICATION_JSON)
                     .characterEncoding(StandardCharsets.UTF_8)
                     .content(objectMapper.writeValueAsBytes(mockVerifyOtpRequest())))
@@ -212,13 +215,14 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOtp_Failed_InvalidToken_403() throws Exception {
-    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any()))
+    Mockito.when(accountApiDelegate.verifyOtp(anyString(), any()))
         .thenThrow(new UserAuthenticationException(ResponseMessage.INVALID_TOKEN));
 
     MockHttpServletResponse response =
         mockMvc
             .perform(
                 MockMvcRequestBuilders.post("/verify-otp")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
                     .contentType(MediaType.APPLICATION_JSON)
                     .characterEncoding(StandardCharsets.UTF_8)
                     .content(objectMapper.writeValueAsBytes(mockVerifyOtpRequest())))
@@ -248,6 +252,7 @@ class AccountControllerTest extends AbstractAccountTest {
         mockMvc
             .perform(
                 MockMvcRequestBuilders.post("/verify-otp")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
                     .contentType(MediaType.APPLICATION_JSON)
                     .characterEncoding(StandardCharsets.UTF_8)
                     .content(objectMapper.writeValueAsBytes(new VerifyOtpRequest())))
@@ -281,6 +286,7 @@ class AccountControllerTest extends AbstractAccountTest {
         mockMvc
             .perform(
                 MockMvcRequestBuilders.post("/verify-otp")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
                     .contentType(MediaType.APPLICATION_JSON)
                     .characterEncoding(StandardCharsets.UTF_8)
                     .content(
