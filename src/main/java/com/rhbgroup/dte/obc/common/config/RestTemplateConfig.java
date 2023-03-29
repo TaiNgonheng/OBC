@@ -18,7 +18,8 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class RestTemplateConfig {
   @Bean
-  public RestTemplate restTemplate() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+  public RestTemplate restTemplate()
+      throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
     TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
     SSLContext sslContext =
         SSLContexts.custom().loadTrustMaterial(null, acceptingTrustStrategy).build();

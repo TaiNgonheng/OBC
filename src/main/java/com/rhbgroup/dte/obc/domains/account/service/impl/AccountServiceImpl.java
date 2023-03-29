@@ -75,9 +75,11 @@ public class AccountServiceImpl implements AccountService {
                   if (userProfile.getPhone().equals(request.getPhoneNumber()))
                     infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin());
                 }))
-        .andThen(Functions.peek(userProfile -> {
-            userProfileService.addBakongId(request.getLogin(), userProfile.getAccountId());
-        }))
+        .andThen(
+            Functions.peek(
+                userProfile ->
+                    userProfileService.updateBakongId(
+                        request.getLogin(), userProfile.getAccountId())))
         .andThen(
             profileResponse -> {
               int otpEnabled =
