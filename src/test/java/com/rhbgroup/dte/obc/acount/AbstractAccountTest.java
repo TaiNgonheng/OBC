@@ -13,11 +13,10 @@ import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
+import java.nio.charset.StandardCharsets;
 import org.codehaus.plexus.util.Base64;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-
-import java.nio.charset.StandardCharsets;
 
 public abstract class AbstractAccountTest {
 
@@ -97,8 +96,7 @@ public abstract class AbstractAccountTest {
   }
 
   protected InfoBipSendOtpResponse mockInfoBipSendOtpResponse() {
-    return new InfoBipSendOtpResponse()
-        .pinId("pinId");
+    return new InfoBipSendOtpResponse().pinId("pinId");
   }
 
   protected Authentication mockAuthentication() {
@@ -110,6 +108,10 @@ public abstract class AbstractAccountTest {
   }
 
   protected String mockBearerString() {
-    return "Bearer ".concat(new String(Base64.encodeBase64("bearerToken".getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8));
+    return "Bearer "
+        .concat(
+            new String(
+                Base64.encodeBase64("bearerToken".getBytes(StandardCharsets.UTF_8)),
+                StandardCharsets.UTF_8));
   }
 }

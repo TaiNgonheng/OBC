@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
-import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.domains.account.service.impl.AccountServiceImpl;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
@@ -35,8 +34,6 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock JwtTokenUtils jwtTokenUtils;
 
-  @Mock CacheUtil cacheUtil;
-
   @Mock UserAuthService userAuthService;
 
   @Mock ConfigService configService;
@@ -47,18 +44,15 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @BeforeEach
   void cleanUp() {
-    reset(
-        jwtTokenUtils, cacheUtil, configService, userAuthService, pgRestClient, infoBipRestClient);
+    reset(jwtTokenUtils, configService, userAuthService, pgRestClient, infoBipRestClient);
   }
 
   @Test
   void testInitLinkAccount_Success_RequireChangePassword() {
 
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    when(pgRestClient.getUserProfile(anyList(), anyString()))
-        .thenReturn(mockProfileRequiredChangeMobile());
+    when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
@@ -71,9 +65,8 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testInitLinkAccount_Failed_AccountNotFullyKYC() {
 
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(pgRestClient.getUserProfile(anyList(), anyString())).thenReturn(mockProfileNotFullyKyc());
+    when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotFullyKyc());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
     try {
@@ -89,10 +82,8 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testInitLinkAccount_Failed_AccountNotActive() {
 
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(pgRestClient.getUserProfile(anyList(), anyString()))
-        .thenReturn(mockProfileUserDeactivated());
+    when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileUserDeactivated());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
     try {
@@ -107,13 +98,13 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testInitLinkAccount_Success_NotRequireChangePassword() {
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
+
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    when(pgRestClient.getUserProfile(anyList(), anyString()))
-        .thenReturn(mockProfileNotRequiredChangeMobile());
+    when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
-    when(infoBipRestClient.sendOtp(anyString(), anyString())).thenReturn(mockInfoBipSendOtpResponse());
+    when(infoBipRestClient.sendOtp(anyString(), anyString()))
+        .thenReturn(mockInfoBipSendOtpResponse());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
@@ -140,9 +131,8 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testInitLinkAccount_Failed_3rdServiceUnavailable() {
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(pgRestClient.getUserProfile(anyList(), anyString()))
+    when(pgRestClient.getUserProfile(anyList()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {
@@ -157,9 +147,8 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testInitLinkAccount_Failed_InfoBipServiceUnavailable() {
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(pgRestClient.getUserProfile(anyList(), anyString())).thenReturn(mockProfileNotRequiredChangeMobile());
+    when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
@@ -177,8 +166,7 @@ class AccountServiceTest extends AbstractAccountTest {
   void testVerifyOTP_Success_IsValid_True() {
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
     when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
-    when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString())).thenReturn(true);
+    when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(true);
 
     VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
     Assertions.assertEquals(AppConstants.STATUS.SUCCESS, response.getStatus().getCode());
@@ -189,8 +177,7 @@ class AccountServiceTest extends AbstractAccountTest {
   void testVerifyOTP_Success_IsValid_False() {
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
     when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
-    when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString())).thenReturn(false);
+    when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(false);
 
     VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
     Assertions.assertEquals(AppConstants.STATUS.SUCCESS, response.getStatus().getCode());
@@ -201,8 +188,7 @@ class AccountServiceTest extends AbstractAccountTest {
   void testVerifyOTP_Failed_InfoBipServiceUnavailable() {
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
     when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
-    when(infoBipRestClient.verifyOtp(anyString(), anyString(), anyString()))
+    when(infoBipRestClient.verifyOtp(anyString(), anyString()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {

@@ -1,5 +1,7 @@
 package com.rhbgroup.dte.obc.acount.controller;
 
+import static org.mockito.Mockito.reset;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.api.AccountApiController;
@@ -8,6 +10,7 @@ import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.GlobalExceptionHandler;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,10 +25,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.nio.charset.StandardCharsets;
-
-import static org.mockito.Mockito.reset;
 
 @ExtendWith(MockitoExtension.class)
 class AccountControllerTest extends AbstractAccountTest {
