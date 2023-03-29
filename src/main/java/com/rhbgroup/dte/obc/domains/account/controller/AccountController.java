@@ -3,12 +3,7 @@ package com.rhbgroup.dte.obc.domains.account.controller;
 import com.rhbgroup.dte.obc.api.AccountApiDelegate;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
-import com.rhbgroup.dte.obc.model.AuthenticationRequest;
-import com.rhbgroup.dte.obc.model.AuthenticationResponse;
-import com.rhbgroup.dte.obc.model.InitAccountRequest;
-import com.rhbgroup.dte.obc.model.InitAccountResponse;
-import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
-import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
+import com.rhbgroup.dte.obc.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -30,6 +25,14 @@ public class AccountController implements AccountApiDelegate {
     return Functions.of(accountService::verifyOtp)
         .andThen(ResponseEntity::ok)
         .apply(authorization, verifyOtpRequest);
+  }
+
+  @Override
+  public ResponseEntity<UnlinkAccountResponse> unlinkAccount(
+      String authorization, UnlinkAccountRequest unlinkAccountRequest) {
+    return Functions.of(accountService::unlinkAccount)
+        .andThen(ResponseEntity::ok)
+        .apply(authorization, unlinkAccountRequest);
   }
 
   @Override

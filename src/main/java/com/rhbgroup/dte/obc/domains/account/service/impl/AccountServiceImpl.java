@@ -3,22 +3,18 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
+import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapperImpl;
+import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
+import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
-import com.rhbgroup.dte.obc.model.AccountModel;
-import com.rhbgroup.dte.obc.model.AuthenticationRequest;
-import com.rhbgroup.dte.obc.model.AuthenticationResponse;
-import com.rhbgroup.dte.obc.model.InitAccountRequest;
-import com.rhbgroup.dte.obc.model.InitAccountResponse;
-import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
-import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
-import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
+import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
@@ -33,12 +29,12 @@ import org.springframework.stereotype.Service;
 public class AccountServiceImpl implements AccountService {
 
   private final JwtTokenUtils jwtTokenUtils;
-
   private final ConfigService configService;
   private final UserAuthService userAuthService;
   private final PGRestClient pgRestClient;
   private final InfoBipRestClient infoBipRestClient;
   private final UserProfileService userProfileService;
+  private final AccountRepository accountRepository;
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
   @Override
@@ -75,9 +71,11 @@ public class AccountServiceImpl implements AccountService {
                   if (userProfile.getPhone().equals(request.getPhoneNumber()))
                     infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin());
                 }))
-        .andThen(Functions.peek(userProfile -> {
-            userProfileService.addBakongId(request.getLogin(), userProfile.getAccountId());
-        }))
+        .andThen(
+            Functions.peek(
+                userProfile -> {
+                  userProfileService.addBakongId(request.getLogin(), userProfile.getAccountId());
+                }))
         .andThen(
             profileResponse -> {
               int otpEnabled =
@@ -103,6 +101,29 @@ public class AccountServiceImpl implements AccountService {
                     .data(
                         new VerifyOtpResponseAllOfData()
                             .isValid(infoBipRestClient.verifyOtp(request.getOtpCode(), loginKey))))
+        .apply(authorization);
+  }
+
+  @Override
+  public UnlinkAccountResponse unlinkAccount(
+      String authorization, UnlinkAccountRequest unlinkAccountRequest) {
+    return Functions.of(jwtTokenUtils::extractJwt)
+        .andThen(jwtTokenUtils::getUsernameFromJwtToken)
+        .andThen(userProfileService::findProfileByUserName)
+        .andThen(
+            Functions.peek(
+                userProfileEntity -> {
+                  AccountEntity accountEntity =
+                      accountRepository.getByAccountIdAndUserId(
+                          unlinkAccountRequest.getAccNumber(), userProfileEntity.getId());
+                  if (accountEntity != null) {
+                    accountEntity.setAccountStatus(AccountStatusEnum.DEACTIVATED.getStatus());
+                    accountRepository.save(accountEntity);
+                  }
+                }))
+        .andThen(
+            userProfileEntity ->
+                new UnlinkAccountResponse().status(ResponseHandler.ok()).data(null))
         .apply(authorization);
   }
 }

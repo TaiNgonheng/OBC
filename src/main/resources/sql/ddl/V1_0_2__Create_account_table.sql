@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `tbl_obc_account` (
   `account_phone` varchar(20) DEFAULT NULL,
   `account_type` varchar(20) DEFAULT NULL,
   `account_ccy` varchar (5) DEFAULT NULL,
-  `account_status` varchar(10) DEFAULT "ACTIVE" NULL,
+  `account_status` varchar(20) DEFAULT "ACTIVE" NULL,
   `country` varchar(50) DEFAULT NULL,
   `balance` decimal DEFAULT NULL,
   `created_date` timestamp DEFAULT CURRENT_TIMESTAMP,

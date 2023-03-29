@@ -25,12 +25,33 @@ public class AccountEntity {
   @Column(name = "user_id", nullable = false)
   private Long userId;
 
-  @Column(name = "active")
-  private Boolean active;
+  @Column(name = "account_name")
+  private String accountName;
+
+  @Column(name = "account_phone")
+  private String accountPhone;
+
+  @Column(name = "account_type")
+  private String accountType;
+
+  @Column(name = "account_ccy")
+  private String accountCcy;
+
+  @Column(name = "account_status")
+  private String accountStatus;
+
+  @Column(name = "country")
+  private String country;
+
+  @Column(name = "balance")
+  private String balance;
 
   @Column(name = "created_date", insertable = false)
   private Instant createdDate;
 
   @Column(name = "updated_date")
   private Instant updatedDate;
+
+  @Column(name = "updated_by")
+  private Instant updatedBy;
 }
