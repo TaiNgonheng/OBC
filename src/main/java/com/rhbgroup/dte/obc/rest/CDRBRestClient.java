@@ -103,8 +103,8 @@ public class CDRBRestClient {
         passwordSplits[1] != null
             ? CryptoUtil.encodeHexString(
                     TripleDESCryptoUtil.encrypt(
-                        CryptoUtil.decodeHex(passwordSplits[1]),
-                        CryptoUtil.decodeHex(decryptedZpk),
+                        padRight(passwordSplits[1]),
+                        addKeyPadding(decryptedZpk),
                         CryptoUtil.decodeHex(zmkIv)))
                 .toUpperCase()
             : passwordEnc1;
@@ -125,7 +125,9 @@ public class CDRBRestClient {
     StringBuilder hexString =
         new StringBuilder(
             CryptoUtil.encodeHexString(passwordSplit.getBytes(StandardCharsets.UTF_8)));
-    while (hexString.length() < 32) {
+
+    int blockSize = passwordSplit.length() < 6 ? 6 : 32;
+    while (hexString.length() < blockSize) {
       hexString.append("F");
     }
 

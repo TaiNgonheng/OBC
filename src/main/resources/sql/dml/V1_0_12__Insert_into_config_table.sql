@@ -2,7 +2,7 @@ INSERT INTO obc.tbl_obc_config
 (config_key, config_value, created_date, updated_date, updated_by)
 VALUES
 ('CDRB_URL', JSON_OBJECT('value', 'https://api.dev.cdrb.link'), CURRENT_TIMESTAMP, NULL, 'OBC_SYSTEM'),
-('CDRB_ACCOUNT', JSON_OBJECT('username', 'sorrynext', 'password', '0XJAoQ/DZuV6GC+/sjMgUg==', 'aesKey', '1234567812345678', 'aesIv', 'p9ozxmiejwPGaWdJ/ffzqA=='), CURRENT_TIMESTAMP, NULL, 'OBC_SYSTEM'),
+('CDRB_ACCOUNT', JSON_OBJECT('username', 'redranger', 'password', 'kyeOvbv74jWKQt4JTqTXt8JeTt7DZZV3A/ynYy2D5Gw=', 'aesKey', '1234567812345678', 'aesIv', 'ohDVA8C+Rd1yWRp1H8vmDQ=='), CURRENT_TIMESTAMP, NULL, 'OBC_SYSTEM'),
 ('CDRB_HSM_ZMK', JSON_OBJECT('value', '5497B691458FC1CD31A16116701F57F8'), CURRENT_TIMESTAMP, NULL, 'OBC_SYSTEM'),
 ('CDRB_HSM_IV', JSON_OBJECT('value', '0000000000000000'), CURRENT_TIMESTAMP, NULL, 'OBC_SYSTEM'),
 ('CDRB_X_API_KEY', JSON_OBJECT('value', 'NQrIN7HPBt141uX5yw2SZ4NigpagyHkZ8cG9b2rf'), CURRENT_TIMESTAMP, NULL, 'OBC_SYSTEM'),
