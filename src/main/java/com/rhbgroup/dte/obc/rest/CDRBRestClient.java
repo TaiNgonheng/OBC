@@ -1,6 +1,8 @@
 package com.rhbgroup.dte.obc.rest;
 
+import com.hazelcast.internal.util.StringUtil;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
 import com.rhbgroup.dte.obc.common.util.SpringRestUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.AESCryptoUtil;
@@ -18,10 +20,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
+import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.json.JSONException;
+import org.apache.commons.lang3.StringUtils;import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -30,7 +33,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CDRBRestClient {
-
+  private final JwtTokenUtils jwtTokenUtils;
   private static final String X_API_KEY = "NQrIN7HPBt141uX5yw2SZ4NigpagyHkZ8cG9b2rf";
 
   private final ConfigService configService;
@@ -74,51 +77,57 @@ public class CDRBRestClient {
             .getString(ConfigConstants.VALUE);
   }
 
-  public CDRBLoginResponse login() {
+  public String login(String authorization) {
+    String cdrbLoginKey =
+        CacheConstants.CDRBCache.CDRB_LOGIN_KEY.concat(
+            jwtTokenUtils.getUsernameFromJwtToken(jwtTokenUtils.extractJwt(authorization)));
 
-    // Decrypted stored password using AES
-    byte[] passwordDecrypted =
-        AESCryptoUtil.decrypt(
-            Base64.getDecoder().decode(encPassword.getBytes(StandardCharsets.UTF_8)),
-            aesKey,
-            Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)));
+    if(StringUtil.isNullOrEmpty(cdrbLoginKey)){
+      // Decrypted stored password using AES
+      byte[] passwordDecrypted =
+          AESCryptoUtil.decrypt(
+              Base64.getDecoder().decode(encPassword.getBytes(StandardCharsets.UTF_8)),
+              aesKey,
+              Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)));
 
-    String passwordStr = new String(passwordDecrypted, StandardCharsets.UTF_8);
+      String passwordStr = new String(passwordDecrypted, StandardCharsets.UTF_8);
 
-    // Split password
-    String[] passwordSplits = splitPassword(passwordStr);
+      // Split password
+      String[] passwordSplits = splitPassword(passwordStr);
 
-    // Decrypt zpk using hsmZmkKey
-    String decryptedZpk = decryptZpk(getHsmKey(), hsmZmkKey);
+      // Decrypt zpk using hsmZmkKey
+      String decryptedZpk = decryptZpk(getHsmKey(), hsmZmkKey);
 
-    String passwordEnc1 =
-        CryptoUtil.encodeHexString(
-                TripleDESCryptoUtil.encrypt(
-                    padRight(passwordSplits[0]),
-                    addKeyPadding(decryptedZpk),
-                    CryptoUtil.decodeHex(zmkIv)))
-            .toUpperCase();
+      String passwordEnc1 =
+          CryptoUtil.encodeHexString(
+                  TripleDESCryptoUtil.encrypt(
+                      padRight(passwordSplits[0]),
+                      addKeyPadding(decryptedZpk),
+                      CryptoUtil.decodeHex(zmkIv)))
+              .toUpperCase();
 
-    String passwordEnc2 =
-        passwordSplits[1] != null
-            ? CryptoUtil.encodeHexString(
-                    TripleDESCryptoUtil.encrypt(
-                        padRight(passwordSplits[1]),
-                        addKeyPadding(decryptedZpk),
-                        CryptoUtil.decodeHex(zmkIv)))
-                .toUpperCase()
-            : passwordEnc1;
+      String passwordEnc2 =
+          passwordSplits[1] != null
+              ? CryptoUtil.encodeHexString(
+                  TripleDESCryptoUtil.encrypt(
+                      padRight(passwordSplits[1]),
+                      addKeyPadding(decryptedZpk),
+                      CryptoUtil.decodeHex(zmkIv)))
+              .toUpperCase()
+              : passwordEnc1;
 
-    String pathUrl = baseUrl.concat("/auth/channel/obc/login");
+      String pathUrl = baseUrl.concat("/auth/channel/obc/login");
 
-    CDRBLoginRequest loginRequest =
-        new CDRBLoginRequest().username(username).encPwd1(passwordEnc1).encPwd2(passwordEnc2);
-
-    return restUtil.sendPost(
-        pathUrl,
-        buildHeader(),
-        loginRequest,
-        ParameterizedTypeReference.forType(CDRBLoginResponse.class));
+      CDRBLoginRequest loginRequest =
+          new CDRBLoginRequest().username(username).encPwd1(passwordEnc1).encPwd2(passwordEnc2);
+      CDRBLoginResponse cdrbLoginResponse = restUtil.sendPost(
+          pathUrl,
+          buildHeader(),
+          loginRequest,
+          ParameterizedTypeReference.forType(CDRBLoginResponse.class));
+      return cdrbLoginResponse.getToken();
+    }
+    return cdrbLoginKey;
   }
 
   private byte[] padRight(String passwordSplit) {

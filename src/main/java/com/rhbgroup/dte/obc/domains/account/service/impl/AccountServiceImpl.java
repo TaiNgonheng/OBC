@@ -84,7 +84,7 @@ public class AccountServiceImpl implements AccountService {
             Functions.peek(
                 userProfile -> {
                   // Mock for testing
-//                  userProfile.setPhone("84961592197");
+                  //                  userProfile.setPhone("84961592197");
                   if (userProfile.getPhone().equals(request.getPhoneNumber())) {
                     infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin());
                   }
@@ -125,19 +125,7 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public FinishLinkAccountResponse finishLinkAccount(
       String authorization, FinishLinkAccountRequest request) {
-    String cdrbLoginKey =
-        CacheConstants.CDRBCache.CDRB_LOGIN_KEY.concat(
-            jwtTokenUtils.getUsernameFromJwtToken(jwtTokenUtils.extractJwt(authorization)));
-    // Validate pgToken token
-    //    String cdrbToken = cacheUtil.getValueFromKey(CacheConstants.CDRBCache.CACHE_NAME,
-    // cdrbLoginKey);
-    //    ConfigService cdrbConfig =
-    //        this.configService.loadJSONValue(ConfigConstants.CDRB.CDRB_CREDENTIAL_KEY);
-
-    //    if (StringUtils.isBlank(cdrbToken) || jwtTokenUtils.isExtTokenExpired(cdrbToken)) {
-    //      // CDRB login
-    //      cdrbToken = crdbAuthenticate(cdrbConfig, cdrbLoginKey);
-    //    }
+    String cdrbToken = cdrbRestClient.login(authorization);
     //    Object accountDetail = cdrbRestClient.getAccountDetail(new HashMap<>());
     //    while (accountDetail == null) {
     //      cdrbToken = crdbAuthenticate(cdrbConfig, cdrbLoginKey);
@@ -165,7 +153,7 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public GetAccountDetailResponse getAccountDetail(GetAccountDetailRequest request) {
-    cdrbRestClient.login();
+//    cdrbRestClient.login();
     return new GetAccountDetailResponse();
   }
 }
