@@ -1,17 +1,23 @@
 package com.rhbgroup.dte.obc.acount.service;
 
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
+import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.impl.AccountServiceImpl;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
@@ -19,8 +25,15 @@ import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
+import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
+import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
+import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
+import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
+import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
@@ -31,6 +44,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest extends AbstractAccountTest {
@@ -47,11 +63,17 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock InfoBipRestClient infoBipRestClient;
 
+  @Mock
+  CDRBRestClient cdrbRestClient;
+
   @Mock UserProfileService userProfileService;
+
+  @Mock
+  AccountRepository accountRepository;
 
   @BeforeEach
   void cleanUp() {
-    reset(jwtTokenUtils, configService, userAuthService, pgRestClient, infoBipRestClient);
+    reset(jwtTokenUtils, configService, userAuthService, pgRestClient, infoBipRestClient, cdrbRestClient, accountRepository);
   }
 
   @Test
@@ -175,7 +197,6 @@ class AccountServiceTest extends AbstractAccountTest {
   void testInitLinkAccount_Failed_InfoBipServiceUnavailable() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
-    when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
     lenient()
         .when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
@@ -274,4 +295,53 @@ class AccountServiceTest extends AbstractAccountTest {
           ResponseMessage.AUTHENTICATION_FAILED.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
+
+  @Test
+  void testFinishLinkAccount() {
+    // Arrange
+    String authorization = "some-auth-token";
+    FinishLinkAccountRequest request = new FinishLinkAccountRequest().accNumber("12345");
+
+    // Mock user profile service
+    UserModel userProfile = new UserModel();
+    userProfile.setId(BigDecimal.valueOf(1));
+    userProfile.setCifNo("cif-no");
+    when(userProfileService.findByUsername(anyString())).thenReturn(userProfile);
+
+    // Mock JWT token utils
+    when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
+    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
+
+    // Mock CDRB rest client
+    CDRBGetAccountDetailResponse cdrbResponse = new CDRBGetAccountDetailResponse();
+    cdrbResponse.setAcct(new CDRBGetAccountDetailResponseAcct());
+    cdrbResponse.getAcct().setAccountNo("123456");
+    cdrbResponse.getAcct().setKycStatus(CDRBGetAccountDetailResponseAcct.KycStatusEnum.F);
+    when(cdrbRestClient.getAccountDetail(anyString(), any())).thenReturn(cdrbResponse);
+
+    // Mock account repository
+    AccountEntity accountEntity = new AccountEntity();
+    accountEntity.setId(1L);
+    accountEntity.setUserId(userProfile.getId().longValue());
+    accountEntity.setAccountId(cdrbResponse.getAcct().getAccountNo());
+    when(accountRepository.findByUserIdAndAccountId(anyLong(), anyString()))
+            .thenReturn(Optional.of(accountEntity));
+    when(accountRepository.save(any(AccountEntity.class))).thenReturn(accountEntity);
+
+    // Act
+    FinishLinkAccountResponse response =
+            accountService.finishLinkAccount(authorization, request);
+
+    // Assert
+    verify(userProfileService, times(1)).findByUsername("username");
+    verify(jwtTokenUtils, times(1)).extractJwt(authorization);
+    verify(jwtTokenUtils, times(1)).getUsernameFromJwtToken("jwt-token");
+    verify(cdrbRestClient, times(1)).getAccountDetail(anyString(), any(CDRBGetAccountDetailRequest.class));
+    verify(accountRepository, times(1))
+            .findByUserIdAndAccountId(userProfile.getId().longValue(), "123456");
+    verify(accountRepository, times(1)).save(any(AccountEntity.class));
+
+    Assertions.assertNotNull(response);
+  }
+
 }
