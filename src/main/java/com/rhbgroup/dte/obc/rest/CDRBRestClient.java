@@ -83,7 +83,7 @@ public class CDRBRestClient {
     return new CDRBGetAccountDetailResponse().kycVerified(true);
   }
 
-  public String login() {
+  private String login() {
 
     // Decrypted stored password using AES
     byte[] passwordDecrypted =

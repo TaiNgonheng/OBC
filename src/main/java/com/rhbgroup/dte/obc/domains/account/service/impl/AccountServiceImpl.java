@@ -132,7 +132,7 @@ public class AccountServiceImpl implements AccountService {
             account -> {
               UserModel user =
                   userProfileService.findByUsername(
-                      jwtTokenUtils.getUsernameFromJwtToken(authorization));
+                      jwtTokenUtils.getUsernameFromJwtToken(jwtTokenUtils.extractJwt(authorization)));
 
               return accountRepository
                   .findByUserIdAndAccountId(Long.parseLong(user.getId()), account.getAccountId())
