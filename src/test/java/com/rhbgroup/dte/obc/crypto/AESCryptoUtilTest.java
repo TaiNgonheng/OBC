@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.rhbgroup.dte.obc.common.util.crypto.AESCryptoUtil;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-
 import org.junit.jupiter.api.Test;
 
 class AESCryptoUtilTest {
@@ -23,7 +22,8 @@ class AESCryptoUtilTest {
     byte[] decryptBytes = AESCryptoUtil.decrypt(encryptedData, secretKey, iv);
 
     System.out.println(new String(Base64.getEncoder().encode(iv), StandardCharsets.UTF_8));
-    System.out.println(new String(Base64.getEncoder().encode(encryptedData), StandardCharsets.UTF_8));
+    System.out.println(
+        new String(Base64.getEncoder().encode(encryptedData), StandardCharsets.UTF_8));
 
     String decryptedData = new String(decryptBytes, StandardCharsets.UTF_8);
     assertNotNull(decryptedData);

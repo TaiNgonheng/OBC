@@ -78,7 +78,6 @@ class AccountServiceTest extends AbstractAccountTest {
     configServiceMock.setJsonValue(
         new JSONObject().put("username", "username").put("password", "password"));
 
-    when(configService.loadJSONValue(anyString())).thenReturn(configServiceMock);
     when(pgRestClient.login(any())).thenReturn(mockPGAuthResponse());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
     when(pgRestClient.getUserProfile(anyList(), anyString()))
