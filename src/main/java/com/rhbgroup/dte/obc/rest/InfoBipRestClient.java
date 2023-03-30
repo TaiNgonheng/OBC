@@ -2,7 +2,7 @@ package com.rhbgroup.dte.obc.rest;
 
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
-import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
+import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.common.util.SpringRestUtil;
 import com.rhbgroup.dte.obc.exceptions.BizException;
