@@ -1,0 +1,10 @@
+type: object
+description: InfoBip verify OTP request
+required:
+  - pin
+properties:
+  pin:
+    type: string
+    minLength: 6
+    maxLength: 6
+    example: 123456

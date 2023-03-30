@@ -27,6 +27,9 @@ public class UserProfileEntity {
   @Column(name = "otp_id")
   private String otpId;
 
+  @Column(name = "bakong_id")
+  private String bakongId;
+
   @Column(name = "otp_verified_status")
   private Boolean otpVerifiedStatus;
 

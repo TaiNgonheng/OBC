@@ -19,9 +19,6 @@ public class AccountEntity {
   @Column(name = "id", nullable = false)
   private Long id;
 
-  @Column(name = "bakong_id", nullable = false)
-  private String bakongId;
-
   @Column(name = "account_id", nullable = false)
   private String accountId;
 

@@ -29,10 +29,11 @@ public class AccountController implements AccountApiDelegate {
   }
 
   @Override
-  public ResponseEntity<VerifyOtpResponse> verifyOtp(VerifyOtpRequest verifyOtpRequest) {
+  public ResponseEntity<VerifyOtpResponse> verifyOtp(
+      String authorization, VerifyOtpRequest verifyOtpRequest) {
     return Functions.of(accountService::verifyOtp)
         .andThen(ResponseEntity::ok)
-        .apply(verifyOtpRequest);
+        .apply(authorization, verifyOtpRequest);
   }
 
   @Override

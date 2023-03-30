@@ -3,7 +3,6 @@
 CREATE TABLE IF NOT EXISTS `tbl_obc_account` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `user_id` bigint NOT NULL,
-  `bakong_id` varchar(50) NOT NULL,
   `account_id` varchar(50) NOT NULL,
   `account_name` varchar(50) NOT NULL,
   `account_phone` varchar(20) DEFAULT NULL,
