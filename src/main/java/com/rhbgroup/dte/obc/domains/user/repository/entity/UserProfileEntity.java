@@ -48,7 +48,7 @@ public class UserProfileEntity {
   @Column(name = "cif_no")
   private String cifNo;
 
-  @Column(name = "created_date", insertable = false)
+  @Column(name = "created_date", insertable = false, updatable = false)
   private Instant createdDate;
 
   @Column(name = "updated_date")

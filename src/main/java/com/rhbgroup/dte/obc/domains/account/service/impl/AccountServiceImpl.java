@@ -149,6 +149,11 @@ public class AccountServiceImpl implements AccountService {
                             accountMapper.toAccountEntity(
                                 userProfile.getId().longValue(), account)))
         .andThen(Functions.peek(accountRepository::save))
+        .andThen(
+            Functions.peek(
+                account ->
+                    userProfileService.updateUserStatus(
+                        userProfile, AppConstants.USER_STATUS.LINKED)))
         .andThen(account -> accountMapper.toFinishLinkAccountResponse())
         .apply(
             authorization,

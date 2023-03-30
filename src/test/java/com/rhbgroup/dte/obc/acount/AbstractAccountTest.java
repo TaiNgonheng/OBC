@@ -149,6 +149,14 @@ public abstract class AbstractAccountTest {
         .acct(
             new CDRBGetAccountDetailResponseAcct()
                 .accountNo("123xxx")
+                .accountType(CDRBGetAccountDetailResponseAcct.AccountTypeEnum.D)
+                .accountStatus(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._1)
+                .accountName("name")
+                .cifNo("123")
+                .currentBal(1.2)
+                .availBal(1.2)
+                .currencyCode("USD")
+                .ctryCitizen("KH")
                 .kycStatus(CDRBGetAccountDetailResponseAcct.KycStatusEnum.F));
   }
 

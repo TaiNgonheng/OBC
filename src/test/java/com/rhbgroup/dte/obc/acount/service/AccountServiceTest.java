@@ -293,7 +293,28 @@ class AccountServiceTest extends AbstractAccountTest {
   }
 
   @Test
-  void testFinishLinkAccount_Success() {
+  void testFinishLinkAccount_Success_WithBrandNewAccount() {
+
+    when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
+    when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
+    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
+    when(cdrbRestClient.getAccountDetail(anyString(), any())).thenReturn(mockCdrbAccountResponse());
+    when(accountRepository.findByUserIdAndAccountId(anyLong(), anyString()))
+        .thenReturn(Optional.empty());
+    when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntity());
+
+    // Act
+    FinishLinkAccountResponse response =
+        accountService.finishLinkAccount(
+            "authorization", new FinishLinkAccountRequest().accNumber("12345"));
+
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(AppConstants.STATUS.SUCCESS, response.getStatus().getCode());
+    Assertions.assertFalse(response.getData().getRequireChangePassword());
+  }
+
+  @Test
+  void testFinishLinkAccount_Success_AccountExisting() {
 
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
