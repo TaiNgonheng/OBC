@@ -3,6 +3,7 @@ package com.rhbgroup.dte.obc.acount.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
@@ -15,6 +16,8 @@ import com.rhbgroup.dte.obc.exceptions.GlobalExceptionHandler;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Assertions;
@@ -403,5 +406,107 @@ class AccountControllerTest extends AbstractAccountTest {
     Assertions.assertEquals(
         ResponseMessage.MANDATORY_FIELD_MISSING.getCode().toString(),
         authResponse.getStatus().getErrorCode());
+  }
+
+  @Test
+  void testFinishLinkAccount_Success_200() throws Exception {
+    when(accountApiDelegate.finishLinkAccount(anyString(), any()))
+        .thenReturn(ResponseEntity.ok(mockFinishLinkAccountResponse()));
+
+    MockHttpServletResponse response =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/finish-link-account")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding(StandardCharsets.UTF_8)
+                    .content(objectMapper.writeValueAsBytes(mockFinishLinkAccountRequest())))
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data").exists())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+            .andReturn()
+            .getResponse();
+
+    String contentAsString = response.getContentAsString();
+    FinishLinkAccountResponse finishLinkAccountResponse =
+        objectMapper.readValue(contentAsString, FinishLinkAccountResponse.class);
+
+    Assertions.assertNotNull(finishLinkAccountResponse.getStatus());
+    Assertions.assertNotNull(finishLinkAccountResponse.getData());
+
+    Assertions.assertEquals(
+        AppConstants.STATUS.SUCCESS, finishLinkAccountResponse.getStatus().getCode());
+    Assertions.assertFalse(finishLinkAccountResponse.getData().getRequireChangePassword());
+  }
+
+  @Test
+  void testFinishLinkAccount_Failed_KycNotVerified_400() throws Exception {
+    when(accountApiDelegate.finishLinkAccount(anyString(), any()))
+        .thenThrow(new BizException(ResponseMessage.KYC_NOT_VERIFIED));
+
+    MockHttpServletResponse response =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/finish-link-account")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding(StandardCharsets.UTF_8)
+                    .content(objectMapper.writeValueAsBytes(mockFinishLinkAccountRequest())))
+            .andExpect(MockMvcResultMatchers.status().isBadRequest())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data").doesNotExist())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+            .andReturn()
+            .getResponse();
+
+    String contentAsString = response.getContentAsString();
+    FinishLinkAccountResponse finishLinkAccountResponse =
+        objectMapper.readValue(contentAsString, FinishLinkAccountResponse.class);
+
+    Assertions.assertNotNull(finishLinkAccountResponse.getStatus());
+    Assertions.assertNull(finishLinkAccountResponse.getData());
+
+    Assertions.assertEquals(
+        AppConstants.STATUS.ERROR, finishLinkAccountResponse.getStatus().getCode());
+    Assertions.assertEquals(
+        ResponseMessage.KYC_NOT_VERIFIED.getCode().toString(),
+        finishLinkAccountResponse.getStatus().getErrorCode());
+    Assertions.assertEquals(
+        ResponseMessage.KYC_NOT_VERIFIED.getMsg(),
+        finishLinkAccountResponse.getStatus().getErrorMessage());
+  }
+
+  @Test
+  void testFinishLinkAccount_Failed_MissingMandatoryFields() throws Exception {
+
+    FinishLinkAccountRequest invalidRequest = new FinishLinkAccountRequest();
+    MockHttpServletResponse response =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/finish-link-account")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding(StandardCharsets.UTF_8)
+                    .content(objectMapper.writeValueAsBytes(invalidRequest)))
+            .andExpect(MockMvcResultMatchers.status().isBadRequest())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data").doesNotExist())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+            .andReturn()
+            .getResponse();
+
+    String contentAsString = response.getContentAsString();
+    FinishLinkAccountResponse finishLinkAccountResponse =
+        objectMapper.readValue(contentAsString, FinishLinkAccountResponse.class);
+
+    Assertions.assertNotNull(finishLinkAccountResponse.getStatus());
+    Assertions.assertNull(finishLinkAccountResponse.getData());
+
+    Assertions.assertEquals(
+        AppConstants.STATUS.ERROR, finishLinkAccountResponse.getStatus().getCode());
+    Assertions.assertEquals(
+        ResponseMessage.MANDATORY_FIELD_MISSING.getCode().toString(),
+        finishLinkAccountResponse.getStatus().getErrorCode());
+    Assertions.assertEquals(
+        ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(),
+        finishLinkAccountResponse.getStatus().getErrorMessage());
   }
 }

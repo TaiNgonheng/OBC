@@ -1,16 +1,20 @@
 package com.rhbgroup.dte.obc.acount.service;
 
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.lenient;import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
+import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.impl.AccountServiceImpl;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
@@ -18,11 +22,15 @@ import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
+import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,11 +54,22 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock InfoBipRestClient infoBipRestClient;
 
+  @Mock CDRBRestClient cdrbRestClient;
+
   @Mock UserProfileService userProfileService;
+
+  @Mock AccountRepository accountRepository;
 
   @BeforeEach
   void cleanUp() {
-    reset(jwtTokenUtils, configService, userAuthService, pgRestClient, infoBipRestClient);
+    reset(
+        jwtTokenUtils,
+        configService,
+        userAuthService,
+        pgRestClient,
+        infoBipRestClient,
+        cdrbRestClient,
+        accountRepository);
   }
 
   @Test
@@ -174,8 +193,8 @@ class AccountServiceTest extends AbstractAccountTest {
   void testInitLinkAccount_Failed_InfoBipServiceUnavailable() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
-    when(configService.getByConfigKey(anyString(),anyString(),any())).thenReturn(1);
-    lenient().when(infoBipRestClient.sendOtp(anyString(), anyString()))
+    lenient()
+        .when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {
@@ -270,6 +289,70 @@ class AccountServiceTest extends AbstractAccountTest {
           ResponseMessage.AUTHENTICATION_FAILED.getCode(), ex.getResponseMessage().getCode());
       Assertions.assertEquals(
           ResponseMessage.AUTHENTICATION_FAILED.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testFinishLinkAccount_Success() {
+
+    when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
+    when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
+    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
+    when(cdrbRestClient.getAccountDetail(anyString(), any())).thenReturn(mockCdrbAccountResponse());
+    when(accountRepository.findByUserIdAndAccountId(anyLong(), anyString()))
+        .thenReturn(Optional.of(mockAccountEntity()));
+    when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntity());
+
+    // Act
+    FinishLinkAccountResponse response =
+        accountService.finishLinkAccount(
+            "authorization", new FinishLinkAccountRequest().accNumber("12345"));
+
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(AppConstants.STATUS.SUCCESS, response.getStatus().getCode());
+    Assertions.assertFalse(response.getData().getRequireChangePassword());
+  }
+
+  @Test
+  void testFinishLinkAccount_Failed_FetchAccountError() {
+
+    when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
+    when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
+    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
+    when(cdrbRestClient.getAccountDetail(anyString(), any()))
+        .thenThrow(new BizException(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS));
+
+    try {
+      accountService.finishLinkAccount("authentication", mockFinishLinkAccountRequest());
+
+    } catch (BizException ex) {
+
+      Assertions.assertEquals(
+          ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS.getCode(),
+          ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testFinishLinkAccount_Failed_AccountNotFullyKyc() {
+
+    when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
+    when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
+    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
+    when(cdrbRestClient.getAccountDetail(anyString(), any()))
+        .thenReturn(mockCdrbAccountResponseNotKYC());
+
+    try {
+      accountService.finishLinkAccount("authentication", mockFinishLinkAccountRequest());
+
+    } catch (BizException ex) {
+
+      Assertions.assertEquals(
+          ResponseMessage.KYC_NOT_VERIFIED.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.KYC_NOT_VERIFIED.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 }

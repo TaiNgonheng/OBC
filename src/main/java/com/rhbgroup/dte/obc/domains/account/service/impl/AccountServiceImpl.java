@@ -30,7 +30,9 @@ import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import java.time.Instant;
 import java.util.Collections;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -136,6 +138,12 @@ public class AccountServiceImpl implements AccountService {
                 accountRepository
                     .findByUserIdAndAccountId(
                         userProfile.getId().longValue(), account.getAcct().getAccountNo())
+                    .flatMap(
+                        entity -> {
+                          entity.setUpdateBy(AppConstants.SYSTEM.OPEN_BANKING_CLIENT);
+                          entity.setUpdatedDate(Instant.now());
+                          return Optional.of(entity);
+                        })
                     .orElseGet(
                         () ->
                             accountMapper.toAccountEntity(
