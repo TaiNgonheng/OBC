@@ -2,12 +2,12 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapperImpl;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
-import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
@@ -21,14 +21,13 @@ import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
-import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
-import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
+import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Collections;
@@ -85,7 +84,7 @@ public class AccountServiceImpl implements AccountService {
             Functions.peek(
                 userProfile -> {
                   // Mock for testing
-                  userProfile.setPhone("84961592197");
+//                  userProfile.setPhone("84961592197");
                   if (userProfile.getPhone().equals(request.getPhoneNumber())) {
                     infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin());
                   }
@@ -130,22 +129,25 @@ public class AccountServiceImpl implements AccountService {
         CacheConstants.CDRBCache.CDRB_LOGIN_KEY.concat(
             jwtTokenUtils.getUsernameFromJwtToken(jwtTokenUtils.extractJwt(authorization)));
     // Validate pgToken token
-    String cdrbToken = cacheUtil.getValueFromKey(CacheConstants.CDRBCache.CACHE_NAME, cdrbLoginKey);
-    ConfigService cdrbConfig =
-        this.configService.loadJSONValue(ConfigConstants.CDRB.CDRB_CREDENTIAL_KEY);
+    //    String cdrbToken = cacheUtil.getValueFromKey(CacheConstants.CDRBCache.CACHE_NAME,
+    // cdrbLoginKey);
+    //    ConfigService cdrbConfig =
+    //        this.configService.loadJSONValue(ConfigConstants.CDRB.CDRB_CREDENTIAL_KEY);
 
-    if (StringUtils.isBlank(cdrbToken) || jwtTokenUtils.isExtTokenExpired(cdrbToken)) {
-      // CDRB login
-      cdrbToken = crdbAuthenticate(cdrbConfig, cdrbLoginKey);
-    }
+    //    if (StringUtils.isBlank(cdrbToken) || jwtTokenUtils.isExtTokenExpired(cdrbToken)) {
+    //      // CDRB login
+    //      cdrbToken = crdbAuthenticate(cdrbConfig, cdrbLoginKey);
+    //    }
     //    Object accountDetail = cdrbRestClient.getAccountDetail(new HashMap<>());
     //    while (accountDetail == null) {
     //      cdrbToken = crdbAuthenticate(cdrbConfig, cdrbLoginKey);
     //      accountDetail = cdrbRestClient.getAccountDetail(new HashMap<>());
     //    }
     // validate account
-    accountRepository.save(new AccountEntity());
-    return buildResponse();
+    //    accountRepository.save(new AccountEntity());
+    //    return buildResponse();
+
+    return null;
   }
 
   private String crdbAuthenticate(ConfigService configService, String cdrbLoginKey) {

@@ -19,8 +19,6 @@ public interface AccountService {
 
   VerifyOtpResponse verifyOtp(String authorization, VerifyOtpRequest request);
 
-  VerifyOtpResponse verifyOtp(VerifyOtpRequest request);
-
   FinishLinkAccountResponse finishLinkAccount(
       String authorization, FinishLinkAccountRequest request);
 
