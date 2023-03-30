@@ -11,7 +11,6 @@ import com.rhbgroup.dte.obc.model.PGAuthRequest;
 import com.rhbgroup.dte.obc.model.PGAuthResponse;
 import com.rhbgroup.dte.obc.model.PGAuthResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
-import com.rhbgroup.dte.obc.model.PGResponseStatus;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +26,8 @@ import org.springframework.util.CollectionUtils;
 @Component
 @RequiredArgsConstructor
 public class PGRestClient {
+
+  private static final String AUTHENTICATE_URL = "/api/authenticate";
 
   private static final String GET_USER_PROFILE_URL =
       "/tps/api/fst-iroha-accounts/find-by-account-name";
@@ -87,20 +88,18 @@ public class PGRestClient {
   }
 
   private PGAuthResponseAllOfData login() {
-    String loginUrl = "/api/authenticate";
+
     PGAuthResponse pgAuthResponse =
         restUtil.sendPost(
-            baseUrl.concat(loginUrl),
+            baseUrl.concat(AUTHENTICATE_URL),
             new PGAuthRequest().username(username).password(password),
             ParameterizedTypeReference.forType(PGAuthResponse.class));
 
-    verifyStatus(pgAuthResponse.getStatus());
-    return pgAuthResponse.getData();
-  }
-
-  private void verifyStatus(PGResponseStatus responseStatus) {
-    if (null != responseStatus && AppConstants.STATUS.SUCCESS != responseStatus.getCode()) {
+    if (null != pgAuthResponse.getStatus()
+        && AppConstants.STATUS.SUCCESS != pgAuthResponse.getStatus().getCode()) {
       throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
+
+    return pgAuthResponse.getData();
   }
 }
