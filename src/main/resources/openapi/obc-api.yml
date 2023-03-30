@@ -24,6 +24,10 @@ paths:
     $ref: './paths/verify-otp.yml'
   /finish-link-account:
     $ref: './paths/finish-link-account.yml'
+  /authenticate:
+    $ref: './paths/authenticate.yml'
+  /account-detail:
+    $ref: './paths/account-detail.yml'
   /gw/user-exchange:
     $ref: './paths/user-exchange.yml'
   /gw/login:
@@ -47,6 +51,14 @@ components:
       $ref: './schemas/account/FinishLinkAccountRequest.yml'
     FinishLinkAccountResponse:
       $ref: './schemas/account/FinishLinkAccountResponse.yml'
+    AuthenticationRequest:
+      $ref: './schemas/account/AuthenticationRequest.yml'
+    AuthenticationResponse:
+      $ref: './schemas/account/AuthenticationResponse.yml'
+    GetAccountDetailRequest:
+      $ref: './schemas/account/GetAccountDetailRequest.yml'
+    GetAccountDetailResponse:
+      $ref: './schemas/account/GetAccountDetailResponse.yml'
     ExchangeAccountRequest:
       $ref: './schemas/user/UserExchangeRequest.yml'
     ExchangeAccountResponse:
@@ -67,6 +79,13 @@ components:
       $ref: './schemas/pg/PGProfileResponse.yml'
     InfoBipVerifyOtpResponse:
       $ref: './schemas/infoBip/InfoBipVerifyOtpResponse.yml'
+    CDRBLoginRequest:
+      $ref: './schemas/cdrb/CDRBLoginRequest.yml'
+    CDRBLoginResponse:
+      $ref: './schemas/cdrb/CDRBLoginResponse.yml'
+    CDRBGetHsmKeyResponse:
+      $ref: './schemas/cdrb/CDRBGetHsmKeyResponse.yml'
+
     CdrbGetHmsKeyResponse:
       $ref: './schemas/cdrb/CdrbGetHmsKeyResponse.yml'
 

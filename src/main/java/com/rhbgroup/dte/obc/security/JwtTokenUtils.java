@@ -18,10 +18,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenUtils {
 
-  @Value("${app.jwt-secret}")
+  @Value("${obc.security.jwt-secret}")
   String mySecret;
 
-  @Value("${app.jwt-ttl}")
+  @Value("${obc.security.jwt-ttl}")
   Long tokenTTL; // in second
 
   public String getUsernameFromJwtToken(String jwt) {

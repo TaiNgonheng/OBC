@@ -1,0 +1,9 @@
+type: object
+description: CDRB login request
+properties:
+  username:
+    type: string
+  encPwd1:
+    type: string
+  encPwd2:
+    type: string

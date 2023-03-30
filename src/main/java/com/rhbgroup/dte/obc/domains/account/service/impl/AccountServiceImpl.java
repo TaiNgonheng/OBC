@@ -2,6 +2,7 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
 import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
@@ -19,6 +20,10 @@ import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.model.AccountModel;
+import com.rhbgroup.dte.obc.model.AuthenticationRequest;
+import com.rhbgroup.dte.obc.model.AuthenticationResponse;
+import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
@@ -30,6 +35,7 @@ import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
+import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.CdrbRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
@@ -40,20 +46,30 @@ import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
+
   private final JwtTokenUtils jwtTokenUtils;
   private final CacheUtil cacheUtil;
   private final UserAuthService userAuthService;
   private final ConfigService configService;
   private final PGRestClient pgRestClient;
+  private final CDRBRestClient cdrbRestClient;
+
   private final CdrbRestClient cdrbRestClient;
   private final AccountRepository accountRepository;
   private final AccountMapper accountMapper = new AccountMapperImpl();
+
+  @Value("${obc.pg1.username}")
+  protected String pg1Username;
+
+  @Value("${obc.pg1.password}")
+  protected String pg1Password;
 
   @PostConstruct
   public void postConstruct() {
@@ -62,8 +78,17 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
-  public InitAccountResponse authenticate(InitAccountRequest request) {
-    return null;
+  public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    return Functions.of(accountMapper::toUserModel)
+        .andThen(userAuthService::authenticate)
+        .andThen(
+            Functions.peek(
+                authContext ->
+                    userAuthService.checkUserRole(
+                        authContext, Collections.singletonList(AppConstants.ROLE.APP_USER))))
+        .andThen(jwtTokenUtils::generateJwt)
+        .andThen(accountMapper::toAuthResponse)
+        .apply(request);
   }
 
   @Override
@@ -122,15 +147,6 @@ public class AccountServiceImpl implements AccountService {
     if (StringUtils.isNotBlank(pgToken) && !jwtTokenUtils.isExtTokenExpired(pgToken)) {
       return pgToken;
     }
-    ConfigService configServiceInstance =
-        configService.loadJSONValue(ConfigConstants.PGConfig.PG1_ACCOUNT_KEY);
-
-    String username =
-        configServiceInstance.getValue(
-            ConfigConstants.PGConfig.PG1_DATA_USERNAME_KEY, String.class);
-    String password =
-        configServiceInstance.getValue(
-            ConfigConstants.PGConfig.PG1_DATA_PASSWORD_KEY, String.class);
 
     return Functions.of(pgRestClient::login)
         .andThen(PGAuthResponseAllOfData::getIdToken)
@@ -138,7 +154,7 @@ public class AccountServiceImpl implements AccountService {
             Functions.peek(
                 idToken ->
                     cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey, idToken)))
-        .apply(new PGAuthRequest().username(username).password(password));
+        .apply(new PGAuthRequest().username(pg1Username).password(pg1Password));
   }
 
   private void validateAccount(PGProfileResponse userProfile) {
@@ -200,5 +216,11 @@ public class AccountServiceImpl implements AccountService {
     FinishLinkAccountResponseAllOfData data = new FinishLinkAccountResponseAllOfData();
     data.setRequireChangePassword(false);
     return new FinishLinkAccountResponse().status(ResponseHandler.ok()).data(data);
+  }
+
+  @Override
+  public GetAccountDetailResponse getAccountDetail(GetAccountDetailRequest request) {
+    cdrbRestClient.login();
+    return new GetAccountDetailResponse();
   }
 }
