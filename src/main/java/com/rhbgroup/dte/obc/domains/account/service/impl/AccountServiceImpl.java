@@ -15,6 +15,7 @@ import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
+import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
@@ -83,8 +84,6 @@ public class AccountServiceImpl implements AccountService {
         .andThen(
             Functions.peek(
                 userProfile -> {
-                  // Mock for testing
-                  // userProfile.setPhone("84961592197");
                   if (userProfile.getPhone().equals(request.getPhoneNumber())) {
                     infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin());
                   }
@@ -126,21 +125,28 @@ public class AccountServiceImpl implements AccountService {
   public FinishLinkAccountResponse finishLinkAccount(
       String authorization, FinishLinkAccountRequest request) {
 
+    UserModel userProfile =
+        userProfileService.findByUsername(
+            jwtTokenUtils.getUsernameFromJwtToken(jwtTokenUtils.extractJwt(authorization)));
+
     return Functions.of(cdrbRestClient::getAccountDetail)
         .andThen(Functions.peek(AccountValidator::validateCasaAccount))
         .andThen(
-            account -> {
-              UserModel user =
-                  userProfileService.findByUsername(
-                      jwtTokenUtils.getUsernameFromJwtToken(jwtTokenUtils.extractJwt(authorization)));
-
-              return accountRepository
-                  .findByUserIdAndAccountId(Long.parseLong(user.getId()), account.getAccountId())
-                  .orElseGet(() -> accountMapper.toAccountEntity(account));
-            })
+            account ->
+                accountRepository
+                    .findByUserIdAndAccountId(
+                        userProfile.getId().longValue(), account.getAcct().getAccountNo())
+                    .orElseGet(
+                        () ->
+                            accountMapper.toAccountEntity(
+                                userProfile.getId().longValue(), account)))
         .andThen(Functions.peek(accountRepository::save))
         .andThen(account -> accountMapper.toFinishLinkAccountResponse())
-        .apply(authorization);
+        .apply(
+            authorization,
+            new CDRBGetAccountDetailRequest()
+                .accountNo(request.getAccNumber())
+                .cifNo(userProfile.getCifNo()));
   }
 
   @Override

@@ -93,6 +93,8 @@ components:
       $ref: './schemas/cdrb/CDRBLoginResponse.yml'
     CDRBGetHsmKeyResponse:
       $ref: './schemas/cdrb/CDRBGetHsmKeyResponse.yml'
+    CDRBGetAccountDetailRequest:
+      $ref: './schemas/cdrb/CDRBGetAccountDetailRequest.yml'
     CDRBGetAccountDetailResponse:
       $ref: './schemas/cdrb/CDRBGetAccountDetailResponse.yml'
 

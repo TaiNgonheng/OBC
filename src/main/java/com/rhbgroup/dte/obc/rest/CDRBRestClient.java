@@ -8,6 +8,7 @@ import com.rhbgroup.dte.obc.common.util.crypto.AESCryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.CryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.TripleDESCryptoUtil;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetHsmKeyResponse;
 import com.rhbgroup.dte.obc.model.CDRBLoginRequest;
@@ -20,8 +21,6 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -34,7 +33,8 @@ public class CDRBRestClient {
 
   private static final String GET_HSM_KEY_URL = "/auth/hsm-key";
   private static final String AUTHENTICATION_URL = "/auth/channel/obc/login";
-  private static final String GET_ACCOUNT_DETAIL = "/auth/channel/obc/accounts";
+  private static final String GET_ACCOUNT_DETAIL =
+      "/corebankingnonfinancialclient/bakong-link-casa/accounts";
 
   private final JwtTokenUtils jwtTokenUtils;
   private final SpringRestUtil restUtil;
@@ -70,17 +70,21 @@ public class CDRBRestClient {
     cacheUtil.createCache(CacheConstants.CDRBCache.CACHE_NAME, Duration.FIVE_MINUTES);
   }
 
-  public CDRBGetAccountDetailResponse getAccountDetail(String authorization) {
+  public CDRBGetAccountDetailResponse getAccountDetail(
+      String authorization, CDRBGetAccountDetailRequest request) {
 
-    //    CDRBGetAccountDetailResponse response =
-    //        restUtil.sendGet(
-    //            baseUrl.concat(GET_ACCOUNT_DETAIL),
-    //            null,
-    //            buildHeader(getAccessToken(authorization)),
-    //            ParameterizedTypeReference.forType(CDRBGetAccountDetailResponse.class));
-    //    return response;
+    String accessToken = getAccessToken(authorization);
 
-    return new CDRBGetAccountDetailResponse().kycVerified(true);
+    try {
+      return restUtil.sendPost(
+          baseUrl.concat(GET_ACCOUNT_DETAIL),
+          buildHeader(accessToken),
+          request,
+          ParameterizedTypeReference.forType(CDRBGetAccountDetailResponse.class));
+
+    } catch (BizException ex) {
+      throw new BizException(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS);
+    }
   }
 
   private String login() {
@@ -168,13 +172,9 @@ public class CDRBRestClient {
   }
 
   private String decryptZpk(String hsmKey, String hsmZmkKey) {
-    try {
-      return CryptoUtil.encodeHexString(
-          TripleDESCryptoUtil.decrypt(
-              Hex.decodeHex(hsmKey), addKeyPadding(hsmZmkKey), Hex.decodeHex(zmkIv)));
-    } catch (DecoderException ex) {
-      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
-    }
+    return CryptoUtil.encodeHexString(
+        TripleDESCryptoUtil.decrypt(
+            CryptoUtil.decodeHex(hsmKey), addKeyPadding(hsmZmkKey), CryptoUtil.decodeHex(zmkIv)));
   }
 
   private String[] splitPassword(String password) {
@@ -220,13 +220,8 @@ public class CDRBRestClient {
   }
 
   private byte[] addKeyPadding(String key) {
-    try {
-      String first2Bytes = key.substring(0, 16);
-      key += first2Bytes;
-      return Hex.decodeHex(key);
-
-    } catch (DecoderException ex) {
-      return new byte[0];
-    }
+    String first2Bytes = key.substring(0, 16);
+    key += first2Bytes;
+    return CryptoUtil.decodeHex(key);
   }
 }

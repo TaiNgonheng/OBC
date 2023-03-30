@@ -24,7 +24,8 @@ public interface UserProfileMapper {
   UserModel toModel(UserProfileEntity entity);
 
   @Named("toOffsetDateTime")
-  default OffsetDateTime toInstant(Instant instant) {
-    return OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
+  default OffsetDateTime toOffsetDateTime(Instant instant) {
+
+    return null == instant ? null : OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
   }
 }

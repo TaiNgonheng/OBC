@@ -12,7 +12,7 @@ class AESCryptoUtilTest {
 
   @Test
   void testEncryptAndDecrypt() {
-    String data = "123456789ABCDEF!";
+    String data = "0BD340F5E2DFC19F323C601144617417";
     String secretKey = "1234567812345678";
     byte[] iv = AESCryptoUtil.getRandomIv(16);
 

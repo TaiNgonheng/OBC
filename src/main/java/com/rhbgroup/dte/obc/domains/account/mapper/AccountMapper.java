@@ -8,6 +8,7 @@ import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
+import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
@@ -15,6 +16,7 @@ import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.UserModel;
+import java.math.BigDecimal;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.stereotype.Component;
@@ -59,7 +61,22 @@ public interface AccountMapper {
     return new AuthenticationResponse().status(ResponseHandler.ok()).data(responseData);
   }
 
-  AccountEntity toAccountEntity(CDRBGetAccountDetailResponse accountResponse);
+  default AccountEntity toAccountEntity(
+      Long userId, CDRBGetAccountDetailResponse accountDetailResponse) {
+    AccountEntity accountEntity = new AccountEntity();
+    CDRBGetAccountDetailResponseAcct accountDetail = accountDetailResponse.getAcct();
+
+    accountEntity.setUserId(userId);
+    accountEntity.setAccountId(accountDetail.getAccountNo());
+    accountEntity.setAccountName(accountDetail.getAccountName());
+    accountEntity.setAccountType(accountDetail.getAccountType().getValue());
+    accountEntity.setAccountStatus(accountDetail.getAccountStatus().getValue());
+    accountEntity.setAccountCcy(accountDetail.getCurrencyCode());
+    accountEntity.setCountry(accountDetail.getCtryCitizen());
+    accountEntity.setBalance(BigDecimal.valueOf(accountDetail.getCurrentBal()));
+
+    return accountEntity;
+  }
 
   default FinishLinkAccountResponse toFinishLinkAccountResponse() {
     return new FinishLinkAccountResponse()

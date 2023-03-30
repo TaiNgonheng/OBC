@@ -2,7 +2,7 @@ type: object
 description: User Model
 properties:
   id:
-    type: string
+    type: number
   username:
     type: string
   password:

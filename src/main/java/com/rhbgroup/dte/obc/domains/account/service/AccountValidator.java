@@ -5,6 +5,7 @@ import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
+import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 
 public class AccountValidator {
@@ -12,6 +13,7 @@ public class AccountValidator {
   private AccountValidator() {}
 
   public static void validateAccount(PGProfileResponse userProfile) {
+
     if (!KycStatusEnum.parse(userProfile.getKycStatus()).equals(KycStatusEnum.FULL_KYC)) {
       throw new BizException(ResponseMessage.KYC_NOT_VERIFIED);
     }
@@ -23,7 +25,10 @@ public class AccountValidator {
   }
 
   public static void validateCasaAccount(CDRBGetAccountDetailResponse account) {
-    if (!account.getKycVerified()) {
+    if (!account
+        .getAcct()
+        .getKycStatus()
+        .equals(CDRBGetAccountDetailResponseAcct.KycStatusEnum.F)) {
       throw new BizException(ResponseMessage.KYC_NOT_VERIFIED);
     }
   }
