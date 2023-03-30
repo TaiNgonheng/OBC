@@ -2,10 +2,14 @@ package com.rhbgroup.dte.obc.domains.account.mapper;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.util.ObcStringUtils;
+import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
+import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
@@ -53,5 +57,13 @@ public interface AccountMapper {
     AuthenticationResponseAllOfData responseData =
         new AuthenticationResponseAllOfData().accessToken(token).requireChangePassword(false);
     return new AuthenticationResponse().status(ResponseHandler.ok()).data(responseData);
+  }
+
+  AccountEntity toAccountEntity(CDRBGetAccountDetailResponse accountResponse);
+
+  default FinishLinkAccountResponse toFinishLinkAccountResponse() {
+    return new FinishLinkAccountResponse()
+        .status(ResponseHandler.ok())
+        .data(new FinishLinkAccountResponseAllOfData().requireChangePassword(false));
   }
 }

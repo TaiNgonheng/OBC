@@ -1,0 +1,8 @@
+type: object
+properties:
+  kycVerified:
+    type: boolean
+    example: true
+  accountId:
+    type: string
+    example: 123xxx

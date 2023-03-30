@@ -28,6 +28,10 @@ import org.springframework.util.MultiValueMap;
 @RequiredArgsConstructor
 public class InfoBipRestClient {
 
+  private static final String INFO_BIP_SEND_OTP_URL = "/2fa/2/pin";
+  private static final String INFO_BIP_VERIFY_OTP_API_URL = "/2fa/2/pin/{pinId}/verify";
+  private static final String INFO_BIP_LOGIN_API_URL = "/auth/1/oauth2/token";
+
   private final SpringRestUtil restUtil;
   private final CacheUtil cacheUtil;
   private final JwtTokenUtils jwtTokenUtils;
@@ -59,7 +63,7 @@ public class InfoBipRestClient {
 
     InfoBipSendOtpResponse sendSmsOtpResponse =
         restUtil.sendPost(
-            baseUrl.concat(ConfigConstants.InfoBip.INFO_BIP_SEND_OTP_PATH),
+            baseUrl.concat(INFO_BIP_SEND_OTP_URL),
             headers,
             new InfoBipSendOtpRequest()
                 .applicationId(appId)
@@ -93,7 +97,7 @@ public class InfoBipRestClient {
     headers.put("Authorization", "Bearer ".concat(getAccessToken()));
     InfoBipVerifyOtpResponse verifyOtpResponse =
         restUtil.sendPost(
-            baseUrl.concat(ConfigConstants.InfoBip.INFO_BIP_VERIFY_OTP_API_PATH),
+            baseUrl.concat(INFO_BIP_VERIFY_OTP_API_URL),
             pathParams,
             null,
             headers,
@@ -113,7 +117,7 @@ public class InfoBipRestClient {
     Map<String, String> headers = new HashMap<>();
     headers.put("Content-Type", "application/x-www-form-urlencoded");
     return restUtil.sendPost(
-        baseUrl.concat(ConfigConstants.InfoBip.INFO_BIP_LOGIN_API_PATH),
+        baseUrl.concat(INFO_BIP_LOGIN_API_URL),
         headers,
         request,
         ParameterizedTypeReference.forType(InfoBipLoginResponse.class));

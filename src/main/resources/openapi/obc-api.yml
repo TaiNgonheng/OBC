@@ -93,9 +93,8 @@ components:
       $ref: './schemas/cdrb/CDRBLoginResponse.yml'
     CDRBGetHsmKeyResponse:
       $ref: './schemas/cdrb/CDRBGetHsmKeyResponse.yml'
-
-    CdrbGetHmsKeyResponse:
-      $ref: './schemas/cdrb/CdrbGetHmsKeyResponse.yml'
+    CDRBGetAccountDetailResponse:
+      $ref: './schemas/cdrb/CDRBGetAccountDetailResponse.yml'
 
   securitySchemes:
     bearerAuth:

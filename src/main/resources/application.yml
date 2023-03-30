@@ -46,8 +46,13 @@ obc:
     password: ${PG1_PASSWORD:+66xZ_feBcRpYP9e}
   cdrb:
     url: ${CDRB_URL:https://api.dev.cdrb.link}
-    username: ${CDRB_USERNAME:cdrb}
-    password: ${CDRB_PASSWORD:cdrb_password}
+    username: ${CDRB_USERNAME:nihaomo}
+    password: ${CDRB_PASSWORD:0BD340F5E2DFC19F323C601144617417}
+    aesKey: ${CDRB_AES_KEY:1234567812345678}
+    aesIv: ${CDRB_AES_IV:DpgS6l/iDH2pAsOerldf8A==}
+    hsmZmk: ${CDRB_HSM_ZMK:5497B691458FC1CD31A16116701F57F8}
+    zmkIv: ${CDRB_ZMK_IV:0000000000000000}
+    xApiKey: ${CDRB_X_API_KEY:NQrIN7HPBt141uX5yw2SZ4NigpagyHkZ8cG9b2rf}
   infobip:
     url: ${INFOBIP_URL:https://9rmmnv.api.infobip.com}
     appId: ${INFOBIP_APP_ID:FA6C2DC0CCC7843B2395F3A91E0B5EC2}

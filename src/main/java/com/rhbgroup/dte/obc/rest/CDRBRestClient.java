@@ -1,31 +1,29 @@
 package com.rhbgroup.dte.obc.rest;
 
-import com.hazelcast.internal.util.StringUtil;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
-import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
+import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.common.util.SpringRestUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.AESCryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.CryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.TripleDESCryptoUtil;
-import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
-import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetHsmKeyResponse;
 import com.rhbgroup.dte.obc.model.CDRBLoginRequest;
 import com.rhbgroup.dte.obc.model.CDRBLoginResponse;
+import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
-import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.StringUtils;import org.json.JSONException;
-import org.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -33,101 +31,98 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CDRBRestClient {
-  private final JwtTokenUtils jwtTokenUtils;
-  private static final String X_API_KEY = "NQrIN7HPBt141uX5yw2SZ4NigpagyHkZ8cG9b2rf";
 
-  private final ConfigService configService;
+  private static final String GET_HSM_KEY_URL = "/auth/hsm-key";
+  private static final String AUTHENTICATION_URL = "/auth/channel/obc/login";
+  private static final String GET_ACCOUNT_DETAIL = "/auth/channel/obc/accounts";
+
+  private final JwtTokenUtils jwtTokenUtils;
   private final SpringRestUtil restUtil;
 
-  private String username;
-  private String encPassword;
-  private String aesKey;
-  private String aesIv;
+  private final CacheUtil cacheUtil;
 
-  private String zmkIv;
-  private String baseUrl;
-  private String hsmZmkKey;
+  @Value("${obc.cdrb.url}")
+  protected String baseUrl;
+
+  @Value("${obc.cdrb.xApiKey}")
+  protected String xApiKey;
+
+  @Value("${obc.cdrb.username}")
+  protected String username;
+
+  @Value("${obc.cdrb.password}")
+  protected String encPassword;
+
+  @Value("${obc.cdrb.aesKey}")
+  protected String aesKey;
+
+  @Value("${obc.cdrb.aesIv}")
+  protected String aesIv;
+
+  @Value("${obc.cdrb.hsmZmk}")
+  protected String hsmZmkKey;
+
+  @Value("${obc.cdrb.zmkIv}")
+  protected String zmkIv;
 
   @PostConstruct
-  private void initConfigValues() throws JSONException {
-    baseUrl = configService.getByConfigKey(ConfigConstants.CDRB_URL, ConfigConstants.VALUE);
-
-    List<ConfigEntity> cdrbConfigs = configService.findByServicePrefix("CDRB_");
-    ConfigEntity cdrbAccount =
-        configService.filterByServiceKey(cdrbConfigs, ConfigConstants.CDRB_ACCOUNT);
-    JSONObject cdrbAccountJson = new JSONObject(cdrbAccount.getConfigValue());
-
-    username = cdrbAccountJson.getString(ConfigConstants.USERNAME);
-    encPassword = cdrbAccountJson.getString(ConfigConstants.PASSWORD);
-    aesKey = cdrbAccountJson.getString(ConfigConstants.AES_KEY);
-    aesIv = cdrbAccountJson.getString(ConfigConstants.AES_IV);
-
-    hsmZmkKey =
-        new JSONObject(
-                configService
-                    .filterByServiceKey(cdrbConfigs, ConfigConstants.CDRB_HSM_ZMK)
-                    .getConfigValue())
-            .getString(ConfigConstants.VALUE);
-
-    zmkIv =
-        new JSONObject(
-                configService
-                    .filterByServiceKey(cdrbConfigs, ConfigConstants.CDRB_HSM_IV)
-                    .getConfigValue())
-            .getString(ConfigConstants.VALUE);
+  private void initCache() {
+    cacheUtil.createCache(CacheConstants.CDRBCache.CACHE_NAME, Duration.FIVE_MINUTES);
   }
 
-  public String login(String authorization) {
+  public CDRBGetAccountDetailResponse getAccountDetail(String authorization) {
+
+    //    CDRBGetAccountDetailResponse response =
+    //        restUtil.sendGet(
+    //            baseUrl.concat(GET_ACCOUNT_DETAIL),
+    //            null,
+    //            buildHeader(getAccessToken(authorization)),
+    //            ParameterizedTypeReference.forType(CDRBGetAccountDetailResponse.class));
+    //    return response;
+
+    return new CDRBGetAccountDetailResponse().kycVerified(true);
+  }
+
+  public String login() {
+
+    // Decrypted stored password using AES
+    byte[] passwordDecrypted =
+        AESCryptoUtil.decrypt(
+            Base64.getDecoder().decode(encPassword.getBytes(StandardCharsets.UTF_8)),
+            aesKey,
+            Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)));
+
+    String passwordStr = new String(passwordDecrypted, StandardCharsets.UTF_8);
+
+    CDRBLoginRequest loginRequest =
+        new CDRBLoginRequest().username(username).encPwd1(passwordStr).encPwd2(passwordStr);
+
+    CDRBLoginResponse cdrbLoginResponse =
+        restUtil.sendPost(
+            baseUrl.concat(AUTHENTICATION_URL),
+            buildHeader(null),
+            loginRequest,
+            ParameterizedTypeReference.forType(CDRBLoginResponse.class));
+
+    return cdrbLoginResponse.getToken();
+  }
+
+  private String getAccessToken(String authorization) {
+
     String cdrbLoginKey =
         CacheConstants.CDRBCache.CDRB_LOGIN_KEY.concat(
             jwtTokenUtils.getUsernameFromJwtToken(jwtTokenUtils.extractJwt(authorization)));
 
-    if(StringUtil.isNullOrEmpty(cdrbLoginKey)){
-      // Decrypted stored password using AES
-      byte[] passwordDecrypted =
-          AESCryptoUtil.decrypt(
-              Base64.getDecoder().decode(encPassword.getBytes(StandardCharsets.UTF_8)),
-              aesKey,
-              Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)));
+    String tokenFromCache =
+        cacheUtil.getValueFromKey(CacheConstants.CDRBCache.CACHE_NAME, cdrbLoginKey);
 
-      String passwordStr = new String(passwordDecrypted, StandardCharsets.UTF_8);
-
-      // Split password
-      String[] passwordSplits = splitPassword(passwordStr);
-
-      // Decrypt zpk using hsmZmkKey
-      String decryptedZpk = decryptZpk(getHsmKey(), hsmZmkKey);
-
-      String passwordEnc1 =
-          CryptoUtil.encodeHexString(
-                  TripleDESCryptoUtil.encrypt(
-                      padRight(passwordSplits[0]),
-                      addKeyPadding(decryptedZpk),
-                      CryptoUtil.decodeHex(zmkIv)))
-              .toUpperCase();
-
-      String passwordEnc2 =
-          passwordSplits[1] != null
-              ? CryptoUtil.encodeHexString(
-                  TripleDESCryptoUtil.encrypt(
-                      padRight(passwordSplits[1]),
-                      addKeyPadding(decryptedZpk),
-                      CryptoUtil.decodeHex(zmkIv)))
-              .toUpperCase()
-              : passwordEnc1;
-
-      String pathUrl = baseUrl.concat("/auth/channel/obc/login");
-
-      CDRBLoginRequest loginRequest =
-          new CDRBLoginRequest().username(username).encPwd1(passwordEnc1).encPwd2(passwordEnc2);
-      CDRBLoginResponse cdrbLoginResponse = restUtil.sendPost(
-          pathUrl,
-          buildHeader(),
-          loginRequest,
-          ParameterizedTypeReference.forType(CDRBLoginResponse.class));
-      return cdrbLoginResponse.getToken();
+    if (StringUtils.isBlank(tokenFromCache)) {
+      String newToken = login();
+      cacheUtil.addKey(CacheConstants.CDRBCache.CACHE_NAME, cdrbLoginKey, newToken);
+      return newToken;
     }
-    return cdrbLoginKey;
+
+    return tokenFromCache;
   }
 
   private byte[] padRight(String passwordSplit) {
@@ -141,6 +136,35 @@ public class CDRBRestClient {
     }
 
     return CryptoUtil.decodeHex(hexString.toString());
+  }
+
+  private String[] constructPasswords(String passwordStr) {
+
+    // Split password
+    String[] passwordSplits = splitPassword(passwordStr);
+
+    // Decrypt zpk using hsmZmkKey
+    String decryptedZpk = decryptZpk(getHsmKey(), hsmZmkKey);
+
+    String passwordEnc1 =
+        CryptoUtil.encodeHexString(
+                TripleDESCryptoUtil.encrypt(
+                    padRight(passwordSplits[0]),
+                    addKeyPadding(decryptedZpk),
+                    CryptoUtil.decodeHex(zmkIv)))
+            .toUpperCase();
+
+    String passwordEnc2 =
+        passwordSplits[1] != null
+            ? CryptoUtil.encodeHexString(
+                    TripleDESCryptoUtil.encrypt(
+                        padRight(passwordSplits[1]),
+                        addKeyPadding(decryptedZpk),
+                        CryptoUtil.decodeHex(zmkIv)))
+                .toUpperCase()
+            : passwordEnc1;
+
+    return new String[] {passwordEnc1, passwordEnc2};
   }
 
   private String decryptZpk(String hsmKey, String hsmZmkKey) {
@@ -172,20 +196,25 @@ public class CDRBRestClient {
   }
 
   private String getHsmKey() {
-    String pathUrl = baseUrl.concat("/auth/hsm-key");
+
     CDRBGetHsmKeyResponse hsmKeyResponse =
         restUtil.sendGet(
-            pathUrl,
-            buildHeader(),
+            baseUrl.concat(GET_HSM_KEY_URL),
+            buildHeader(null),
             ParameterizedTypeReference.forType(CDRBGetHsmKeyResponse.class));
 
     return hsmKeyResponse.getZpk();
   }
 
-  private Map<String, String> buildHeader() {
+  private Map<String, String> buildHeader(String accessToken) {
+
     Map<String, String> header = new HashMap<>();
-    header.put("x-api-key", X_API_KEY);
+    header.put("x-api-key", xApiKey);
     header.put("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+
+    if (StringUtils.isNotBlank(accessToken)) {
+      header.put("Authorization", "Bearer ".concat(accessToken));
+    }
 
     return header;
   }

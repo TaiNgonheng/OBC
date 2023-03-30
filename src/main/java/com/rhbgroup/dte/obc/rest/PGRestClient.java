@@ -28,7 +28,6 @@ import org.springframework.util.CollectionUtils;
 public class PGRestClient {
 
   private static final String AUTHENTICATE_URL = "/api/authenticate";
-
   private static final String GET_USER_PROFILE_URL =
       "/tps/api/fst-iroha-accounts/find-by-account-name";
 
@@ -45,7 +44,7 @@ public class PGRestClient {
   protected String password;
 
   @PostConstruct
-  public void initCache() {
+  private void initCache() {
     cacheUtil.createCache(CacheConstants.PGCache.CACHE_NAME, Duration.ONE_MINUTE);
   }
 
@@ -74,15 +73,16 @@ public class PGRestClient {
 
     String pgLoginKey =
         StringUtils.isNotBlank(bakongId) ? bakongId : ObcStringUtils.randomString(10);
+    String cacheLoginKey = CacheConstants.PGCache.PG1_LOGIN_KEY.concat(pgLoginKey);
 
     String tokenFromCache =
-        cacheUtil.getValueFromKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey);
+        cacheUtil.getValueFromKey(CacheConstants.PGCache.CACHE_NAME, cacheLoginKey);
     if (tokenFromCache != null) {
       return tokenFromCache;
     }
 
     String pg1AccessToken = login().getIdToken();
-    cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, pgLoginKey, pg1AccessToken);
+    cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, cacheLoginKey, pg1AccessToken);
 
     return pg1AccessToken;
   }

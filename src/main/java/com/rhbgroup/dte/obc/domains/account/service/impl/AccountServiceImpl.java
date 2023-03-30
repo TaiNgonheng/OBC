@@ -2,7 +2,6 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
-import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
@@ -18,11 +17,11 @@ import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
-import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
+import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
@@ -44,9 +43,10 @@ public class AccountServiceImpl implements AccountService {
 
   private final ConfigService configService;
   private final UserAuthService userAuthService;
+  private final UserProfileService userProfileService;
+
   private final PGRestClient pgRestClient;
   private final InfoBipRestClient infoBipRestClient;
-  private final UserProfileService userProfileService;
   private final CDRBRestClient cdrbRestClient;
 
   private final AccountRepository accountRepository;
@@ -84,7 +84,7 @@ public class AccountServiceImpl implements AccountService {
             Functions.peek(
                 userProfile -> {
                   // Mock for testing
-                  //                  userProfile.setPhone("84961592197");
+                  // userProfile.setPhone("84961592197");
                   if (userProfile.getPhone().equals(request.getPhoneNumber())) {
                     infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin());
                   }
@@ -125,35 +125,26 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public FinishLinkAccountResponse finishLinkAccount(
       String authorization, FinishLinkAccountRequest request) {
-    String cdrbToken = cdrbRestClient.login(authorization);
-    //    Object accountDetail = cdrbRestClient.getAccountDetail(new HashMap<>());
-    //    while (accountDetail == null) {
-    //      cdrbToken = crdbAuthenticate(cdrbConfig, cdrbLoginKey);
-    //      accountDetail = cdrbRestClient.getAccountDetail(new HashMap<>());
-    //    }
-    // validate account
-    //    accountRepository.save(new AccountEntity());
-    //    return buildResponse();
 
-    return null;
-  }
+    return Functions.of(cdrbRestClient::getAccountDetail)
+        .andThen(Functions.peek(AccountValidator::validateCasaAccount))
+        .andThen(
+            account -> {
+              UserModel user =
+                  userProfileService.findByUsername(
+                      jwtTokenUtils.getUsernameFromJwtToken(authorization));
 
-  private String crdbAuthenticate(ConfigService configService, String cdrbLoginKey) {
-    //    String hmsKey = cdrbRestClient.getHmsKey();
-    //    Object cdrbAuthResponse = cdrbRestClient.login(new Object());
-    //    cacheUtil.addKey(CacheConstants.CDRBCache.CACHE_NAME, cdrbLoginKey, null);
-    return "";
-  }
-
-  private FinishLinkAccountResponse buildResponse() {
-    FinishLinkAccountResponseAllOfData data = new FinishLinkAccountResponseAllOfData();
-    data.setRequireChangePassword(false);
-    return new FinishLinkAccountResponse().status(ResponseHandler.ok()).data(data);
+              return accountRepository
+                  .findByUserIdAndAccountId(Long.parseLong(user.getId()), account.getAccountId())
+                  .orElseGet(() -> accountMapper.toAccountEntity(account));
+            })
+        .andThen(Functions.peek(accountRepository::save))
+        .andThen(account -> accountMapper.toFinishLinkAccountResponse())
+        .apply(authorization);
   }
 
   @Override
   public GetAccountDetailResponse getAccountDetail(GetAccountDetailRequest request) {
-//    cdrbRestClient.login();
     return new GetAccountDetailResponse();
   }
 }

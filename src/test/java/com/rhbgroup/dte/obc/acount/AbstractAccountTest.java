@@ -18,11 +18,10 @@ import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
+import java.nio.charset.StandardCharsets;
 import org.codehaus.plexus.util.Base64;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-
-import java.nio.charset.StandardCharsets;
 
 public abstract class AbstractAccountTest {
 
