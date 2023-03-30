@@ -1,0 +1,11 @@
+type: object
+description: InfoBip send OTP response
+properties:
+  pinId:
+    type: string
+  to:
+    type: string
+  ncStatus:
+    type: string
+  smsStatus:
+    type: string

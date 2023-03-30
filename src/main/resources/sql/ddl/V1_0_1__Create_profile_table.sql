@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS `tbl_obc_profile` (
   `username` varchar(50) UNIQUE NOT NULL,
   `password` varchar(100) NOT NULL,
   `otp_id` varchar(50) DEFAULT NULL,
+  `bakong_id` varchar(50) DEFAULT NULL,
   `otp_verified_status` bit(1) DEFAULT 0,
   `otp_verified_date` timestamp DEFAULT NULL,
   `mobile_no` varchar(20) UNIQUE DEFAULT NULL,

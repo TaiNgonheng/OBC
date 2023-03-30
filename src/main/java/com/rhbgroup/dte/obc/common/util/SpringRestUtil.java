@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.common.util;
 
+import com.hazelcast.internal.util.MapUtil;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import java.net.URISyntaxException;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriTemplate;
 
 @Component
 @Slf4j
@@ -42,6 +44,22 @@ public class SpringRestUtil {
     return sendRequest(url, HttpMethod.GET, headers, null, typeReference);
   }
 
+  public <T> T sendGet(
+      @NotBlank String url,
+      Map<String, String> paths,
+      Map<String, String> parameters,
+      Map<String, String> headers,
+      ParameterizedTypeReference<T> typeReference)
+      throws RestClientException {
+
+    return sendRequest(
+        buildUrlWithPathsAndParams(url, paths, parameters),
+        HttpMethod.GET,
+        headers,
+        null,
+        typeReference);
+  }
+
   public String withPathParams(String url, List<String> pathParams) {
     String paths = pathParams.stream().reduce((s1, s2) -> s1.concat("/").concat(s2)).orElse("");
     return url + paths;
@@ -57,7 +75,24 @@ public class SpringRestUtil {
 
       return uriBuilder.build().toString();
     } catch (URISyntaxException ex) {
-      return null;
+      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  private String buildUrlWithPathsAndParams(
+      String url, Map<String, String> paths, Map<String, String> parameters) {
+    try {
+      if (!MapUtil.isNullOrEmpty(paths)) url = new UriTemplate(url).expand(paths).toString();
+      URIBuilder uriBuilder = new URIBuilder(url);
+      uriBuilder.setCharset(StandardCharsets.UTF_8);
+      if (!MapUtil.isNullOrEmpty(parameters)) {
+        for (Map.Entry<String, String> entrySet : parameters.entrySet()) {
+          uriBuilder.addParameter(entrySet.getKey(), entrySet.getValue());
+        }
+      }
+      return uriBuilder.build().toString();
+    } catch (URISyntaxException ex) {
+      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -78,6 +113,22 @@ public class SpringRestUtil {
       Object body,
       ParameterizedTypeReference<T> typeReference) {
     return sendRequest(url, HttpMethod.POST, headers, body, typeReference);
+  }
+
+  public <T> T sendPost(
+      String url,
+      Map<String, String> paths,
+      Map<String, String> parameters,
+      Map<String, String> headers,
+      Object body,
+      ParameterizedTypeReference<T> typeReference)
+      throws RestClientException {
+    return sendRequest(
+        buildUrlWithPathsAndParams(url, paths, parameters),
+        HttpMethod.POST,
+        headers,
+        body,
+        typeReference);
   }
 
   private <T> T sendRequest(
