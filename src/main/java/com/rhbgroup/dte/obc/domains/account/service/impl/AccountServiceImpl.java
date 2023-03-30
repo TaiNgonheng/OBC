@@ -2,6 +2,7 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
 import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
@@ -16,6 +17,8 @@ import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.AccountModel;
+import com.rhbgroup.dte.obc.model.AuthenticationRequest;
+import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpResponse;
@@ -67,8 +70,17 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
-  public InitAccountResponse authenticate(InitAccountRequest request) {
-    return null;
+  public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    return Functions.of(accountMapper::toUserModel)
+        .andThen(userAuthService::authenticate)
+        .andThen(
+            Functions.peek(
+                authContext ->
+                    userAuthService.checkUserRole(
+                        authContext, Collections.singletonList(AppConstants.ROLE.APP_USER))))
+        .andThen(jwtTokenUtils::generateJwt)
+        .andThen(accountMapper::toAuthResponse)
+        .apply(request);
   }
 
   @Override

@@ -22,6 +22,8 @@ paths:
     $ref: './paths/init-link-account.yml'
   /verify-otp:
     $ref: './paths/verify-otp.yml'
+  /authenticate:
+    $ref: './paths/authenticate.yml'
   /account-detail:
     $ref: './paths/account-detail.yml'
   /gw/user-exchange:
@@ -43,6 +45,10 @@ components:
       $ref: './schemas/account/VerifyOtpRequest.yml'
     VerifyOtpResponse:
       $ref: './schemas/account/VerifyOtpResponse.yml'
+    AuthenticationRequest:
+      $ref: './schemas/account/AuthenticationRequest.yml'
+    AuthenticationResponse:
+      $ref: './schemas/account/AuthenticationResponse.yml'
     GetAccountDetailRequest:
       $ref: './schemas/account/GetAccountDetailRequest.yml'
     GetAccountDetailResponse:

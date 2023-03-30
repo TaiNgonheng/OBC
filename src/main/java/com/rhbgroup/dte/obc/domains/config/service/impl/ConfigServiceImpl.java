@@ -100,4 +100,8 @@ public class ConfigServiceImpl implements ConfigService {
   public JSONObject getJsonValue() {
     return jsonValue;
   }
+
+  public void setJsonValue(JSONObject jsonValue) {
+    this.jsonValue = jsonValue;
+  }
 }
