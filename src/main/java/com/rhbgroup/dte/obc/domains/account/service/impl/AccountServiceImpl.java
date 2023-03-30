@@ -18,10 +18,12 @@ import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
-import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpResponse;
@@ -36,11 +38,9 @@ import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
-import com.rhbgroup.dte.obc.rest.CdrbRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Collections;
-import java.util.HashMap;
 import javax.annotation.PostConstruct;
 import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
@@ -61,7 +61,6 @@ public class AccountServiceImpl implements AccountService {
   private final PGRestClient pgRestClient;
   private final CDRBRestClient cdrbRestClient;
 
-  private final CdrbRestClient cdrbRestClient;
   private final AccountRepository accountRepository;
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
@@ -196,22 +195,23 @@ public class AccountServiceImpl implements AccountService {
       // CDRB login
       cdrbToken = crdbAuthenticate(cdrbConfig, cdrbLoginKey);
     }
-    Object accountDetail = cdrbRestClient.getAccountDetail(new HashMap<>());
-    while (accountDetail==null){
-      cdrbToken = crdbAuthenticate(cdrbConfig, cdrbLoginKey);
-      accountDetail = cdrbRestClient.getAccountDetail(new HashMap<>());
-    }
+    //    Object accountDetail = cdrbRestClient.getAccountDetail(new HashMap<>());
+    //    while (accountDetail == null) {
+    //      cdrbToken = crdbAuthenticate(cdrbConfig, cdrbLoginKey);
+    //      accountDetail = cdrbRestClient.getAccountDetail(new HashMap<>());
+    //    }
     // validate account
     accountRepository.save(new AccountEntity());
     return buildResponse();
   }
 
   private String crdbAuthenticate(ConfigService configService, String cdrbLoginKey) {
-    String hmsKey = cdrbRestClient.getHmsKey();
-    Object cdrbAuthResponse = cdrbRestClient.login(new Object());
-    cacheUtil.addKey(CacheConstants.CDRBCache.CACHE_NAME, cdrbLoginKey, null);
+    //    String hmsKey = cdrbRestClient.getHmsKey();
+    //    Object cdrbAuthResponse = cdrbRestClient.login(new Object());
+    //    cacheUtil.addKey(CacheConstants.CDRBCache.CACHE_NAME, cdrbLoginKey, null);
     return "";
   }
+
   private FinishLinkAccountResponse buildResponse() {
     FinishLinkAccountResponseAllOfData data = new FinishLinkAccountResponseAllOfData();
     data.setRequireChangePassword(false);

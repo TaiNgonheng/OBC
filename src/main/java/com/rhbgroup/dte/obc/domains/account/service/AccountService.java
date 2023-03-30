@@ -1,9 +1,9 @@
 package com.rhbgroup.dte.obc.domains.account.service;
 
-import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
-import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;

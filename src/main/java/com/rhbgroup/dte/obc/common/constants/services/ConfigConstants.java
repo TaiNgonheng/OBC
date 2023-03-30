@@ -18,10 +18,9 @@ public class ConfigConstants {
   public static final String PG1_ACCOUNT = "PG1_ACCOUNT";
   public static final String PG1_URL = "PG1_URL";
 
-    // JSON values
-    public static final String PG1_DATA_PASSWORD_KEY = "password";
-    public static final String PG1_DATA_USERNAME_KEY = "username";
-  }
+  // JSON values
+  public static final String PG1_DATA_PASSWORD_KEY = "password";
+  public static final String PG1_DATA_USERNAME_KEY = "username";
 
   public static class InfoBip {
     private InfoBip() {}
@@ -36,6 +35,7 @@ public class ConfigConstants {
     public static final String CDRB_API_KEY = "x-api-key";
     public static final String CDRB_API_KEY_VALUE = "NQrIN7HPBt141uX5yw2SZ4NigpagyHkZ8cG9b2rf";
   }
+
   // CDRB service
   public static final String CDRB_URL = "CDRB_URL";
   public static final String CDRB_ACCOUNT = "CDRB_ACCOUNT";

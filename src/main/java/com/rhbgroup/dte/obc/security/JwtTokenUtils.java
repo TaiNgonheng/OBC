@@ -60,8 +60,10 @@ public class JwtTokenUtils {
         .compact();
   }
 
-  public String extractJwt(String jwt){
-    return StringUtils.isNotBlank(jwt) && jwt.contains("Bearer") ? jwt.substring(7): new String("");
+  public String extractJwt(String jwt) {
+    return StringUtils.isNotBlank(jwt) && jwt.contains("Bearer")
+        ? jwt.substring(7)
+        : "";
   }
 
   public boolean isExpired(String token) {
