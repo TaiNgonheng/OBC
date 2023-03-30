@@ -5,7 +5,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.lenient;import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
@@ -174,7 +174,8 @@ class AccountServiceTest extends AbstractAccountTest {
   void testInitLinkAccount_Failed_InfoBipServiceUnavailable() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
-    when(infoBipRestClient.sendOtp(anyString(), anyString()))
+    when(configService.getByConfigKey(anyString(),anyString(),any())).thenReturn(1);
+    lenient().when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {

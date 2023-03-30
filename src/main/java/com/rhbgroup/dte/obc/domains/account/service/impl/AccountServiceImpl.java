@@ -95,7 +95,7 @@ public class AccountServiceImpl implements AccountService {
                         request.getLogin(), userProfile.getAccountId())))
         .andThen(
             profileResponse -> {
-              int otpEnabled =
+              Integer otpEnabled =
                   configService.getByConfigKey(
                       ConfigConstants.REQUIRED_INIT_ACCOUNT_OTP_KEY,
                       ConfigConstants.VALUE,
