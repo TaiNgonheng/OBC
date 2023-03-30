@@ -6,6 +6,9 @@ import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
+import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.InfoBipSendOtpResponse;
 import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
@@ -102,6 +105,16 @@ public abstract class AbstractAccountTest {
         .kycStatus(KycStatusEnum.FULL_KYC.getName())
         .phone(MOBILE_NUMBER)
         .accountStatus(AccountStatusEnum.ACTIVATED.getStatus());
+  }
+
+  protected FinishLinkAccountRequest mockFinishLinkAccountRequest() {
+    return new FinishLinkAccountRequest().accNumber("10000xxx");
+  }
+
+  protected FinishLinkAccountResponse mockFinishLinkAccountResponse() {
+    return new FinishLinkAccountResponse()
+        .status(ResponseHandler.ok())
+        .data(new FinishLinkAccountResponseAllOfData().requireChangePassword(false));
   }
 
   protected PGAuthResponseAllOfData mockPGAuthResponse() {
