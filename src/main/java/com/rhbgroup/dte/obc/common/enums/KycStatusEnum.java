@@ -10,6 +10,7 @@ public enum KycStatusEnum {
   FULL_KYC("FULL_KYC"),
   PARTIAL_KYC("PARTIAL_KYC"),
   REJECTED("REJECTED"),
+  FROZEN("FROZEN"),
   UNKNOWN("UNKNOWN"),
   ;
 

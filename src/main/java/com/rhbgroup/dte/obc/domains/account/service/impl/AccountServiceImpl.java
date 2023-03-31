@@ -7,6 +7,8 @@ import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapperImpl;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
+import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
+import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
@@ -48,6 +50,8 @@ public class AccountServiceImpl implements AccountService {
   private final UserAuthService userAuthService;
   private final UserProfileService userProfileService;
 
+  private final AccountRepository accountRepository;
+
   private final PGRestClient pgRestClient;
   private final InfoBipRestClient infoBipRestClient;
   private final CDRBRestClient cdrbRestClient;
@@ -85,16 +89,11 @@ public class AccountServiceImpl implements AccountService {
         .andThen(Functions.peek(AccountValidator::validateAccount))
         .andThen(
             Functions.peek(
-                userProfile -> {
-                  if (userProfile.getPhone().equals(request.getPhoneNumber())) {
-                    infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin());
-                  }
-                }))
+                userProfile ->
+                    infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin())))
         .andThen(
             Functions.peek(
-                userProfile ->
-                    userProfileService.updateBakongId(
-                        request.getLogin(), userProfile.getAccountId())))
+                response -> updateBakongId(request.getLogin(), request.getBakongAccId())))
         .andThen(
             profileResponse -> {
               Integer otpEnabled =
@@ -102,10 +101,27 @@ public class AccountServiceImpl implements AccountService {
                       ConfigConstants.REQUIRED_INIT_ACCOUNT_OTP_KEY,
                       ConfigConstants.VALUE,
                       Integer.class);
+
               return accountMapper.toInitAccountResponse(
                   request, profileResponse, token, otpEnabled == 1);
             })
         .apply(Collections.singletonList(request.getBakongAccId()));
+  }
+
+  private void updateBakongId(String username, String bakongId) {
+
+    Functions.of(userProfileService::getByUsername)
+        .andThen(
+            userEntity -> {
+              AccountEntity accountEntity = new AccountEntity();
+              accountEntity.setUserId(userEntity.getId());
+              accountEntity.setBakongId(bakongId);
+              accountEntity.setLinkedStatus(AppConstants.LinkStatus.PENDING);
+
+              return accountEntity;
+            })
+        .andThen(accountRepository::save)
+        .apply(username);
   }
 
   @Override

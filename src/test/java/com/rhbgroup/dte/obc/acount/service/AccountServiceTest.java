@@ -54,11 +54,11 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock InfoBipRestClient infoBipRestClient;
 
-  @Mock CDRBRestClient cdrbRestClient;
+  @Mock AccountRepository accountRepository;
 
   @Mock UserProfileService userProfileService;
 
-  @Mock AccountRepository accountRepository;
+  @Mock CDRBRestClient cdrbRestClient;
 
   @BeforeEach
   void cleanUp() {
@@ -69,7 +69,8 @@ class AccountServiceTest extends AbstractAccountTest {
         pgRestClient,
         infoBipRestClient,
         cdrbRestClient,
-        accountRepository);
+        accountRepository,
+        userProfileService);
   }
 
   @Test
@@ -77,7 +78,8 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    doNothing().when(userProfileService).updateBakongId(anyString(), anyString());
+    when(userProfileService.getByUsername(any())).thenReturn(mockObcUserProfileEntity());
+    when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
@@ -94,7 +96,8 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    doNothing().when(userProfileService).updateBakongId(anyString(), anyString());
+    when(userProfileService.getByUsername(any())).thenReturn(mockObcUserProfileEntity());
+    when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
@@ -144,7 +147,8 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    doNothing().when(userProfileService).updateBakongId(anyString(), anyString());
+    when(userProfileService.getByUsername(any())).thenReturn(mockObcUserProfileEntity());
+    when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))

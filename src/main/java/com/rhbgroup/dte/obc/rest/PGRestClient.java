@@ -51,10 +51,9 @@ public class PGRestClient {
   public PGProfileResponse getUserProfile(List<String> pathParams) {
 
     String paths = restUtil.withPathParams(GET_USER_PROFILE_URL.concat("/"), pathParams);
-    String bakongId = CollectionUtils.isEmpty(pathParams) ? null : pathParams.get(0);
 
     Map<String, String> header = new HashMap<>();
-    header.put("Authorization", "Bearer ".concat(getAccessToken(bakongId)));
+    header.put("Authorization", "Bearer ".concat(getAccessToken()));
 
     PGProfileResponse responseObject =
         restUtil.sendGet(
@@ -69,20 +68,18 @@ public class PGRestClient {
     return responseObject;
   }
 
-  private String getAccessToken(String bakongId) {
-
-    String pgLoginKey =
-        StringUtils.isNotBlank(bakongId) ? bakongId : ObcStringUtils.randomString(10);
-    String cacheLoginKey = CacheConstants.PGCache.PG1_LOGIN_KEY.concat(pgLoginKey);
+  private String getAccessToken() {
 
     String tokenFromCache =
-        cacheUtil.getValueFromKey(CacheConstants.PGCache.CACHE_NAME, cacheLoginKey);
+        cacheUtil.getValueFromKey(
+            CacheConstants.PGCache.CACHE_NAME, CacheConstants.PGCache.PG1_LOGIN_KEY);
     if (tokenFromCache != null) {
       return tokenFromCache;
     }
 
     String pg1AccessToken = login().getIdToken();
-    cacheUtil.addKey(CacheConstants.PGCache.CACHE_NAME, cacheLoginKey, pg1AccessToken);
+    cacheUtil.addKey(
+        CacheConstants.PGCache.CACHE_NAME, CacheConstants.PGCache.PG1_LOGIN_KEY, pg1AccessToken);
 
     return pg1AccessToken;
   }
