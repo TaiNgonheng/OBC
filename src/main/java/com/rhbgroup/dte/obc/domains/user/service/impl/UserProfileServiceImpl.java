@@ -15,11 +15,6 @@ public class UserProfileServiceImpl implements UserProfileService {
   private final UserProfileRepository userProfileRepository;
 
   @Override
-  public void updateBakongId(String username, String bakongId) {
-    // Nothing
-  }
-
-  @Override
   public UserProfileEntity getByUsername(String username) {
     return userProfileRepository
         .getByUsername(username)

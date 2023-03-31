@@ -3,6 +3,7 @@ package com.rhbgroup.dte.obc.acount;
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
+import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
@@ -86,6 +87,12 @@ public abstract class AbstractAccountTest {
         .kycStatus(KycStatusEnum.PARTIAL_KYC.getName())
         .phone("85500000000")
         .accountStatus(AccountStatusEnum.ACTIVATED.getStatus());
+  }
+
+  protected UserProfileEntity mockObcUserProfileEntity() {
+    UserProfileEntity entity = new UserProfileEntity();
+    entity.setId(1L);
+    return entity;
   }
 
   protected PGProfileResponse mockProfileUserDeactivated() {
