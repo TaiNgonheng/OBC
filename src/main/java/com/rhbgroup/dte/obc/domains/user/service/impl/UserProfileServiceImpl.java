@@ -1,12 +1,15 @@
 package com.rhbgroup.dte.obc.domains.user.service.impl;
 
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +38,8 @@ public class UserProfileServiceImpl implements UserProfileService {
                         });
 
                 userProfile.setBakongId(bakongId);
+                userProfile.setUpdatedBy(AppConstants.SYSTEM.OPEN_BANKING_CLIENT);
+                userProfile.setUpdatedDate(Instant.now());
                 userProfileRepository.save(userProfile);
               }
             });
