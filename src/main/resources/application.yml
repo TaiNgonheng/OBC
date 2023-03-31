@@ -54,3 +54,4 @@ obc:
     messageId: ${INFOBIP_APP_ID:CFF95B6AC9CAB1CDE1E852762651F8A5}
     username: ${INFOBIP_USERNAME:tmnhat.cmcglobal}
     password: ${INFOBIP_PASSWORD:Sunn@123}
+    enabled: ${INFOBIP_ENABLED:true}

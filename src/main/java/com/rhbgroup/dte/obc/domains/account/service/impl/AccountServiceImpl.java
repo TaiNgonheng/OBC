@@ -77,11 +77,8 @@ public class AccountServiceImpl implements AccountService {
         .andThen(Functions.peek(AccountValidator::validateAccount))
         .andThen(
             Functions.peek(
-                userProfile -> {
-                  if (userProfile.getPhone().equals(request.getPhoneNumber())) {
-                    infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin());
-                  }
-                }))
+                userProfile ->
+                    infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin())))
         .andThen(
             Functions.peek(
                 response -> updateBakongId(request.getLogin(), request.getBakongAccId())))
