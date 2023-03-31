@@ -4,7 +4,6 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.reset;
@@ -78,7 +77,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    when(userProfileService.getByUsername(any())).thenReturn(mockObcUserProfileEntity());
+    when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
@@ -96,7 +95,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    when(userProfileService.getByUsername(any())).thenReturn(mockObcUserProfileEntity());
+    when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
@@ -147,7 +146,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    when(userProfileService.getByUsername(any())).thenReturn(mockObcUserProfileEntity());
+    when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());

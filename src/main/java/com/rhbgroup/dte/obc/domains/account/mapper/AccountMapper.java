@@ -1,6 +1,7 @@
 package com.rhbgroup.dte.obc.domains.account.mapper;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
+import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.util.ObcStringUtils;
 import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.model.AccountModel;
@@ -74,6 +75,7 @@ public interface AccountMapper {
     accountEntity.setAccountCcy(accountDetail.getCurrencyCode());
     accountEntity.setCountry(accountDetail.getCtryCitizen());
     accountEntity.setBalance(BigDecimal.valueOf(accountDetail.getCurrentBal()));
+    accountEntity.setLinkedStatus(AppConstants.LinkStatus.COMPLETED);
 
     return accountEntity;
   }

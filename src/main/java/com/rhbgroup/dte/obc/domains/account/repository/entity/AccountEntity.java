@@ -48,7 +48,7 @@ public class AccountEntity {
   private String country;
 
   @Column(name = "balance")
-  private String balance;
+  private BigDecimal balance;
 
   @Column(name = "linked_status")
   private String linkedStatus;

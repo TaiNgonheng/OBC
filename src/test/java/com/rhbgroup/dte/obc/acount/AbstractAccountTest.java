@@ -14,8 +14,6 @@ import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.InfoBipSendOtpResponse;
-import com.rhbgroup.dte.obc.model.InfoBipSendOtpResponse;
-import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;

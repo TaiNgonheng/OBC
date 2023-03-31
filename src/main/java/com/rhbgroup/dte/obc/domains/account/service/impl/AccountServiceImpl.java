@@ -1,12 +1,12 @@
 package com.rhbgroup.dte.obc.domains.account.service.impl;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
+import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapperImpl;
-import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
 import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
@@ -14,6 +14,7 @@ import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
+import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
@@ -56,7 +57,6 @@ public class AccountServiceImpl implements AccountService {
   private final InfoBipRestClient infoBipRestClient;
   private final CDRBRestClient cdrbRestClient;
 
-  private final AccountRepository accountRepository;
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
   @Override
@@ -110,11 +110,11 @@ public class AccountServiceImpl implements AccountService {
 
   private void updateBakongId(String username, String bakongId) {
 
-    Functions.of(userProfileService::getByUsername)
+    Functions.of(userProfileService::findByUsername)
         .andThen(
-            userEntity -> {
+            userModel -> {
               AccountEntity accountEntity = new AccountEntity();
-              accountEntity.setUserId(userEntity.getId());
+              accountEntity.setUserId(userModel.getId().longValue());
               accountEntity.setBakongId(bakongId);
               accountEntity.setLinkedStatus(AppConstants.LinkStatus.PENDING);
 
@@ -147,6 +147,13 @@ public class AccountServiceImpl implements AccountService {
         userProfileService.findByUsername(
             jwtTokenUtils.getUsernameFromJwtToken(jwtTokenUtils.extractJwt(authorization)));
 
+    accountRepository
+        .findByAccountIdAndLinkedStatus(request.getAccNumber(), AppConstants.LinkStatus.COMPLETED)
+        .ifPresent(
+            account -> {
+              throw new BizException(ResponseMessage.ACCOUNT_ALREADY_LINKED);
+            });
+
     return Functions.of(cdrbRestClient::getAccountDetail)
         .andThen(Functions.peek(AccountValidator::validateCasaAccount))
         .andThen(
@@ -156,7 +163,7 @@ public class AccountServiceImpl implements AccountService {
                         userProfile.getId().longValue(), account.getAcct().getAccountNo())
                     .flatMap(
                         entity -> {
-                          entity.setUpdateBy(AppConstants.SYSTEM.OPEN_BANKING_CLIENT);
+                          entity.setUpdatedBy(AppConstants.SYSTEM.OPEN_BANKING_CLIENT);
                           entity.setUpdatedDate(Instant.now());
                           return Optional.of(entity);
                         })
@@ -165,11 +172,6 @@ public class AccountServiceImpl implements AccountService {
                             accountMapper.toAccountEntity(
                                 userProfile.getId().longValue(), account)))
         .andThen(Functions.peek(accountRepository::save))
-        .andThen(
-            Functions.peek(
-                account ->
-                    userProfileService.updateUserStatus(
-                        userProfile, AppConstants.USER_STATUS.LINKED)))
         .andThen(account -> accountMapper.toFinishLinkAccountResponse())
         .apply(
             authorization,

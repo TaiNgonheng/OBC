@@ -4,7 +4,6 @@ import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
-import com.rhbgroup.dte.obc.common.util.ObcStringUtils;
 import com.rhbgroup.dte.obc.common.util.SpringRestUtil;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.PGAuthRequest;
@@ -17,11 +16,9 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 @Component
 @RequiredArgsConstructor
