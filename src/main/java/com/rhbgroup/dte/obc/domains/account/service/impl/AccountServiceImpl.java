@@ -12,6 +12,8 @@ import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
+import com.rhbgroup.dte.obc.domains.user.mapper.UserProfileMapper;
+import com.rhbgroup.dte.obc.domains.user.mapper.UserProfileMapperImpl;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
@@ -33,7 +35,6 @@ import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +59,7 @@ public class AccountServiceImpl implements AccountService {
   private final CDRBRestClient cdrbRestClient;
 
   private final AccountMapper accountMapper = new AccountMapperImpl();
+  private final UserProfileMapper userProfileMapper = new UserProfileMapperImpl();
 
   @Override
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -89,11 +91,12 @@ public class AccountServiceImpl implements AccountService {
         .andThen(Functions.peek(AccountValidator::validateAccount))
         .andThen(
             Functions.peek(
-                userProfile ->
-                    infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin())))
+                userProfile -> {
+                  infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin());
+                }))
         .andThen(
             Functions.peek(
-                response -> updateBakongId(request.getLogin(), request.getBakongAccId())))
+                response -> insertBakongId(request.getLogin(), request.getBakongAccId())))
         .andThen(
             profileResponse -> {
               Integer otpEnabled =
@@ -102,24 +105,32 @@ public class AccountServiceImpl implements AccountService {
                       ConfigConstants.VALUE,
                       Integer.class);
 
+              UserModel gowaveUser =
+                  userProfileService.findByUsername(profileResponse.getAccountId());
+
               return accountMapper.toInitAccountResponse(
-                  request, profileResponse, token, otpEnabled == 1);
+                  gowaveUser, profileResponse, token, otpEnabled == 1);
             })
         .apply(Collections.singletonList(request.getBakongAccId()));
   }
 
-  private void updateBakongId(String username, String bakongId) {
+  private void insertBakongId(String username, String bakongId) {
 
     Functions.of(userProfileService::findByUsername)
         .andThen(
-            userModel -> {
-              AccountEntity accountEntity = new AccountEntity();
-              accountEntity.setUserId(userModel.getId().longValue());
-              accountEntity.setBakongId(bakongId);
-              accountEntity.setLinkedStatus(AppConstants.LinkStatus.PENDING);
+            userModel ->
+                accountRepository
+                    .findByUserIdAndBakongIdAndLinkedStatus(
+                        userModel.getId().longValue(), bakongId, AppConstants.LinkStatus.PENDING)
+                    .orElseGet(
+                        () -> {
+                          AccountEntity accountEntity = new AccountEntity();
+                          accountEntity.setUserId(userModel.getId().longValue());
+                          accountEntity.setBakongId(bakongId);
+                          accountEntity.setLinkedStatus(AppConstants.LinkStatus.PENDING);
 
-              return accountEntity;
-            })
+                          return accountEntity;
+                        }))
         .andThen(accountRepository::save)
         .apply(username);
   }
@@ -159,18 +170,10 @@ public class AccountServiceImpl implements AccountService {
         .andThen(
             account ->
                 accountRepository
-                    .findByUserIdAndAccountId(
-                        userProfile.getId().longValue(), account.getAcct().getAccountNo())
-                    .flatMap(
-                        entity -> {
-                          entity.setUpdatedBy(AppConstants.SYSTEM.OPEN_BANKING_CLIENT);
-                          entity.setUpdatedDate(Instant.now());
-                          return Optional.of(entity);
-                        })
-                    .orElseGet(
-                        () ->
-                            accountMapper.toAccountEntity(
-                                userProfile.getId().longValue(), account)))
+                    .findByUserIdAndLinkedStatus(
+                        userProfile.getId().longValue(), AppConstants.LinkStatus.PENDING)
+                    .flatMap(entity -> Optional.of(accountMapper.toAccountEntity(entity, account)))
+                    .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND)))
         .andThen(Functions.peek(accountRepository::save))
         .andThen(account -> accountMapper.toFinishLinkAccountResponse())
         .apply(

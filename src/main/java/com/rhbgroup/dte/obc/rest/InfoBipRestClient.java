@@ -61,7 +61,7 @@ public class InfoBipRestClient {
 
   public InfoBipSendOtpResponse sendOtp(String phone, String loginKey) {
 
-    if (otpEnabled) {
+    if (!otpEnabled) {
       return new InfoBipSendOtpResponse().pinId("pinId");
     }
 
