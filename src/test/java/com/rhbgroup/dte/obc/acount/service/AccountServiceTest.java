@@ -7,10 +7,6 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
@@ -25,22 +21,14 @@ import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
-import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
-import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
-import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
-import java.util.Optional;
-import java.math.BigDecimal;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,7 +73,7 @@ class AccountServiceTest extends AbstractAccountTest {
   }
 
   @Test
-  void testInitLinkAccount_Success_RequireChangePassword() {
+  void testInitLinkAccount_Success_RequireChangePhone() {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
@@ -98,7 +86,6 @@ class AccountServiceTest extends AbstractAccountTest {
 
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
-    Assertions.assertEquals(true, response.getData().getRequireOtp());
     Assertions.assertEquals(true, response.getData().getRequireChangePhone());
   }
 
@@ -115,7 +102,6 @@ class AccountServiceTest extends AbstractAccountTest {
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
-    Assertions.assertEquals(true, response.getData().getRequireOtp());
     Assertions.assertEquals(true, response.getData().getRequireChangePhone());
   }
 
@@ -154,7 +140,7 @@ class AccountServiceTest extends AbstractAccountTest {
   }
 
   @Test
-  void testInitLinkAccount_Success_NotRequireChangePassword() {
+  void testInitLinkAccount_Success_NotRequireChangePhone() {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
@@ -168,7 +154,6 @@ class AccountServiceTest extends AbstractAccountTest {
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
-    Assertions.assertEquals(true, response.getData().getRequireOtp());
     Assertions.assertFalse(response.getData().getRequireChangePhone());
   }
 
@@ -314,11 +299,10 @@ class AccountServiceTest extends AbstractAccountTest {
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
     when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
     when(cdrbRestClient.getAccountDetail(anyString(), any())).thenReturn(mockCdrbAccountResponse());
-    when(accountRepository.findByUserIdAndAccountId(anyLong(), anyString()))
-        .thenReturn(Optional.empty());
+    when(accountRepository.findByUserIdAndLinkedStatus(anyLong(), anyString()))
+            .thenReturn(Optional.of(mockAccountEntity()));
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntity());
 
-    // Act
     FinishLinkAccountResponse response =
         accountService.finishLinkAccount(
             "authorization", new FinishLinkAccountRequest().accNumber("12345"));
@@ -335,11 +319,10 @@ class AccountServiceTest extends AbstractAccountTest {
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
     when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
     when(cdrbRestClient.getAccountDetail(anyString(), any())).thenReturn(mockCdrbAccountResponse());
-    when(accountRepository.findByUserIdAndAccountId(anyLong(), anyString()))
-        .thenReturn(Optional.of(mockAccountEntity()));
+    when(accountRepository.findByUserIdAndLinkedStatus(anyLong(), anyString()))
+            .thenReturn(Optional.of(mockAccountEntity()));
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntity());
 
-    // Act
     FinishLinkAccountResponse response =
         accountService.finishLinkAccount(
             "authorization", new FinishLinkAccountRequest().accNumber("12345"));

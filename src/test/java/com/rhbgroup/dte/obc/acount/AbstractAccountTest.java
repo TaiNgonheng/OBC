@@ -8,9 +8,6 @@ import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
-import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
-import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
-import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
@@ -21,6 +18,7 @@ import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.LoginTypeEnum;
+import com.rhbgroup.dte.obc.model.PGAuthResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.UserModel;
@@ -124,12 +122,6 @@ public abstract class AbstractAccountTest {
     return new FinishLinkAccountRequest().accNumber("10000xxx");
   }
 
-  protected FinishLinkAccountResponse mockFinishLinkAccountResponse() {
-    return new FinishLinkAccountResponse()
-        .status(ResponseHandler.ok())
-        .data(new FinishLinkAccountResponseAllOfData().requireChangePassword(false));
-  }
-
   protected PGAuthResponseAllOfData mockPGAuthResponse() {
     return new PGAuthResponseAllOfData().idToken(mockJwtToken());
   }
@@ -161,7 +153,7 @@ public abstract class AbstractAccountTest {
   }
 
   protected UserModel mockUserModel() {
-    return new UserModel().cifNo("123xxx").id(BigDecimal.ONE);
+    return new UserModel().cifNo("123xxx").id(BigDecimal.ONE).mobileNo(MOBILE_NUMBER);
   }
 
   protected CDRBGetAccountDetailResponse mockCdrbAccountResponse() {
