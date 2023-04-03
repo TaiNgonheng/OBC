@@ -70,10 +70,9 @@ public class CDRBRestClient {
     cacheUtil.createCache(CacheConstants.CDRBCache.CACHE_NAME, Duration.FIVE_MINUTES);
   }
 
-  public CDRBGetAccountDetailResponse getAccountDetail(
-      String authorization, CDRBGetAccountDetailRequest request) {
+  public CDRBGetAccountDetailResponse getAccountDetail(CDRBGetAccountDetailRequest request) {
 
-    String accessToken = getAccessToken(authorization);
+    String accessToken = getAccessToken();
 
     try {
       return restUtil.sendPost(
@@ -111,18 +110,16 @@ public class CDRBRestClient {
     return cdrbLoginResponse.getToken();
   }
 
-  private String getAccessToken(String authorization) {
-
-    String cdrbLoginKey =
-        CacheConstants.CDRBCache.CDRB_LOGIN_KEY.concat(
-            jwtTokenUtils.getUsernameFromJwtToken(jwtTokenUtils.extractJwt(authorization)));
+  private String getAccessToken() {
 
     String tokenFromCache =
-        cacheUtil.getValueFromKey(CacheConstants.CDRBCache.CACHE_NAME, cdrbLoginKey);
+        cacheUtil.getValueFromKey(
+            CacheConstants.CDRBCache.CACHE_NAME, CacheConstants.CDRBCache.CDRB_LOGIN_KEY);
 
     if (StringUtils.isBlank(tokenFromCache)) {
       String newToken = login();
-      cacheUtil.addKey(CacheConstants.CDRBCache.CACHE_NAME, cdrbLoginKey, newToken);
+      cacheUtil.addKey(
+          CacheConstants.CDRBCache.CACHE_NAME, CacheConstants.CDRBCache.CDRB_LOGIN_KEY, newToken);
       return newToken;
     }
 

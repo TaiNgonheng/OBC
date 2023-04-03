@@ -1,7 +1,6 @@
 package com.rhbgroup.dte.obc.acount.service;
 
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -210,7 +209,7 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testVerifyOTP_Success_IsValid_True() {
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
-    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
+    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(true);
 
     VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
@@ -221,7 +220,7 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testVerifyOTP_Success_IsValid_False() {
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
-    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
+    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(false);
 
     VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
@@ -232,7 +231,7 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testVerifyOTP_Failed_InfoBipServiceUnavailable() {
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
-    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
+    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
     when(infoBipRestClient.verifyOtp(anyString(), anyString()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
@@ -297,9 +296,9 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
-    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
-    when(cdrbRestClient.getAccountDetail(anyString(), any())).thenReturn(mockCdrbAccountResponse());
-    when(accountRepository.findByUserIdAndLinkedStatus(anyLong(), anyString()))
+    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
+    when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
+    when(accountRepository.findByBakongIdAndLinkedStatus(anyString(), any()))
         .thenReturn(Optional.of(mockAccountEntity()));
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntity());
 
@@ -317,9 +316,9 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
-    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
-    when(cdrbRestClient.getAccountDetail(anyString(), any())).thenReturn(mockCdrbAccountResponse());
-    when(accountRepository.findByUserIdAndLinkedStatus(anyLong(), anyString()))
+    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
+    when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
+    when(accountRepository.findByBakongIdAndLinkedStatus(anyString(), any()))
         .thenReturn(Optional.of(mockAccountEntity()));
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntity());
 
@@ -337,8 +336,8 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
-    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
-    when(cdrbRestClient.getAccountDetail(anyString(), any()))
+    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
+    when(cdrbRestClient.getAccountDetail(any()))
         .thenThrow(new BizException(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS));
 
     try {
@@ -359,9 +358,8 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
-    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
-    when(cdrbRestClient.getAccountDetail(anyString(), any()))
-        .thenReturn(mockCdrbAccountResponseNotKYC());
+    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
+    when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponseNotKYC());
 
     try {
       accountService.finishLinkAccount("authentication", mockFinishLinkAccountRequest());

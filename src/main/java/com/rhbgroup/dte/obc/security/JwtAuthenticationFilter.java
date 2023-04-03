@@ -3,6 +3,7 @@ package com.rhbgroup.dte.obc.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.ResponseWrapper;
 import java.io.IOException;
@@ -33,8 +34,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     AuthenticationStatus authResponse = jwtTokenManager.verifyRequest(request);
     switch (authResponse.getResult()) {
       case SUCCESS:
-        jwtTokenManager.supplySecurityContext(request, authResponse.getJwt());
-        filterChain.doFilter(request, response);
+        try {
+          jwtTokenManager.supplySecurityContext(request, authResponse.getJwt());
+          filterChain.doFilter(request, response);
+        } catch (BizException ex) {
+          captureError(response, ex.getResponseMessage());
+        }
         break;
       case EXPIRED:
         captureError(response, ResponseMessage.SESSION_EXPIRED);

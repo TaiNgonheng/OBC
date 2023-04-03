@@ -3,7 +3,6 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
-import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
@@ -12,7 +11,6 @@ import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
 import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
-import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
@@ -35,9 +33,10 @@ import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Collections;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -47,7 +46,6 @@ public class AccountServiceImpl implements AccountService {
 
   private final JwtTokenUtils jwtTokenUtils;
 
-  private final ConfigService configService;
   private final UserAuthService userAuthService;
   private final UserProfileService userProfileService;
 
@@ -59,6 +57,9 @@ public class AccountServiceImpl implements AccountService {
 
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
+  @Value("${obc.infobip.enabled}")
+  protected boolean otpEnabled;
+
   @Override
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
     return Functions.of(accountMapper::toUserModel)
@@ -68,7 +69,7 @@ public class AccountServiceImpl implements AccountService {
                 authContext ->
                     userAuthService.checkUserRole(
                         authContext, Collections.singletonList(AppConstants.ROLE.APP_USER))))
-        .andThen(jwtTokenUtils::generateJwt)
+        .andThen(jwtTokenUtils::generateJwtAppUser)
         .andThen(accountMapper::toAuthResponse)
         .apply(request);
   }
@@ -81,7 +82,7 @@ public class AccountServiceImpl implements AccountService {
         Functions.of(accountMapper::toModel)
             .andThen(AccountModel::getUser)
             .andThen(userAuthService::authenticate)
-            .andThen(jwtTokenUtils::generateJwt)
+            .andThen(jwtTokenUtils::generateJwtAppUser)
             .apply(request);
 
     // Get PG user profile, trigger OTP and build response
@@ -96,17 +97,10 @@ public class AccountServiceImpl implements AccountService {
                 response -> insertBakongId(request.getLogin(), request.getBakongAccId())))
         .andThen(
             profileResponse -> {
-              Integer otpEnabled =
-                  configService.getByConfigKey(
-                      ConfigConstants.REQUIRED_INIT_ACCOUNT_OTP_KEY,
-                      ConfigConstants.VALUE,
-                      Integer.class);
-
-              UserModel gowaveUser =
-                  userProfileService.findByUsername(profileResponse.getAccountId());
+              UserModel gowaveUser = userProfileService.findByUsername(request.getLogin());
 
               return accountMapper.toInitAccountResponse(
-                  gowaveUser, profileResponse, token, otpEnabled == 1);
+                  gowaveUser, profileResponse, token, otpEnabled);
             })
         .apply(Collections.singletonList(request.getBakongAccId()));
   }
@@ -118,7 +112,7 @@ public class AccountServiceImpl implements AccountService {
             userModel ->
                 accountRepository
                     .findByUserIdAndBakongIdAndLinkedStatus(
-                        userModel.getId().longValue(), bakongId, AppConstants.LinkStatus.PENDING)
+                        userModel.getId().longValue(), bakongId, LinkedStatusEnum.PENDING)
                     .orElseGet(
                         () -> {
                           AccountEntity accountEntity = new AccountEntity();
@@ -135,8 +129,7 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public VerifyOtpResponse verifyOtp(String authorization, VerifyOtpRequest request) {
 
-    return Functions.of(jwtTokenUtils::extractJwt)
-        .andThen(jwtTokenUtils::getUsernameFromJwtToken)
+    return Functions.of(jwtTokenUtils::getSubject)
         .andThen(
             loginKey ->
                 new VerifyOtpResponse()
@@ -151,12 +144,26 @@ public class AccountServiceImpl implements AccountService {
   public FinishLinkAccountResponse finishLinkAccount(
       String authorization, FinishLinkAccountRequest request) {
 
-    UserModel userProfile =
-        userProfileService.findByUsername(
-            jwtTokenUtils.getUsernameFromJwtToken(jwtTokenUtils.extractJwt(authorization)));
+    String bakongId = jwtTokenUtils.getSubject(authorization);
+    Long userId = Long.parseLong(jwtTokenUtils.getUserId(authorization));
+
+    if (StringUtils.isBlank(bakongId)) {
+      throw new BizException(ResponseMessage.NO_ACCOUNT_FOUND);
+    }
+
+    // One pending at a time
+    AccountEntity pendingAccount =
+        accountRepository
+            .findByUserIdAndBakongIdAndLinkedStatus(userId, bakongId, LinkedStatusEnum.PENDING)
+            .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
+
+    CDRBGetAccountDetailRequest accountDetailRequest =
+        new CDRBGetAccountDetailRequest()
+            .accountNo(request.getAccNumber())
+            .cifNo(userProfileService.findByUserId(userId).getCifNo());
 
     accountRepository
-        .findByAccountIdAndLinkedStatus(request.getAccNumber(), AppConstants.LinkStatus.COMPLETED)
+        .findByAccountIdAndLinkedStatus(request.getAccNumber(), LinkedStatusEnum.COMPLETED)
         .ifPresent(
             account -> {
               throw new BizException(ResponseMessage.ACCOUNT_ALREADY_LINKED);
@@ -164,20 +171,10 @@ public class AccountServiceImpl implements AccountService {
 
     return Functions.of(cdrbRestClient::getAccountDetail)
         .andThen(Functions.peek(AccountValidator::validateCasaAccount))
-        .andThen(
-            account ->
-                accountRepository
-                    .findByUserIdAndLinkedStatus(
-                        userProfile.getId().longValue(), AppConstants.LinkStatus.PENDING)
-                    .flatMap(entity -> Optional.of(accountMapper.toAccountEntity(entity, account)))
-                    .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND)))
+        .andThen(cdrbAccount -> accountMapper.toAccountEntity(pendingAccount, cdrbAccount))
         .andThen(Functions.peek(accountRepository::save))
         .andThen(account -> accountMapper.toFinishLinkAccountResponse())
-        .apply(
-            authorization,
-            new CDRBGetAccountDetailRequest()
-                .accountNo(request.getAccNumber())
-                .cifNo(userProfile.getCifNo()));
+        .apply(accountDetailRequest);
   }
 
   @Override

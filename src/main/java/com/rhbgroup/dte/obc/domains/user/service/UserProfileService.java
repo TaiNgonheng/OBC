@@ -5,4 +5,6 @@ import com.rhbgroup.dte.obc.model.UserModel;
 public interface UserProfileService {
 
   UserModel findByUsername(String username);
+
+  UserModel findByUserId(Long userId);
 }

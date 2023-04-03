@@ -43,7 +43,7 @@ public interface AccountMapper {
     if (!userProfile.getPhone().equals(userModel.getMobileNo())) {
       data.setRequireOtp(false);
       data.setRequireChangePhone(true);
-      data.setLast3DigitsPhone(ObcStringUtils.getLast3DigitsPhone(userProfile.getPhone()));
+      data.setLast3DigitsPhone(ObcStringUtils.getLast3DigitsPhone(userModel.getMobileNo()));
 
     } else {
       data.setRequireChangePhone(false);

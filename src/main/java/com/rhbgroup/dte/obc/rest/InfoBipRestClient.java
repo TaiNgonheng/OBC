@@ -135,18 +135,20 @@ public class InfoBipRestClient {
   }
 
   private String getAccessToken() {
-    String accessToken;
-    String infoBipLoginKey = CacheConstants.InfoBipCache.INFOBIP_LOGIN_KEY.concat(username);
 
     String tokenFromCache =
-        cacheUtil.getValueFromKey(CacheConstants.InfoBipCache.CACHE_NAME, infoBipLoginKey);
+        cacheUtil.getValueFromKey(
+            CacheConstants.InfoBipCache.CACHE_NAME, CacheConstants.InfoBipCache.INFOBIP_LOGIN_KEY);
 
     if (StringUtils.isNotBlank(tokenFromCache)
         && !jwtTokenUtils.isExtTokenExpired(tokenFromCache)) {
       return tokenFromCache;
     }
-    accessToken = login().getAccessToken();
-    cacheUtil.addKey(CacheConstants.InfoBipCache.CACHE_NAME, infoBipLoginKey, accessToken);
+    String accessToken = login().getAccessToken();
+    cacheUtil.addKey(
+        CacheConstants.InfoBipCache.CACHE_NAME,
+        CacheConstants.InfoBipCache.INFOBIP_LOGIN_KEY,
+        accessToken);
     return accessToken;
   }
 }

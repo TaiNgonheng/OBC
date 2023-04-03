@@ -24,4 +24,12 @@ public class UserProfileServiceImpl implements UserProfileService {
         .flatMap(userProfileMapper::toModelOptional)
         .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND));
   }
+
+  @Override
+  public UserModel findByUserId(Long userId) {
+    return userProfileRepository
+        .findById(userId)
+        .flatMap(userProfileMapper::toModelOptional)
+        .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND));
+  }
 }
