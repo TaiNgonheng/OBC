@@ -46,7 +46,7 @@ public class JwtTokenUtils {
   public String getUserId(String jwt) {
     try {
       String encUserId =
-          getClaimFromToken(extractJwt(jwt), claims -> claims.get(CLAIMS_USER).toString());
+          (String) getClaimFromToken(extractJwt(jwt), claims -> claims.get(CLAIMS_USER));
       return new String(
           AESCryptoUtil.decrypt(
               CryptoUtil.decodeHex(encUserId), AES_KEY, AES_IV.getBytes(StandardCharsets.UTF_8)),
@@ -80,7 +80,7 @@ public class JwtTokenUtils {
     if (StringUtils.isNotBlank(userDetails.getPermissions())) {
       claims.put(CLAIMS_AUTHORIZATIONS, userDetails.getPermissions().split(","));
     }
-    claims.put(CLAIMS_EXPIRY_DATE, Instant.now().toEpochMilli() + (tokenTTL * 100));
+    claims.put(CLAIMS_EXPIRY_DATE, Instant.now().toEpochMilli() + (tokenTTL * 1000));
     claims.put(
         CLAIMS_USER,
         CryptoUtil.encodeHexString(
@@ -99,13 +99,13 @@ public class JwtTokenUtils {
     CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
     Claims claims = Jwts.claims().setSubject(userDetails.getUsername());
+    claims.put(CLAIMS_EXPIRY_DATE, Instant.now().toEpochMilli() + (tokenTTL * 1000));
     if (StringUtils.isNotBlank(userDetails.getPermissions())) {
       claims.put(CLAIMS_AUTHORIZATIONS, userDetails.getPermissions().split(","));
     }
 
     return Jwts.builder()
         .setClaims(claims)
-        .setExpiration(new Date((new Date()).getTime() + (tokenTTL * 1000)))
         .signWith(SignatureAlgorithm.HS512, jwtSecrete)
         .compact();
   }
@@ -117,8 +117,9 @@ public class JwtTokenUtils {
 
   public boolean isExpired(String token) {
     try {
-      Date expiryDate = getClaimFromToken(token, Claims::getExpiration);
-      return expiryDate.before(new Date());
+      long expiryDate = (long) getClaimFromToken(token, claims -> claims.get(CLAIMS_EXPIRY_DATE));
+
+      return new Date(expiryDate).before(new Date());
 
     } catch (Exception ex) {
       return true;

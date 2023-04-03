@@ -33,14 +33,15 @@ public class UserAuthService {
             .getByUsername(userModel.getUsername())
             .orElseThrow(
                 () -> new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
-    if (profile.getLogTime().isAfter(Instant.now()))
+    if (profile.getLogTime() != null && profile.getLogTime().isAfter(Instant.now()))
       throw new UserAuthenticationException(ResponseMessage.AUTHENTICATION_LOCKED);
+
     try {
       Authentication authentication =
           authManager.authenticate(
               new UsernamePasswordAuthenticationToken(
                   userModel.getUsername(), userModel.getPassword()));
-      if (profile.getLogAttempt() != 0) recordFailAttempt(profile, 0);
+      if (profile.getLogAttempt() != null && profile.getLogAttempt() != 0) recordFailAttempt(profile, 0);
       return authentication;
     } catch (AuthenticationException ex) {
       recordFailAttempt(profile, profile.getLogAttempt() + 1);
