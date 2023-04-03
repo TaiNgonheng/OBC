@@ -124,7 +124,7 @@ public class AccountServiceImpl implements AccountService {
                           AccountEntity accountEntity = new AccountEntity();
                           accountEntity.setUserId(userModel.getId().longValue());
                           accountEntity.setBakongId(bakongId);
-                          accountEntity.setLinkedStatus(AppConstants.LinkStatus.PENDING);
+                          accountEntity.setLinkedStatus(LinkedStatusEnum.PENDING);
 
                           return accountEntity;
                         }))

@@ -1,7 +1,6 @@
 package com.rhbgroup.dte.obc.domains.account.repository.entity;
 
 import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
-import java.math.BigDecimal;
 import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Entity;
