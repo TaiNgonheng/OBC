@@ -3,8 +3,8 @@ package com.rhbgroup.dte.obc.acount;
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
+import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
-import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
@@ -18,13 +18,13 @@ import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.LoginTypeEnum;
-import com.rhbgroup.dte.obc.model.PGAuthResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
+import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import org.codehaus.plexus.util.Base64;
@@ -94,12 +94,6 @@ public abstract class AbstractAccountTest {
         .accountStatus(AccountStatusEnum.ACTIVATED.getStatus());
   }
 
-  protected UserProfileEntity mockObcUserProfileEntity() {
-    UserProfileEntity entity = new UserProfileEntity();
-    entity.setId(1L);
-    return entity;
-  }
-
   protected PGProfileResponse mockProfileUserDeactivated() {
     return new PGProfileResponse()
         .accountName("test")
@@ -122,10 +116,6 @@ public abstract class AbstractAccountTest {
     return new FinishLinkAccountRequest().accNumber("10000xxx");
   }
 
-  protected PGAuthResponseAllOfData mockPGAuthResponse() {
-    return new PGAuthResponseAllOfData().idToken(mockJwtToken());
-  }
-
   protected FinishLinkAccountResponse mockFinishLinkAccountResponse() {
     return new FinishLinkAccountResponse()
         .status(ResponseHandler.ok())
@@ -137,7 +127,16 @@ public abstract class AbstractAccountTest {
   }
 
   protected Authentication mockAuthentication() {
-    return new UsernamePasswordAuthenticationToken("test", "test");
+    CustomUserDetails customUserDetails =
+        CustomUserDetails.builder()
+            .permissions("can_get_balance,can_top_up")
+            .username("test")
+            .password("test")
+            .bakongId("bakongId@oski")
+            .userId(1L)
+            .build();
+    return new UsernamePasswordAuthenticationToken(
+        customUserDetails, customUserDetails.getPassword());
   }
 
   protected String mockJwtToken() {
@@ -180,11 +179,22 @@ public abstract class AbstractAccountTest {
                 .kycStatus(CDRBGetAccountDetailResponseAcct.KycStatusEnum.V));
   }
 
-  protected AccountEntity mockAccountEntity() {
+  protected AccountEntity mockAccountEntityLinked() {
     AccountEntity accountEntity = new AccountEntity();
     accountEntity.setId(1L);
     accountEntity.setUserId(1L);
     accountEntity.setAccountId(mockCdrbAccountResponse().getAcct().getAccountNo());
+    accountEntity.setLinkedStatus(LinkedStatusEnum.COMPLETED);
+
+    return accountEntity;
+  }
+
+  protected AccountEntity mockAccountEntityAccountPending() {
+    AccountEntity accountEntity = new AccountEntity();
+    accountEntity.setId(1L);
+    accountEntity.setUserId(1L);
+    accountEntity.setAccountId(null);
+    accountEntity.setLinkedStatus(LinkedStatusEnum.PENDING);
 
     return accountEntity;
   }

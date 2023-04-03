@@ -75,11 +75,10 @@ class AccountServiceTest extends AbstractAccountTest {
   void testInitLinkAccount_Success_RequireChangePhone() {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
-    when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
 
@@ -92,11 +91,10 @@ class AccountServiceTest extends AbstractAccountTest {
   void testInitLinkAccount_Success_ValueInCacheHasBeenExpired() {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
-    when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
@@ -109,7 +107,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotFullyKyc());
-    when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
 
     try {
       accountService.initLinkAccount(mockInitAccountRequest());
@@ -126,7 +124,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileUserDeactivated());
-    when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
 
     try {
       accountService.initLinkAccount(mockInitAccountRequest());
@@ -142,11 +140,10 @@ class AccountServiceTest extends AbstractAccountTest {
   void testInitLinkAccount_Success_NotRequireChangePhone() {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
-    when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenReturn(mockInfoBipSendOtpResponse());
 
@@ -208,7 +205,6 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOTP_Success_IsValid_True() {
-    when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
     when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(true);
 
@@ -219,7 +215,6 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOTP_Success_IsValid_False() {
-    when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
     when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(false);
 
@@ -230,7 +225,6 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOTP_Failed_InfoBipServiceUnavailable() {
-    when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
     when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
     when(infoBipRestClient.verifyOtp(anyString(), anyString()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
@@ -248,7 +242,9 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testAuthenticate_Successful() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
+    when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
+        .thenReturn(Optional.of(mockAccountEntityLinked()));
 
     AuthenticationResponse response = accountService.authenticate(mockAuthenticationRequest());
 
@@ -277,6 +273,8 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testAuthenticate_Failed_Unauthorized_ROLE_NOT_PERMITTED() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
+    when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
+        .thenReturn(Optional.of(mockAccountEntityLinked()));
     doThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED))
         .when(userAuthService)
         .checkUserRole(any(), anyList());
@@ -292,15 +290,30 @@ class AccountServiceTest extends AbstractAccountTest {
   }
 
   @Test
+  void testAuthenticate_Failed_AccountNotActive() {
+    when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
+    when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
+        .thenReturn(Optional.of(mockAccountEntityAccountPending()));
+    try {
+      accountService.authenticate(mockAuthenticationRequest());
+    } catch (UserAuthenticationException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.NO_ACCOUNT_FOUND.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.NO_ACCOUNT_FOUND.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
   void testFinishLinkAccount_Success_WithBrandNewAccount() {
 
-    when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
-    when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
     when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
+    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
+    when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
-    when(accountRepository.findByBakongIdAndLinkedStatus(anyString(), any()))
-        .thenReturn(Optional.of(mockAccountEntity()));
-    when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntity());
+    when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
+        .thenReturn(Optional.ofNullable(mockAccountEntityAccountPending()));
+    when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntityLinked());
 
     FinishLinkAccountResponse response =
         accountService.finishLinkAccount(
@@ -312,31 +325,34 @@ class AccountServiceTest extends AbstractAccountTest {
   }
 
   @Test
-  void testFinishLinkAccount_Success_AccountExisting() {
+  void testFinishLinkAccount_Success_AccountAlreadyLinked() {
 
-    when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
-    when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
     when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
+    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
+    when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
+    when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
+        .thenReturn(Optional.ofNullable(mockAccountEntityLinked()));
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
-    when(accountRepository.findByBakongIdAndLinkedStatus(anyString(), any()))
-        .thenReturn(Optional.of(mockAccountEntity()));
-    when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntity());
 
-    FinishLinkAccountResponse response =
-        accountService.finishLinkAccount(
-            "authorization", new FinishLinkAccountRequest().accNumber("12345"));
-
-    Assertions.assertNotNull(response);
-    Assertions.assertEquals(AppConstants.STATUS.SUCCESS, response.getStatus().getCode());
-    Assertions.assertFalse(response.getData().getRequireChangePassword());
+    try {
+      accountService.finishLinkAccount(
+          "authorization", new FinishLinkAccountRequest().accNumber("12345"));
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.ACCOUNT_ALREADY_LINKED.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.ACCOUNT_ALREADY_LINKED.getMsg(), ex.getResponseMessage().getMsg());
+    }
   }
 
   @Test
   void testFinishLinkAccount_Failed_FetchAccountError() {
 
-    when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
-    when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
     when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
+    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
+    when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
+    when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
+        .thenReturn(Optional.ofNullable(mockAccountEntityAccountPending()));
     when(cdrbRestClient.getAccountDetail(any()))
         .thenThrow(new BizException(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS));
 
@@ -356,9 +372,11 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testFinishLinkAccount_Failed_AccountNotFullyKyc() {
 
-    when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
-    when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
     when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
+    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
+    when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
+    when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
+        .thenReturn(Optional.ofNullable(mockAccountEntityAccountPending()));
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponseNotKYC());
 
     try {
@@ -370,6 +388,26 @@ class AccountServiceTest extends AbstractAccountTest {
           ResponseMessage.KYC_NOT_VERIFIED.getCode(), ex.getResponseMessage().getCode());
       Assertions.assertEquals(
           ResponseMessage.KYC_NOT_VERIFIED.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testFinishLinkAccount_Failed_AccountNotFoundInOBC() {
+
+    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
+    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
+    when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
+        .thenReturn(Optional.empty());
+
+    try {
+      accountService.finishLinkAccount("authentication", mockFinishLinkAccountRequest());
+
+    } catch (BizException ex) {
+
+      Assertions.assertEquals(
+          ResponseMessage.NO_ACCOUNT_FOUND.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.NO_ACCOUNT_FOUND.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 }
