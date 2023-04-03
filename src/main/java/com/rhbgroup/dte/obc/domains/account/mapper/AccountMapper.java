@@ -1,6 +1,7 @@
 package com.rhbgroup.dte.obc.domains.account.mapper;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
+import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.util.ObcStringUtils;
 import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.model.AccountModel;
@@ -17,6 +18,7 @@ import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.UserModel;
 import java.math.BigDecimal;
+import java.time.Instant;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.stereotype.Component;
@@ -33,17 +35,16 @@ public interface AccountMapper {
   AccountModel toModel(InitAccountRequest request);
 
   default InitAccountResponse toInitAccountResponse(
-      InitAccountRequest request,
-      PGProfileResponse userProfile,
-      String jwtToken,
-      boolean otpEnabled) {
+      UserModel userModel, PGProfileResponse userProfile, String jwtToken, boolean otpEnabled) {
 
     InitAccountResponseAllOfData data =
         new InitAccountResponseAllOfData().accessToken(jwtToken).requireOtp(otpEnabled);
 
-    if (!userProfile.getPhone().equals(request.getPhoneNumber())) {
+    if (!userProfile.getPhone().equals(userModel.getMobileNo())) {
+      data.setRequireOtp(false);
       data.setRequireChangePhone(true);
       data.setLast3DigitsPhone(ObcStringUtils.getLast3DigitsPhone(userProfile.getPhone()));
+
     } else {
       data.setRequireChangePhone(false);
     }
@@ -62,20 +63,21 @@ public interface AccountMapper {
   }
 
   default AccountEntity toAccountEntity(
-      Long userId, CDRBGetAccountDetailResponse accountDetailResponse) {
-    AccountEntity accountEntity = new AccountEntity();
+      AccountEntity entity, CDRBGetAccountDetailResponse accountDetailResponse) {
     CDRBGetAccountDetailResponseAcct accountDetail = accountDetailResponse.getAcct();
 
-    accountEntity.setUserId(userId);
-    accountEntity.setAccountId(accountDetail.getAccountNo());
-    accountEntity.setAccountName(accountDetail.getAccountName());
-    accountEntity.setAccountType(accountDetail.getAccountType().getValue());
-    accountEntity.setAccountStatus(accountDetail.getAccountStatus().getValue());
-    accountEntity.setAccountCcy(accountDetail.getCurrencyCode());
-    accountEntity.setCountry(accountDetail.getCtryCitizen());
-    accountEntity.setBalance(BigDecimal.valueOf(accountDetail.getCurrentBal()));
+    entity.setAccountId(accountDetail.getAccountNo());
+    entity.setAccountName(accountDetail.getAccountName());
+    entity.setAccountType(accountDetail.getAccountType().getValue());
+    entity.setAccountStatus(accountDetail.getAccountStatus().getValue());
+    entity.setAccountCcy(accountDetail.getCurrencyCode());
+    entity.setCountry(accountDetail.getCtryCitizen());
+    entity.setBalance(BigDecimal.valueOf(accountDetail.getCurrentBal()));
+    entity.setLinkedStatus(AppConstants.LinkStatus.COMPLETED);
+    entity.setUpdatedDate(Instant.now());
+    entity.setUpdatedBy(AppConstants.SYSTEM.OPEN_BANKING_CLIENT);
 
-    return accountEntity;
+    return entity;
   }
 
   default FinishLinkAccountResponse toFinishLinkAccountResponse() {

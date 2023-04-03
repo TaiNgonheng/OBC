@@ -20,11 +20,14 @@ public class AccountEntity {
   @Column(name = "id", nullable = false)
   private Long id;
 
-  @Column(name = "account_id", nullable = false)
+  @Column(name = "account_id", unique = true)
   private String accountId;
 
-  @Column(name = "user_id", nullable = false)
+  @Column(name = "user_id", nullable = false, unique = true)
   private Long userId;
+
+  @Column(name = "bakong_id", nullable = false)
+  private String bakongId;
 
   @Column(name = "account_name")
   private String accountName;
@@ -47,12 +50,15 @@ public class AccountEntity {
   @Column(name = "balance")
   private BigDecimal balance;
 
-  @Column(name = "created_date", insertable = false)
+  @Column(name = "linked_status")
+  private String linkedStatus;
+
+  @Column(name = "created_date", insertable = false, updatable = false)
   private Instant createdDate;
 
   @Column(name = "updated_date")
   private Instant updatedDate;
 
   @Column(name = "updated_by")
-  private String updateBy;
+  private String updatedBy;
 }
