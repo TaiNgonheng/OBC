@@ -39,7 +39,13 @@ public class UserProfileEntity {
   @Column(name = "cif_no")
   private String cifNo;
 
-  @Column(name = "created_date", insertable = false, updatable = false)
+  @Column(name = "log_attempt")
+  private Integer logAttempt;
+
+  @Column(name = "log_time")
+  private Instant logTime;
+
+  @Column(name = "created_date", insertable = false)
   private Instant createdDate;
 
   @Column(name = "updated_date")

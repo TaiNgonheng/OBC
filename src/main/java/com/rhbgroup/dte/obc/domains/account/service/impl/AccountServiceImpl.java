@@ -48,13 +48,10 @@ public class AccountServiceImpl implements AccountService {
 
   private final UserAuthService userAuthService;
   private final UserProfileService userProfileService;
-
   private final AccountRepository accountRepository;
-
   private final PGRestClient pgRestClient;
   private final InfoBipRestClient infoBipRestClient;
   private final CDRBRestClient cdrbRestClient;
-
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
   @Value("${obc.infobip.enabled}")
