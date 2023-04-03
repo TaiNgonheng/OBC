@@ -300,7 +300,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
     when(cdrbRestClient.getAccountDetail(anyString(), any())).thenReturn(mockCdrbAccountResponse());
     when(accountRepository.findByUserIdAndLinkedStatus(anyLong(), anyString()))
-            .thenReturn(Optional.of(mockAccountEntity()));
+        .thenReturn(Optional.of(mockAccountEntity()));
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntity());
 
     FinishLinkAccountResponse response =
@@ -320,7 +320,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
     when(cdrbRestClient.getAccountDetail(anyString(), any())).thenReturn(mockCdrbAccountResponse());
     when(accountRepository.findByUserIdAndLinkedStatus(anyLong(), anyString()))
-            .thenReturn(Optional.of(mockAccountEntity()));
+        .thenReturn(Optional.of(mockAccountEntity()));
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntity());
 
     FinishLinkAccountResponse response =
