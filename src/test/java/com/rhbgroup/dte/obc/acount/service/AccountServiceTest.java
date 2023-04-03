@@ -2,7 +2,6 @@ package com.rhbgroup.dte.obc.acount.service;
 
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -37,6 +36,8 @@ import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import java.math.BigDecimal;
+import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,9 +45,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.math.BigDecimal;
-import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest extends AbstractAccountTest {
@@ -63,17 +61,22 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock InfoBipRestClient infoBipRestClient;
 
-  @Mock
-  CDRBRestClient cdrbRestClient;
+  @Mock CDRBRestClient cdrbRestClient;
 
   @Mock UserProfileService userProfileService;
 
-  @Mock
-  AccountRepository accountRepository;
+  @Mock AccountRepository accountRepository;
 
   @BeforeEach
   void cleanUp() {
-    reset(jwtTokenUtils, configService, userAuthService, pgRestClient, infoBipRestClient, cdrbRestClient, accountRepository);
+    reset(
+        jwtTokenUtils,
+        configService,
+        userAuthService,
+        pgRestClient,
+        infoBipRestClient,
+        cdrbRestClient,
+        accountRepository);
   }
 
   @Test
@@ -325,23 +328,22 @@ class AccountServiceTest extends AbstractAccountTest {
     accountEntity.setUserId(userProfile.getId().longValue());
     accountEntity.setAccountId(cdrbResponse.getAcct().getAccountNo());
     when(accountRepository.findByUserIdAndAccountId(anyLong(), anyString()))
-            .thenReturn(Optional.of(accountEntity));
+        .thenReturn(Optional.of(accountEntity));
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(accountEntity);
 
     // Act
-    FinishLinkAccountResponse response =
-            accountService.finishLinkAccount(authorization, request);
+    FinishLinkAccountResponse response = accountService.finishLinkAccount(authorization, request);
 
     // Assert
     verify(userProfileService, times(1)).findByUsername("username");
     verify(jwtTokenUtils, times(1)).extractJwt(authorization);
     verify(jwtTokenUtils, times(1)).getUsernameFromJwtToken("jwt-token");
-    verify(cdrbRestClient, times(1)).getAccountDetail(anyString(), any(CDRBGetAccountDetailRequest.class));
+    verify(cdrbRestClient, times(1))
+        .getAccountDetail(anyString(), any(CDRBGetAccountDetailRequest.class));
     verify(accountRepository, times(1))
-            .findByUserIdAndAccountId(userProfile.getId().longValue(), "123456");
+        .findByUserIdAndAccountId(userProfile.getId().longValue(), "123456");
     verify(accountRepository, times(1)).save(any(AccountEntity.class));
 
     Assertions.assertNotNull(response);
   }
-
 }

@@ -4,14 +4,13 @@ import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.UserRoleRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
-import com.rhbgroup.dte.obc.domains.user.repository.entity.UserRoleEntity;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
+import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Service;
 public class UserDetailsServiceImpl implements UserDetailsService {
 
   private final UserProfileRepository userProfileRepository;
-
   private final UserRoleRepository userRoleRepository;
 
   @Override
@@ -34,14 +32,27 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             .orElseThrow(
                 () -> new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
 
-    Optional<UserRoleEntity> byUserId = userRoleRepository.findByUserId(userProfile.getId());
-    if (byUserId.isPresent()) {
-      UserRoleEntity userRoleEntity = byUserId.get();
-      SimpleGrantedAuthority authority = new SimpleGrantedAuthority(userRoleEntity.getRole());
-      Set<SimpleGrantedAuthority> singleton = Collections.singleton(authority);
-      return new User(username, userProfile.getPassword(), singleton);
-    }
+    return userRoleRepository
+        .findByUserId(userProfile.getId())
+        .flatMap(
+            userRole -> {
+              SimpleGrantedAuthority authority = new SimpleGrantedAuthority(userRole.getRole());
+              Set<SimpleGrantedAuthority> singleton = Collections.singleton(authority);
 
-    return new User(username, userProfile.getPassword(), Collections.emptySet());
+              CustomUserDetails userDetails =
+                  CustomUserDetails.builder()
+                      .username(username)
+                      .permissions(userRole.getPermissions())
+                      .password(userProfile.getPassword())
+                      .authorities(singleton)
+                      .accountNonLocked(true)
+                      .accountNonExpired(true)
+                      .credentialsNonExpired(true)
+                      .enabled(true)
+                      .build();
+
+              return Optional.of(userDetails);
+            })
+        .orElseGet(() -> CustomUserDetails.withoutAuthorities(username, userProfile.getPassword()));
   }
 }
