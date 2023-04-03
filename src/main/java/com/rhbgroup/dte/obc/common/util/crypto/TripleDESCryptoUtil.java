@@ -29,8 +29,8 @@ public class TripleDESCryptoUtil extends CryptoUtil {
       Cipher cipher = Cipher.getInstance(ALGORITHM);
       cipher.init(
           Cipher.DECRYPT_MODE, new SecretKeySpec(key, KEY_ALGORITHM), new IvParameterSpec(iv));
-      byte[] encryptedBytes = cipher.doFinal(data);
-      return encryptedBytes;
+
+      return cipher.doFinal(data);
 
     } catch (Exception ex) {
       return new byte[0];

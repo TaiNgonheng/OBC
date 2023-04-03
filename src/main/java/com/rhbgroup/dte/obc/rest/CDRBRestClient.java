@@ -139,7 +139,7 @@ public class CDRBRestClient {
     return CryptoUtil.decodeHex(hexString.toString());
   }
 
-  private String[] constructPasswords(String passwordStr) {
+  public String[] constructPasswords(String passwordStr) {
 
     // Split password
     String[] passwordSplits = splitPassword(passwordStr);

@@ -31,6 +31,7 @@ import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
+import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,21 @@ public class AccountServiceImpl implements AccountService {
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
     return Functions.of(accountMapper::toUserModel)
         .andThen(userAuthService::authenticate)
+        .andThen(
+            Functions.peek(
+                authContext -> {
+                  // Checking account status
+                  CustomUserDetails principal = (CustomUserDetails) authContext.getPrincipal();
+                  AccountEntity accountEntity =
+                      accountRepository
+                          .findByUserIdAndBakongIdAndLinkedStatus(
+                              principal.getUserId(),
+                              principal.getBakongId(),
+                              LinkedStatusEnum.COMPLETED)
+                          .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
+
+                  log.info("Found account entity >> {}", accountEntity);
+                }))
         .andThen(
             Functions.peek(
                 authContext ->
@@ -159,6 +175,7 @@ public class AccountServiceImpl implements AccountService {
             .accountNo(request.getAccNumber())
             .cifNo(userProfileService.findByUserId(userId).getCifNo());
 
+    // Validate if acct has been linked already
     accountRepository
         .findByAccountIdAndLinkedStatus(request.getAccNumber(), LinkedStatusEnum.COMPLETED)
         .ifPresent(
@@ -166,6 +183,7 @@ public class AccountServiceImpl implements AccountService {
               throw new BizException(ResponseMessage.ACCOUNT_ALREADY_LINKED);
             });
 
+    // Get CDRB account detail & update account table
     return Functions.of(cdrbRestClient::getAccountDetail)
         .andThen(Functions.peek(AccountValidator::validateCasaAccount))
         .andThen(cdrbAccount -> accountMapper.toAccountEntity(pendingAccount, cdrbAccount))

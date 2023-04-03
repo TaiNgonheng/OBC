@@ -76,7 +76,7 @@ public class UserAuthService {
 
   private void recordFailAttempt(UserProfileEntity profile, Integer attempt) {
     profile.setLogAttempt(attempt);
-    if (attempt >= AppConstants.AUTHENTICATION.AUTHENTICATION_ALLOWED_TIME){
+    if (attempt >= AppConstants.AUTHENTICATION.AUTHENTICATION_ALLOWED_TIME) {
       profile.setLogAttempt(0);
       profile.setLogTime(Instant.now().plusSeconds(AppConstants.AUTHENTICATION.LOCK_SECOND));
     }
