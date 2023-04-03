@@ -46,17 +46,13 @@ import org.springframework.stereotype.Service;
 public class AccountServiceImpl implements AccountService {
 
   private final JwtTokenUtils jwtTokenUtils;
-
   private final ConfigService configService;
   private final UserAuthService userAuthService;
   private final UserProfileService userProfileService;
-
   private final AccountRepository accountRepository;
-
   private final PGRestClient pgRestClient;
   private final InfoBipRestClient infoBipRestClient;
   private final CDRBRestClient cdrbRestClient;
-
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
   @Override

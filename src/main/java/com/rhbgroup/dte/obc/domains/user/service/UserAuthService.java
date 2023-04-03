@@ -1,9 +1,13 @@
 package com.rhbgroup.dte.obc.domains.user.service;
 
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
+import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.UserModel;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -21,14 +25,25 @@ import org.springframework.stereotype.Service;
 public class UserAuthService {
 
   private final AuthenticationManager authManager;
+  private final UserProfileRepository userProfileRepository;
 
   public Authentication authenticate(UserModel userModel) {
+    UserProfileEntity profile =
+        userProfileRepository
+            .getByUsername(userModel.getUsername())
+            .orElseThrow(
+                () -> new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
+    if (profile.getLogTime().isAfter(Instant.now()))
+      throw new UserAuthenticationException(ResponseMessage.AUTHENTICATION_LOCKED);
     try {
-      return authManager.authenticate(
-          new UsernamePasswordAuthenticationToken(
-              userModel.getUsername(), userModel.getPassword()));
-
+      Authentication authentication =
+          authManager.authenticate(
+              new UsernamePasswordAuthenticationToken(
+                  userModel.getUsername(), userModel.getPassword()));
+      if (profile.getLogAttempt() != 0) recordFailAttempt(profile, 0);
+      return authentication;
     } catch (AuthenticationException ex) {
+      recordFailAttempt(profile, profile.getLogAttempt() + 1);
       throw new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED);
     }
   }
@@ -57,5 +72,14 @@ public class UserAuthService {
     } catch (Exception ex) {
       throw new BizException(ResponseMessage.SESSION_EXPIRED);
     }
+  }
+
+  private void recordFailAttempt(UserProfileEntity profile, Integer attempt) {
+    profile.setLogAttempt(attempt);
+    if (attempt >= AppConstants.AUTHENTICATION.AUTHENTICATION_ALLOWED_TIME){
+      profile.setLogAttempt(0);
+      profile.setLogTime(Instant.now().plusSeconds(AppConstants.AUTHENTICATION.LOCK_SECOND));
+    }
+    userProfileRepository.save(profile);
   }
 }

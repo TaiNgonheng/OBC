@@ -13,6 +13,12 @@ public class AppConstants {
   }
 
   @UtilityClass
+  public class AUTHENTICATION {
+    public static final Integer LOCK_SECOND = 28800;
+    public static final Integer AUTHENTICATION_ALLOWED_TIME = 3;
+  }
+
+  @UtilityClass
   public class PERMISSION {
     public static final String CAN_TOP_UP = "can_top_up";
     public static final String CAN_GET_BALANCE = "can_get_balance";
