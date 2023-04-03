@@ -3,6 +3,7 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
+import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapperImpl;
@@ -104,7 +105,7 @@ public class AccountServiceImpl implements AccountService {
               AccountEntity accountEntity = new AccountEntity();
               accountEntity.setUserId(userEntity.getId());
               accountEntity.setBakongId(bakongId);
-              accountEntity.setLinkedStatus(AppConstants.LinkStatus.PENDING);
+              accountEntity.setLinkedStatus(LinkedStatusEnum.PENDING);
 
               return accountEntity;
             })

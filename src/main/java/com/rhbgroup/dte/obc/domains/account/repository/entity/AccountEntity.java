@@ -1,8 +1,11 @@
 package com.rhbgroup.dte.obc.domains.account.repository.entity;
 
+import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -31,9 +34,6 @@ public class AccountEntity {
   @Column(name = "account_name")
   private String accountName;
 
-  @Column(name = "account_phone")
-  private String accountPhone;
-
   @Column(name = "account_type")
   private String accountType;
 
@@ -43,14 +43,9 @@ public class AccountEntity {
   @Column(name = "account_status")
   private String accountStatus;
 
-  @Column(name = "country")
-  private String country;
-
-  @Column(name = "balance")
-  private String balance;
-
   @Column(name = "linked_status")
-  private String linkedStatus;
+  @Enumerated(EnumType.STRING)
+  private LinkedStatusEnum linkedStatus;
 
   @Column(name = "created_date", insertable = false, updatable = false)
   private Instant createdDate;
