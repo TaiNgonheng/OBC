@@ -4,6 +4,7 @@ import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
+import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapperImpl;
@@ -12,8 +13,6 @@ import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
-import com.rhbgroup.dte.obc.domains.user.mapper.UserProfileMapper;
-import com.rhbgroup.dte.obc.domains.user.mapper.UserProfileMapperImpl;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
@@ -59,7 +58,6 @@ public class AccountServiceImpl implements AccountService {
   private final CDRBRestClient cdrbRestClient;
 
   private final AccountMapper accountMapper = new AccountMapperImpl();
-  private final UserProfileMapper userProfileMapper = new UserProfileMapperImpl();
 
   @Override
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -91,9 +89,8 @@ public class AccountServiceImpl implements AccountService {
         .andThen(Functions.peek(AccountValidator::validateAccount))
         .andThen(
             Functions.peek(
-                userProfile -> {
-                  infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin());
-                }))
+                userProfile ->
+                    infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin())))
         .andThen(
             Functions.peek(
                 response -> insertBakongId(request.getLogin(), request.getBakongAccId())))
@@ -127,7 +124,7 @@ public class AccountServiceImpl implements AccountService {
                           AccountEntity accountEntity = new AccountEntity();
                           accountEntity.setUserId(userModel.getId().longValue());
                           accountEntity.setBakongId(bakongId);
-                          accountEntity.setLinkedStatus(AppConstants.LinkStatus.PENDING);
+                          accountEntity.setLinkedStatus(LinkedStatusEnum.PENDING);
 
                           return accountEntity;
                         }))

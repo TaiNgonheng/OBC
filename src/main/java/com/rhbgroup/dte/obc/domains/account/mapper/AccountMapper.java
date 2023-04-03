@@ -2,6 +2,7 @@ package com.rhbgroup.dte.obc.domains.account.mapper;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.common.util.ObcStringUtils;
 import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.model.AccountModel;
@@ -17,7 +18,6 @@ import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.UserModel;
-import java.math.BigDecimal;
 import java.time.Instant;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -71,9 +71,7 @@ public interface AccountMapper {
     entity.setAccountType(accountDetail.getAccountType().getValue());
     entity.setAccountStatus(accountDetail.getAccountStatus().getValue());
     entity.setAccountCcy(accountDetail.getCurrencyCode());
-    entity.setCountry(accountDetail.getCtryCitizen());
-    entity.setBalance(BigDecimal.valueOf(accountDetail.getCurrentBal()));
-    entity.setLinkedStatus(AppConstants.LinkStatus.COMPLETED);
+    entity.setLinkedStatus(LinkedStatusEnum.COMPLETED);
     entity.setUpdatedDate(Instant.now());
     entity.setUpdatedBy(AppConstants.SYSTEM.OPEN_BANKING_CLIENT);
 

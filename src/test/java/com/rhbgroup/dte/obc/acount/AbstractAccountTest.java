@@ -18,6 +18,7 @@ import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.LoginTypeEnum;
+import com.rhbgroup.dte.obc.model.PGAuthResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.UserModel;
@@ -121,6 +122,10 @@ public abstract class AbstractAccountTest {
     return new FinishLinkAccountRequest().accNumber("10000xxx");
   }
 
+  protected PGAuthResponseAllOfData mockPGAuthResponse() {
+    return new PGAuthResponseAllOfData().idToken(mockJwtToken());
+  }
+
   protected FinishLinkAccountResponse mockFinishLinkAccountResponse() {
     return new FinishLinkAccountResponse()
         .status(ResponseHandler.ok())
@@ -148,7 +153,7 @@ public abstract class AbstractAccountTest {
   }
 
   protected UserModel mockUserModel() {
-    return new UserModel().cifNo("123xxx").id(BigDecimal.ONE);
+    return new UserModel().cifNo("123xxx").id(BigDecimal.ONE).mobileNo(MOBILE_NUMBER);
   }
 
   protected CDRBGetAccountDetailResponse mockCdrbAccountResponse() {

@@ -12,7 +12,6 @@ import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -50,11 +49,13 @@ public class JwtTokenUtils {
   }
 
   public String generateJwt(Authentication authentication) {
-    UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
+    CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
+
+    Claims claims = Jwts.claims().setSubject(userPrincipal.getUsername());
+    claims.put("auth", userPrincipal.getPermissions().split(","));
 
     return Jwts.builder()
-        .setSubject(userPrincipal.getUsername())
-        .setIssuedAt(new Date())
+        .setClaims(claims)
         .setExpiration(new Date((new Date()).getTime() + (tokenTTL * 1000)))
         .signWith(SignatureAlgorithm.HS512, mySecret)
         .compact();

@@ -53,11 +53,11 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock InfoBipRestClient infoBipRestClient;
 
-  @Mock AccountRepository accountRepository;
+  @Mock CDRBRestClient cdrbRestClient;
 
   @Mock UserProfileService userProfileService;
 
-  @Mock CDRBRestClient cdrbRestClient;
+  @Mock AccountRepository accountRepository;
 
   @BeforeEach
   void cleanUp() {
@@ -73,7 +73,7 @@ class AccountServiceTest extends AbstractAccountTest {
   }
 
   @Test
-  void testInitLinkAccount_Success_RequireChangePassword() {
+  void testInitLinkAccount_Success_RequireChangePhone() {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
@@ -86,7 +86,6 @@ class AccountServiceTest extends AbstractAccountTest {
 
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
-    Assertions.assertEquals(true, response.getData().getRequireOtp());
     Assertions.assertEquals(true, response.getData().getRequireChangePhone());
   }
 
@@ -103,7 +102,6 @@ class AccountServiceTest extends AbstractAccountTest {
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
-    Assertions.assertEquals(true, response.getData().getRequireOtp());
     Assertions.assertEquals(true, response.getData().getRequireChangePhone());
   }
 
@@ -142,7 +140,7 @@ class AccountServiceTest extends AbstractAccountTest {
   }
 
   @Test
-  void testInitLinkAccount_Success_NotRequireChangePassword() {
+  void testInitLinkAccount_Success_NotRequireChangePhone() {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
@@ -156,7 +154,6 @@ class AccountServiceTest extends AbstractAccountTest {
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
-    Assertions.assertEquals(true, response.getData().getRequireOtp());
     Assertions.assertFalse(response.getData().getRequireChangePhone());
   }
 
@@ -302,11 +299,10 @@ class AccountServiceTest extends AbstractAccountTest {
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
     when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
     when(cdrbRestClient.getAccountDetail(anyString(), any())).thenReturn(mockCdrbAccountResponse());
-    when(accountRepository.findByUserIdAndAccountId(anyLong(), anyString()))
-        .thenReturn(Optional.empty());
+    when(accountRepository.findByUserIdAndLinkedStatus(anyLong(), anyString()))
+        .thenReturn(Optional.of(mockAccountEntity()));
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntity());
 
-    // Act
     FinishLinkAccountResponse response =
         accountService.finishLinkAccount(
             "authorization", new FinishLinkAccountRequest().accNumber("12345"));
@@ -323,11 +319,10 @@ class AccountServiceTest extends AbstractAccountTest {
     when(jwtTokenUtils.extractJwt(anyString())).thenReturn("jwt-token");
     when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
     when(cdrbRestClient.getAccountDetail(anyString(), any())).thenReturn(mockCdrbAccountResponse());
-    when(accountRepository.findByUserIdAndAccountId(anyLong(), anyString()))
+    when(accountRepository.findByUserIdAndLinkedStatus(anyLong(), anyString()))
         .thenReturn(Optional.of(mockAccountEntity()));
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntity());
 
-    // Act
     FinishLinkAccountResponse response =
         accountService.finishLinkAccount(
             "authorization", new FinishLinkAccountRequest().accNumber("12345"));
