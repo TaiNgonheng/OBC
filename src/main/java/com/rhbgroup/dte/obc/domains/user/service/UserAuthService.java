@@ -1,6 +1,7 @@
 package com.rhbgroup.dte.obc.domains.user.service;
 
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.UserModel;
 import java.util.Collection;
@@ -11,6 +12,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -42,6 +45,17 @@ public class UserAuthService {
 
     if (matchCount != authorities.size()) {
       throw new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED);
+    }
+  }
+
+  public String getCurrentUser() {
+    try {
+      UserDetails principal =
+          (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+      return principal.getUsername();
+    } catch (Exception ex) {
+      throw new BizException(ResponseMessage.SESSION_EXPIRED);
     }
   }
 }

@@ -4,25 +4,27 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
-import com.rhbgroup.dte.obc.common.util.CacheUtil;
+import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
+import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.impl.AccountServiceImpl;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
-import com.rhbgroup.dte.obc.domains.config.service.impl.ConfigServiceImpl;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
+import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
+import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
+import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,30 +40,42 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock JwtTokenUtils jwtTokenUtils;
 
-  @Mock CacheUtil cacheUtil;
-
   @Mock UserAuthService userAuthService;
 
   @Mock ConfigService configService;
 
   @Mock PGRestClient pgRestClient;
 
+  @Mock InfoBipRestClient infoBipRestClient;
+
+  @Mock AccountRepository accountRepository;
+
+  @Mock UserProfileService userProfileService;
+
   @BeforeEach
   void cleanUp() {
-    reset(jwtTokenUtils, cacheUtil, configService, userAuthService, pgRestClient);
+    reset(
+        jwtTokenUtils,
+        configService,
+        userAuthService,
+        pgRestClient,
+        infoBipRestClient,
+        accountRepository,
+        userProfileService);
   }
 
   @Test
   void testInitLinkAccount_Success_RequireChangePassword() {
 
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    when(pgRestClient.getUserProfile(anyList(), anyString()))
-        .thenReturn(mockProfileRequiredChangeMobile());
+    when(userProfileService.getByUsername(any())).thenReturn(mockObcUserProfileEntity());
+    when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
+    when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
+
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
     Assertions.assertEquals(true, response.getData().getRequireOtp());
@@ -69,20 +83,13 @@ class AccountServiceTest extends AbstractAccountTest {
   }
 
   @Test
-  void testInitLinkAccount_Success_ValueInCacheHasBeenExpired() throws JSONException {
+  void testInitLinkAccount_Success_ValueInCacheHasBeenExpired() {
 
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(null);
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-
-    ConfigServiceImpl configServiceMock = new ConfigServiceImpl(null);
-    configServiceMock.setJsonValue(
-        new JSONObject().put("username", "username").put("password", "password"));
-
-    when(configService.loadJSONValue(anyString())).thenReturn(configServiceMock);
-    when(pgRestClient.login(any())).thenReturn(mockPGAuthResponse());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    when(pgRestClient.getUserProfile(anyList(), anyString()))
-        .thenReturn(mockProfileRequiredChangeMobile());
+    when(userProfileService.getByUsername(any())).thenReturn(mockObcUserProfileEntity());
+    when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
+    when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
@@ -95,9 +102,8 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testInitLinkAccount_Failed_AccountNotFullyKYC() {
 
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(pgRestClient.getUserProfile(anyList(), anyString())).thenReturn(mockProfileNotFullyKyc());
+    when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotFullyKyc());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
     try {
@@ -113,10 +119,8 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testInitLinkAccount_Failed_AccountNotActive() {
 
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(pgRestClient.getUserProfile(anyList(), anyString()))
-        .thenReturn(mockProfileUserDeactivated());
+    when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileUserDeactivated());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
 
     try {
@@ -131,12 +135,15 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testInitLinkAccount_Success_NotRequireChangePassword() {
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
+
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(configService.getByConfigKey(anyString(), anyString(), any())).thenReturn(1);
-    when(pgRestClient.getUserProfile(anyList(), anyString()))
-        .thenReturn(mockProfileNotRequiredChangeMobile());
+    when(userProfileService.getByUsername(any())).thenReturn(mockObcUserProfileEntity());
+    when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
+    when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
     when(jwtTokenUtils.generateJwt(any())).thenReturn(mockJwtToken());
+    when(infoBipRestClient.sendOtp(anyString(), anyString()))
+        .thenReturn(mockInfoBipSendOtpResponse());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
@@ -163,13 +170,69 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testInitLinkAccount_Failed_3rdServiceUnavailable() {
-    when(cacheUtil.getValueFromKey(anyString(), anyString())).thenReturn(mockJwtToken());
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(pgRestClient.getUserProfile(anyList(), anyString()))
+    when(pgRestClient.getUserProfile(anyList()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {
       accountService.initLinkAccount(mockInitAccountRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testInitLinkAccount_Failed_InfoBipServiceUnavailable() {
+    when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
+    when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
+    lenient()
+        .when(infoBipRestClient.sendOtp(anyString(), anyString()))
+        .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
+
+    try {
+      accountService.initLinkAccount(mockInitAccountRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testVerifyOTP_Success_IsValid_True() {
+    when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
+    when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(true);
+
+    VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
+    Assertions.assertEquals(AppConstants.STATUS.SUCCESS, response.getStatus().getCode());
+    Assertions.assertTrue(response.getData().getIsValid());
+  }
+
+  @Test
+  void testVerifyOTP_Success_IsValid_False() {
+    when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
+    when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(false);
+
+    VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
+    Assertions.assertEquals(AppConstants.STATUS.SUCCESS, response.getStatus().getCode());
+    Assertions.assertFalse(response.getData().getIsValid());
+  }
+
+  @Test
+  void testVerifyOTP_Failed_InfoBipServiceUnavailable() {
+    when(jwtTokenUtils.extractJwt(anyString())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.getUsernameFromJwtToken(anyString())).thenReturn("username");
+    when(infoBipRestClient.verifyOtp(anyString(), anyString()))
+        .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
+
+    try {
+      accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
     } catch (BizException ex) {
       Assertions.assertEquals(
           ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());

@@ -3,9 +3,12 @@ package com.rhbgroup.dte.obc.acount;
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
+import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
+import com.rhbgroup.dte.obc.model.InfoBipSendOtpResponse;
+import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
@@ -16,6 +19,8 @@ import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
+import java.nio.charset.StandardCharsets;
+import org.codehaus.plexus.util.Base64;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
@@ -84,6 +89,12 @@ public abstract class AbstractAccountTest {
         .accountStatus(AccountStatusEnum.ACTIVATED.getStatus());
   }
 
+  protected UserProfileEntity mockObcUserProfileEntity() {
+    UserProfileEntity entity = new UserProfileEntity();
+    entity.setId(1L);
+    return entity;
+  }
+
   protected PGProfileResponse mockProfileUserDeactivated() {
     return new PGProfileResponse()
         .accountId("BankAccountId")
@@ -108,11 +119,31 @@ public abstract class AbstractAccountTest {
     return new PGAuthResponseAllOfData().idToken(mockJwtToken());
   }
 
+  protected InfoBipVerifyOtpResponse mockInfoBipVerifyOtpResponse() {
+    return new InfoBipVerifyOtpResponse()
+        .pinId("pinId")
+        .msisdn("msisdn")
+        .attemptsRemaining(1)
+        .verified(true);
+  }
+
+  protected InfoBipSendOtpResponse mockInfoBipSendOtpResponse() {
+    return new InfoBipSendOtpResponse().pinId("pinId");
+  }
+
   protected Authentication mockAuthentication() {
     return new UsernamePasswordAuthenticationToken("test", "test");
   }
 
   protected String mockJwtToken() {
     return "header.payload.signature";
+  }
+
+  protected String mockBearerString() {
+    return "Bearer "
+        .concat(
+            new String(
+                Base64.encodeBase64("bearerToken".getBytes(StandardCharsets.UTF_8)),
+                StandardCharsets.UTF_8));
   }
 }

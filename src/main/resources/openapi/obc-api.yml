@@ -65,8 +65,16 @@ components:
       $ref: './schemas/pg/PGAuthResponse.yml'
     PGProfileResponse:
       $ref: './schemas/pg/PGProfileResponse.yml'
+    InfoBipSendOtpRequest:
+      $ref: './schemas/infoBip/InfoBipSendOtpRequest.yml'
+    InfoBipSendOtpResponse:
+      $ref: './schemas/infoBip/InfoBipSendOtpResponse.yml'
+    InfoBipVerifyOtpRequest:
+      $ref: './schemas/infoBip/InfoBipVerifyOtpRequest.yml'
     InfoBipVerifyOtpResponse:
       $ref: './schemas/infoBip/InfoBipVerifyOtpResponse.yml'
+    InfoBipLoginResponse:
+      $ref: './schemas/infoBip/InfoBipLoginResponse.yml'
   securitySchemes:
     bearerAuth:
       type: http
