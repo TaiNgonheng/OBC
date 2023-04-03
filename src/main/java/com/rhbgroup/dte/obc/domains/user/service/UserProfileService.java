@@ -4,7 +4,5 @@ import com.rhbgroup.dte.obc.model.UserModel;
 
 public interface UserProfileService {
 
-  void updateBakongId(String username, String bakongId);
-
   UserModel findByUsername(String username);
 }

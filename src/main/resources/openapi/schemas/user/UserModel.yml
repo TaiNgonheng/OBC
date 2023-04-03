@@ -18,6 +18,8 @@ properties:
     format: date-time
   mobileNo:
     type: string
+  email:
+    type: string
   cifNo:
     type: string
   status:

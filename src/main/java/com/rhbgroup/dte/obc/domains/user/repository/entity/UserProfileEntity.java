@@ -24,20 +24,11 @@ public class UserProfileEntity {
   @Column(name = "password", nullable = false)
   private String password;
 
-  @Column(name = "otp_id")
-  private String otpId;
-
-  @Column(name = "bakong_id")
-  private String bakongId;
-
   @Column(name = "otp_verified_status")
   private Boolean otpVerifiedStatus;
 
   @Column(name = "otp_verified_date")
   private Instant otpVerifiedDate;
-
-  @Column(name = "status")
-  private String status;
 
   @Column(name = "mobile_no", unique = true)
   private String mobileNo;
@@ -48,7 +39,7 @@ public class UserProfileEntity {
   @Column(name = "cif_no")
   private String cifNo;
 
-  @Column(name = "created_date", insertable = false)
+  @Column(name = "created_date", insertable = false, updatable = false)
   private Instant createdDate;
 
   @Column(name = "updated_date")
