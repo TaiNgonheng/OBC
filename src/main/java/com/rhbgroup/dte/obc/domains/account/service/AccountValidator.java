@@ -32,11 +32,13 @@ public class AccountValidator {
       throw new BizException(ResponseMessage.KYC_NOT_VERIFIED);
     }
 
-    // 1 = Active, 2 = Closed, 4 = New Today, 9 = Dormant
+    // 1 = Active, 2 = Closed, 4 = New Today, 5 = Do not close on Zero, 7 = Frozen, 9 = Dormant
     CDRBGetAccountDetailResponseAcct.AccountStatusEnum accountStatus =
         account.getAcct().getAccountStatus();
     if (accountStatus.equals(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._2)
+        || accountStatus.equals(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._7)
         || accountStatus.equals(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._9)) {
+
       throw new BizException(ResponseMessage.ACCOUNT_DEACTIVATED);
     }
   }
