@@ -1,0 +1,11 @@
+type: object
+description: InfoBip verify OTP response
+properties:
+  pinId:
+    type: string
+  msisdn:
+    type: string
+  verified:
+    type: boolean
+  attemptsRemaining:
+    type: integer

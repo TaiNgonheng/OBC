@@ -1,16 +1,17 @@
-#/init-link-account:
+#/gw/login:
+
 post:
   tags:
     - Account
-  summary: Initialize CASA linking account
-  description: Link CASA between NBC and GoWave
-  operationId: initLinkAccount
+  summary: After init account, user need to use this endpoint to get auth token
+  description: After init account, user need to use this endpoint to get auth token
+  operationId: authenticate
   requestBody:
-    description: Create account
+    description: Request for getting authorization token
     content:
       application/json:
         schema:
-          $ref: '../schemas/account/InitAccountRequest.yml'
+          $ref: '../schemas/account/AuthenticationRequest.yml'
     required: true
   responses:
     '200':
@@ -18,7 +19,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../schemas/account/InitAccountResponse.yml'
+            $ref: '../schemas/account/AuthenticationResponse.yml'
     '400':
       description: Bad Request
     '401':

@@ -1,8 +1,11 @@
 package com.rhbgroup.dte.obc.domains.account.repository.entity;
 
+import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -19,21 +22,37 @@ public class AccountEntity {
   @Column(name = "id", nullable = false)
   private Long id;
 
+  @Column(name = "account_id", unique = true)
+  private String accountId;
+
+  @Column(name = "user_id", nullable = false, unique = true)
+  private Long userId;
+
   @Column(name = "bakong_id", nullable = false)
   private String bakongId;
 
-  @Column(name = "account_id", nullable = false)
-  private String accountId;
+  @Column(name = "account_name")
+  private String accountName;
 
-  @Column(name = "user_id", nullable = false)
-  private Long userId;
+  @Column(name = "account_type")
+  private String accountType;
 
-  @Column(name = "active")
-  private Boolean active;
+  @Column(name = "account_ccy")
+  private String accountCcy;
 
-  @Column(name = "created_date", insertable = false)
+  @Column(name = "account_status")
+  private String accountStatus;
+
+  @Column(name = "linked_status")
+  @Enumerated(EnumType.STRING)
+  private LinkedStatusEnum linkedStatus;
+
+  @Column(name = "created_date", insertable = false, updatable = false)
   private Instant createdDate;
 
   @Column(name = "updated_date")
   private Instant updatedDate;
+
+  @Column(name = "updated_by")
+  private String updatedBy;
 }

@@ -37,8 +37,8 @@ public class AppConstants {
   }
 
   @UtilityClass
-  public class USER_STATUS {
-    public static final String UNLINKED = "UNLINKED";
-    public static final String LINKED = "LINKED";
+  public class LinkStatus {
+    public static final String PENDING = "PENDING";
+    public static final String COMPLETED = "COMPLETED";
   }
 }

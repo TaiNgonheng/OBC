@@ -19,7 +19,6 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -48,8 +47,7 @@ public class TransactionServiceImpl implements TransactionService {
   public void processTransactionHistoryBatchFile(TransactionBatchFileProcessingRequest request) {
     LocalDate date = getProcessingDate(request);
     BatchReport report = batchReportRepository.findByDate(date);
-    if (ObjectUtils.isNotEmpty(report)
-        && !report.getStatus().equals(BatchReportStatus.FAILED)) {
+    if (ObjectUtils.isNotEmpty(report) && !report.getStatus().equals(BatchReportStatus.FAILED)) {
       throw new IllegalArgumentException("The file input date has been processed");
     }
     report.setStatus(BatchReportStatus.PENDING);

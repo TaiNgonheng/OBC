@@ -1,10 +1,9 @@
 type: object
+description: Authentication request
 required:
   - loginType
   - login
   - key
-  - bakongAccId
-  - phoneNumber
 properties:
   loginType:
     $ref: '../common/LoginTypeEnum.yml'
@@ -14,11 +13,5 @@ properties:
   key:
     type: string
     description: A hash password in SHA256
+    regex: ^[a-fA-F0-9]{64}$
     example: sha256_password
-  bakongAccId:
-    type: string
-    example: john@email.com
-  phoneNumber:
-    type: string
-    regex: ^855\d{8,9}$
-    example: '85512345678'

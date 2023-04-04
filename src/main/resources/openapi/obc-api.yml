@@ -20,6 +20,10 @@ servers: # context path - /api/v1
 paths:
   /init-link-account:
     $ref: './paths/init-link-account.yml'
+  /verify-otp:
+    $ref: './paths/verify-otp.yml'
+  /authenticate:
+    $ref: './paths/authenticate.yml'
   /gw/user-exchange:
     $ref: './paths/user-exchange.yml'
   /gw/login:
@@ -37,6 +41,14 @@ components:
       $ref: './schemas/account/InitAccountRequest.yml'
     InitAccountResponse:
       $ref: './schemas/account/InitAccountResponse.yml'
+    VerifyOtpRequest:
+      $ref: './schemas/account/VerifyOtpRequest.yml'
+    VerifyOtpResponse:
+      $ref: './schemas/account/VerifyOtpResponse.yml'
+    AuthenticationRequest:
+      $ref: './schemas/account/AuthenticationRequest.yml'
+    AuthenticationResponse:
+      $ref: './schemas/account/AuthenticationResponse.yml'
     ExchangeAccountRequest:
       $ref: './schemas/user/UserExchangeRequest.yml'
     ExchangeAccountResponse:
@@ -55,6 +67,16 @@ components:
       $ref: './schemas/pg/PGAuthResponse.yml'
     PGProfileResponse:
       $ref: './schemas/pg/PGProfileResponse.yml'
+    InfoBipSendOtpRequest:
+      $ref: './schemas/infoBip/InfoBipSendOtpRequest.yml'
+    InfoBipSendOtpResponse:
+      $ref: './schemas/infoBip/InfoBipSendOtpResponse.yml'
+    InfoBipVerifyOtpRequest:
+      $ref: './schemas/infoBip/InfoBipVerifyOtpRequest.yml'
+    InfoBipVerifyOtpResponse:
+      $ref: './schemas/infoBip/InfoBipVerifyOtpResponse.yml'
+    InfoBipLoginResponse:
+      $ref: './schemas/infoBip/InfoBipLoginResponse.yml'
     SFTPConfig:
       $ref: './schemas/config/SFTPConfig.yml'
     SIBSSyncDateConfig:

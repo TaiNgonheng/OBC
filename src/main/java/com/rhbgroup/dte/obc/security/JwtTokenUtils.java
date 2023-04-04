@@ -18,10 +18,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenUtils {
 
-  @Value("${app.jwt-secret}")
+  @Value("${obc.security.jwt-secret}")
   String mySecret;
 
-  @Value("${app.jwt-ttl}")
+  @Value("${obc.security.jwt-ttl}")
   Long tokenTTL; // in second
 
   public String getUsernameFromJwtToken(String jwt) {
@@ -58,6 +58,12 @@ public class JwtTokenUtils {
         .setExpiration(new Date((new Date()).getTime() + (tokenTTL * 1000)))
         .signWith(SignatureAlgorithm.HS512, mySecret)
         .compact();
+  }
+
+  public String extractJwt(String jwt) {
+    return StringUtils.isNotBlank(jwt) && jwt.contains("Bearer")
+        ? jwt.substring(7)
+        : StringUtils.EMPTY;
   }
 
   public boolean isExpired(String token) {
