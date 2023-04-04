@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    active: local
   jpa:
     properties:
       dialect: org.hibernate.dialect.MySQL5Dialect

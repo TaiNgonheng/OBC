@@ -24,6 +24,8 @@ paths:
     $ref: './paths/verify-otp.yml'
   /finish-link-account:
     $ref: './paths/finish-link-account.yml'
+  /unlink-account:
+    $ref: './paths/unlink-account.yml'
   /authenticate:
     $ref: './paths/authenticate.yml'
   /account-detail:
