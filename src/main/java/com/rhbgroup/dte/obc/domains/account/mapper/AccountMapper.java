@@ -2,6 +2,8 @@ package com.rhbgroup.dte.obc.domains.account.mapper;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.common.enums.BakongAccountStatusEnum;
+import com.rhbgroup.dte.obc.common.enums.BakongKYCStatusEnum;
 import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.common.util.ObcStringUtils;
 import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
@@ -109,21 +111,21 @@ public interface AccountMapper {
         || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._5
             .name()
             .equals(responseData.getAccStatus())) {
-      responseData.setAccStatus("ACTIVE");
+      responseData.setAccStatus(BakongAccountStatusEnum.ACTIVE.name());
     } else {
-      responseData.setAccStatus("CLOSED");
+      responseData.setAccStatus(BakongAccountStatusEnum.CLOSED.name());
     }
 
     if (CDRBGetAccountDetailResponseAcct.KycStatusEnum.F.getValue()
         .equals(responseData.getKycStatus())) {
-      responseData.setKycStatus("FULL");
+      responseData.setKycStatus(BakongKYCStatusEnum.FULL.name());
     } else if (CDRBGetAccountDetailResponseAcct.KycStatusEnum.V.getValue()
             .equals(responseData.getKycStatus())
         || CDRBGetAccountDetailResponseAcct.KycStatusEnum.X.getValue()
             .equals(responseData.getKycStatus())) {
-      responseData.setKycStatus("PARTIAL");
+      responseData.setKycStatus(BakongKYCStatusEnum.PARTIAL.name());
     } else {
-      responseData.setKycStatus("BASIC");
+      responseData.setKycStatus(BakongKYCStatusEnum.BASIC.name());
     }
 
     responseData.setAccPhone(mobileNo);
