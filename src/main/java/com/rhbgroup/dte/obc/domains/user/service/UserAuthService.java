@@ -33,7 +33,7 @@ public class UserAuthService {
             .getByUsername(userModel.getUsername())
             .orElseThrow(
                 () -> new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
-    if (profile.getLogTime() != null && profile.getLogTime().isAfter(Instant.now()))
+    if (profile.getLockTime() != null && profile.getLockTime().isAfter(Instant.now()))
       throw new UserAuthenticationException(ResponseMessage.AUTHENTICATION_LOCKED);
 
     try {
@@ -41,10 +41,11 @@ public class UserAuthService {
           authManager.authenticate(
               new UsernamePasswordAuthenticationToken(
                   userModel.getUsername(), userModel.getPassword()));
-      if (profile.getLogAttempt() != null && profile.getLogAttempt() != 0) recordFailAttempt(profile, 0);
+      if (profile.getLoginAttempt() != null && profile.getLoginAttempt() != 0)
+        recordFailAttempt(profile, 0);
       return authentication;
     } catch (AuthenticationException ex) {
-      recordFailAttempt(profile, profile.getLogAttempt() + 1);
+      recordFailAttempt(profile, profile.getLoginAttempt() + 1);
       throw new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED);
     }
   }
@@ -76,10 +77,11 @@ public class UserAuthService {
   }
 
   private void recordFailAttempt(UserProfileEntity profile, Integer attempt) {
-    profile.setLogAttempt(attempt);
+    profile.setLoginAttempt(attempt);
+    profile.setLockTime(null);
     if (attempt >= AppConstants.AUTHENTICATION.AUTHENTICATION_ALLOWED_TIME) {
-      profile.setLogAttempt(0);
-      profile.setLogTime(Instant.now().plusSeconds(AppConstants.AUTHENTICATION.LOCK_SECOND));
+      profile.setLoginAttempt(0);
+      profile.setLockTime(Instant.now().plusSeconds(AppConstants.AUTHENTICATION.LOCK_SECOND));
     }
     userProfileRepository.save(profile);
   }
