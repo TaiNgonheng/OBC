@@ -69,7 +69,7 @@ public class AccountServiceImpl implements AccountService {
                   CustomUserDetails principal = (CustomUserDetails) authContext.getPrincipal();
                   AccountEntity accountEntity =
                       accountRepository
-                          .findByUserIdAndBakongIdAndLinkedStatus(
+                          .findFirstByUserIdAndBakongIdAndLinkedStatus(
                               principal.getUserId(),
                               principal.getBakongId(),
                               LinkedStatusEnum.COMPLETED)

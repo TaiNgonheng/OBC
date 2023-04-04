@@ -67,16 +67,21 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             })
         .flatMap(
             userDetail -> {
-              CustomUserDetails customUserDetails =
-                  accountRepository
-                      .findByUserId(userProfile.getId())
-                      .flatMap(
-                          account ->
-                              Optional.of(
-                                  userDetail.toBuilder().bakongId(account.getBakongId()).build()))
-                      .orElse(userDetail);
+              try {
+                CustomUserDetails customUserDetails =
+                    accountRepository
+                        .findFirstByUserId(userProfile.getId())
+                        .flatMap(
+                            account ->
+                                Optional.of(
+                                    userDetail.toBuilder().bakongId(account.getBakongId()).build()))
+                        .orElse(userDetail);
 
-              return Optional.of(customUserDetails);
+                return Optional.of(customUserDetails);
+
+              } catch (Exception ex) {
+                return Optional.of(userDetail);
+              }
             })
         .orElseGet(() -> CustomUserDetails.withoutAuthorities(userProfile));
   }
