@@ -1,0 +1,43 @@
+type: object
+properties:
+  acct:
+    type: object
+    properties:
+      accountNo:
+        type: string
+      accountType:
+        type: string
+        enum:
+          - D
+          - S
+      cifNo:
+        type: string
+      currencyCode:
+        type: string
+      accountName:
+        type: string
+      accountStatus:
+        type: string
+        description: 1 = Active, 2 = Closed, 4 = New Today, 5 = Do not close on Zero, 7 = Frozen, 9 = Dormant
+        enum:
+          - 1
+          - 2
+          - 4
+          - 5
+          - 7
+          - 9
+      kycStatus:
+        type: string
+        description: F = Full KYC, V = Partial KYC with Validation, X = Partial KYC without Validation
+        enum:
+          - F
+          - V
+          - X
+      ctryCitizen:
+        type: string
+      currentBal:
+        type: number
+        format: double
+      availBal:
+        type: number
+        format: double

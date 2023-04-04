@@ -9,14 +9,14 @@ public class ResponseHandler {
 
   public static ResponseStatus ok() {
     return new ResponseStatus()
-        .code(AppConstants.STATUS.SUCCESS)
+        .code(AppConstants.Status.SUCCESS)
         .errorCode(null)
         .errorMessage(null);
   }
 
   public static ResponseStatus error(ResponseMessage message) {
     return new ResponseStatus()
-        .code(AppConstants.STATUS.ERROR)
+        .code(AppConstants.Status.ERROR)
         .errorCode(message.getCode().toString())
         .errorMessage(message.getMsg());
   }

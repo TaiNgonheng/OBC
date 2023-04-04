@@ -39,6 +39,15 @@ public class UserProfileEntity {
   @Column(name = "cif_no")
   private String cifNo;
 
+  @Column(name = "login_attempt")
+  private Integer loginAttempt;
+
+  @Column(name = "lock_time")
+  private Instant lockTime;
+
+  @Column(name = "deleted")
+  private boolean deleted;
+
   @Column(name = "created_date", insertable = false)
   private Instant createdDate;
 

@@ -1,0 +1,12 @@
+type: object
+properties:
+  cifNo:
+    type: string
+  accountNo:
+    type: string
+  accountType:
+    type: string
+    description: Account type to identify current (D) or savings (S) account
+    enum:
+      - D
+      - S

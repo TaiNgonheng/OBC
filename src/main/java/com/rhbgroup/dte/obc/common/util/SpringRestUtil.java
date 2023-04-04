@@ -111,8 +111,7 @@ public class SpringRestUtil {
       String url,
       Map<String, String> headers,
       Object body,
-      ParameterizedTypeReference<T> typeReference)
-      throws RestClientException {
+      ParameterizedTypeReference<T> typeReference) {
     return sendRequest(url, HttpMethod.POST, headers, body, typeReference);
   }
 
@@ -143,8 +142,10 @@ public class SpringRestUtil {
       HttpEntity<Object> httpEntity = new HttpEntity<>(body, buildHeader(header));
       ResponseEntity<T> response =
           restTemplate.exchange(url, method, httpEntity, parameterizedTypeReference);
+
       return response.getBody();
-    } catch (Exception ex) {
+    } catch (RestClientException ex) {
+      log.error("Internal API response with error >> {}", ex.getMessage());
       throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
   }

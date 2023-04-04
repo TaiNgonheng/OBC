@@ -25,7 +25,6 @@ import org.springframework.stereotype.Component;
 public class PGRestClient {
 
   private static final String AUTHENTICATE_URL = "/api/authenticate";
-
   private static final String GET_USER_PROFILE_URL =
       "/tps/api/fst-iroha-accounts/find-by-account-name";
 
@@ -42,7 +41,7 @@ public class PGRestClient {
   protected String password;
 
   @PostConstruct
-  public void initCache() {
+  private void initCache() {
     cacheUtil.createCache(CacheConstants.PGCache.CACHE_NAME, Duration.ONE_MINUTE);
   }
 
@@ -91,7 +90,7 @@ public class PGRestClient {
             ParameterizedTypeReference.forType(PGAuthResponse.class));
 
     if (null != pgAuthResponse.getStatus()
-        && AppConstants.STATUS.SUCCESS != pgAuthResponse.getStatus().getCode()) {
+        && AppConstants.Status.SUCCESS != pgAuthResponse.getStatus().getCode()) {
       throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
 

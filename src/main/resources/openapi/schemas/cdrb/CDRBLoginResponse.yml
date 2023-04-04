@@ -1,0 +1,12 @@
+type: object
+description: CDRB login response
+properties:
+  code:
+    type: string
+    example: 2000
+  message:
+    type: string
+    example: INVALID_LOGIN_CREDENTIALS
+  token:
+    type: string
+    example: header.payload.signature

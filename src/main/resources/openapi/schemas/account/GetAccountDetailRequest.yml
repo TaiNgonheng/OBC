@@ -1,0 +1,8 @@
+type: object
+required:
+  - acctNumber
+properties:
+  accNumber:
+    type: string
+    minLength: 1
+    maxLength: 50
