@@ -78,7 +78,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
-    when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.generateJwtAppUser(anyString(), any())).thenReturn(mockJwtToken());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
 
@@ -94,7 +94,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
-    when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.generateJwtAppUser(anyString(), any())).thenReturn(mockJwtToken());
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
@@ -107,7 +107,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotFullyKyc());
-    when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.generateJwtAppUser(anyString(), any())).thenReturn(mockJwtToken());
 
     try {
       accountService.initLinkAccount(mockInitAccountRequest());
@@ -124,7 +124,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileUserDeactivated());
-    when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.generateJwtAppUser(anyString(), any())).thenReturn(mockJwtToken());
 
     try {
       accountService.initLinkAccount(mockInitAccountRequest());
@@ -143,7 +143,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(new AccountEntity());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
-    when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
+    when(jwtTokenUtils.generateJwtAppUser(anyString(), any())).thenReturn(mockJwtToken());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenReturn(mockInfoBipSendOtpResponse());
 
@@ -243,7 +243,7 @@ class AccountServiceTest extends AbstractAccountTest {
   void testAuthenticate_Successful() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
-    when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
+    when(accountRepository.findFirstByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
         .thenReturn(Optional.of(mockAccountEntityLinked()));
 
     AuthenticationResponse response = accountService.authenticate(mockAuthenticationRequest());
@@ -273,7 +273,7 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testAuthenticate_Failed_Unauthorized_ROLE_NOT_PERMITTED() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
+    when(accountRepository.findFirstByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
         .thenReturn(Optional.of(mockAccountEntityLinked()));
     doThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED))
         .when(userAuthService)
@@ -292,7 +292,7 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testAuthenticate_Failed_AccountNotActive() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
+    when(accountRepository.findFirstByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
         .thenReturn(Optional.of(mockAccountEntityAccountPending()));
     try {
       accountService.authenticate(mockAuthenticationRequest());
