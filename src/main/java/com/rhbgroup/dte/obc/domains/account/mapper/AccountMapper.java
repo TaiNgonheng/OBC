@@ -13,7 +13,9 @@ import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponseAllOfData;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponseAllOfDataLimit;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
@@ -85,6 +87,56 @@ public interface AccountMapper {
         .data(new FinishLinkAccountResponseAllOfData().requireChangePassword(false));
   }
 
-//  @Mapping()
-  GetAccountDetailResponseAllOfData toAccountDetailResponse(CDRBGetAccountDetailResponse response);
+  @Mapping(source = "accountNo", target = "accNumber")
+  @Mapping(source = "accountName", target = "accName")
+  @Mapping(source = "accountType", target = "accType")
+  @Mapping(source = "currencyCode", target = "accCcy")
+  @Mapping(source = "accountStatus", target = "accStatus")
+  @Mapping(source = "ctryCitizen", target = "country")
+  @Mapping(source = "currentBal", target = "balance")
+  GetAccountDetailResponseAllOfData toAccountDetailData(CDRBGetAccountDetailResponseAcct response);
+
+  default GetAccountDetailResponse mappingMobileNoAndAccStatus(
+      String mobileNo, Double trxMin, Double trxMax, GetAccountDetailResponse response) {
+
+    GetAccountDetailResponseAllOfData responseData = response.getData();
+    if (CDRBGetAccountDetailResponseAcct.AccountStatusEnum._1
+            .name()
+            .equals(responseData.getAccStatus())
+        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._4
+            .name()
+            .equals(responseData.getAccStatus())
+        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._5
+            .name()
+            .equals(responseData.getAccStatus())) {
+      responseData.setAccStatus("ACTIVE");
+    } else {
+      responseData.setAccStatus("CLOSED");
+    }
+
+    if (CDRBGetAccountDetailResponseAcct.KycStatusEnum.F.getValue()
+        .equals(responseData.getKycStatus())) {
+      responseData.setKycStatus("FULL");
+    } else if (CDRBGetAccountDetailResponseAcct.KycStatusEnum.V.getValue()
+            .equals(responseData.getKycStatus())
+        || CDRBGetAccountDetailResponseAcct.KycStatusEnum.X.getValue()
+            .equals(responseData.getKycStatus())) {
+      responseData.setKycStatus("PARTIAL");
+    } else {
+      responseData.setKycStatus("BASIC");
+    }
+
+    responseData.setAccPhone(mobileNo);
+    responseData.setLimit(
+        new GetAccountDetailResponseAllOfDataLimit().maxTrxAmount(trxMax).minTrxAmount(trxMin));
+
+    return response;
+  }
+
+  default GetAccountDetailResponse toAccountDetailResponse(
+      CDRBGetAccountDetailResponseAcct response) {
+    return new GetAccountDetailResponse()
+        .status(ResponseHandler.ok())
+        .data(toAccountDetailData(response));
+  }
 }

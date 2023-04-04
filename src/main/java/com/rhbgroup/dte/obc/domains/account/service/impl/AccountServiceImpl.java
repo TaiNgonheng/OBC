@@ -3,6 +3,7 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
@@ -11,6 +12,7 @@ import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
 import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
+import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
@@ -18,6 +20,7 @@ import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
+import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
@@ -53,6 +56,7 @@ public class AccountServiceImpl implements AccountService {
   private final PGRestClient pgRestClient;
   private final InfoBipRestClient infoBipRestClient;
   private final CDRBRestClient cdrbRestClient;
+  private final ConfigService configService;
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
   @Value("${obc.infobip.enabled}")
@@ -197,16 +201,33 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public GetAccountDetailResponse getAccountDetail(GetAccountDetailRequest request) {
 
-    CustomUserDetails currentUser = userAuthService.getCurrentUser();
-    userProfileService.findByUserId(currentUser.getUserId());
+    UserModel userModel =
+        userProfileService.findByUserId(userAuthService.getCurrentUser().getUserId());
 
-    Functions.of(cdrbRestClient::getAccountDetail)
-        .andThen(accountMapper::toModel)
+    Long accountNumber =
+        accountRepository.countByAccountIdAndLinkedStatus(
+            request.getAccNumber(), LinkedStatusEnum.COMPLETED);
+    if (accountNumber == 0) {
+      throw new BizException(ResponseMessage.NO_ACCOUNT_FOUND);
+    }
+
+    return Functions.of(cdrbRestClient::getAccountDetail)
+        .andThen(CDRBGetAccountDetailResponse::getAcct)
+        .andThen(accountMapper::toAccountDetailResponse)
+        .andThen(
+            response -> {
+              ConfigService transactionConfig =
+                  this.configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY);
+
+              return accountMapper.mappingMobileNoAndAccStatus(
+                  userModel.getMobileNo(),
+                  transactionConfig.getValue(ConfigConstants.Transaction.MIN_AMOUNT, Double.class),
+                  transactionConfig.getValue(ConfigConstants.Transaction.MAX_AMOUNT, Double.class),
+                  response);
+            })
         .apply(
             new CDRBGetAccountDetailRequest()
-                .cifNo(userProfileService
-                    .findByUserId(currentUser.getUserId()).getCifNo())
+                .cifNo(userModel.getCifNo())
                 .accountNo(request.getAccNumber()));
-    return new GetAccountDetailResponse();
   }
 }

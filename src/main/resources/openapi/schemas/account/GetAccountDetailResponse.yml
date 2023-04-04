@@ -8,13 +8,12 @@ allOf:
         properties:
           accNumber:
             type: string
-            example: 123456789
+            example: 123xxxxx
           accName:
             type: string
-            example: Jonh Smith
           accPhone:
             type: string
-            example: 012345678
+            example: 855xxxxxxxx
           accType:
             type: string
             example: SAVINGS
@@ -31,14 +30,17 @@ allOf:
             type: string
             example: KH
           balance:
-            type: string
-            example: 1000
+            type: number
+            format: double
+            example: 1000.0
           limit:
             type: object
             properties:
               minTrxAmount:
-                type: string
+                type: number
+                format: double
                 example: 1
               maxTrxAmount:
-                type: string
-                example: 100
+                type: number
+                format: double
+                example: 1000.0
