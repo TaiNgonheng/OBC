@@ -1,2 +1,16 @@
 ALTER TABLE `tbl_obc_temp_transaction_history`
+    DROP `transfer_type`,
+    DROP `trx_id`,
+    DROP `trx_completion_date`,
+    DROP `trx_status`,
+    DROP `from_account`,
+    DROP `to_account`,
+    ADD `record_type` VARCHAR(50),
+    ADD `journal_seq` VARCHAR(50),
+    ADD `trx_code` VARCHAR(50),
+    ADD `account_number` VARCHAR(50),
+    ADD `sender_account` VARCHAR(50),
+    ADD `receiver_account` VARCHAR(50),
+    ADD `bakong_ref_no` VARCHAR(50),
+    ADD `bakong_status` VARCHAR(10),
     MODIFY `trx_hash` VARCHAR(255) NOT NULL;

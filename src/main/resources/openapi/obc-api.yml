@@ -24,6 +24,8 @@ paths:
     $ref: './paths/user-exchange.yml'
   /gw/login:
     $ref: './paths/gw-login.yml'
+  /transaction-processing:
+    $ref: './paths/transaction-processing.yml'
 
 components:
   schemas:
@@ -55,10 +57,12 @@ components:
       $ref: './schemas/pg/PGProfileResponse.yml'
     SFTPConfig:
       $ref: './schemas/config/SFTPConfig.yml'
-    PGPConfig:
-      $ref: './schemas/config/PGPConfig.yml'
     SIBSSyncDateConfig:
       $ref: './schemas/config/SIBSSyncDateConfig.yml'
+    TransactionBatchFileProcessingRequest:
+      $ref: './schemas/transaction/TransactionBatchFileProcessingRequest.yml'
+    BatchReportStatus:
+      $ref: './schemas/transaction/BatchReportStatus.yml'
 
   securitySchemes:
     bearerAuth:

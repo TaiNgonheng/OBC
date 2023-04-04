@@ -18,6 +18,7 @@ public interface TransactionMapper {
       source = "transactionDate",
       target = "transactionDate",
       qualifiedByName = "DateFromDDMMYYYY")
+  @Mapping(source = "debitCreditIndicator", target = "creditDebitIndicator")
   SIBSTransaction toSIBSTransaction(SIBSBatchTransaction transaction);
 
   List<SIBSTransaction> toSIBSTransactions(List<SIBSBatchTransaction> transactions);

@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
 public class SIBSTransaction {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id")
   private Long id;
 
