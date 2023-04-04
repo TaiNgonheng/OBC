@@ -45,6 +45,9 @@ public class UserProfileEntity {
   @Column(name = "lock_time")
   private Instant lockTime;
 
+  @Column(name = "deleted")
+  private boolean deleted;
+
   @Column(name = "created_date", insertable = false)
   private Instant createdDate;
 

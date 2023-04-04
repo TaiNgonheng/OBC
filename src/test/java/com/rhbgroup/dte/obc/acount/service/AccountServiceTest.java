@@ -209,7 +209,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(true);
 
     VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
-    Assertions.assertEquals(AppConstants.STATUS.SUCCESS, response.getStatus().getCode());
+    Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
     Assertions.assertTrue(response.getData().getIsValid());
   }
 
@@ -219,7 +219,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(false);
 
     VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
-    Assertions.assertEquals(AppConstants.STATUS.SUCCESS, response.getStatus().getCode());
+    Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
     Assertions.assertFalse(response.getData().getIsValid());
   }
 
@@ -249,7 +249,7 @@ class AccountServiceTest extends AbstractAccountTest {
     AuthenticationResponse response = accountService.authenticate(mockAuthenticationRequest());
 
     Assertions.assertNotNull(response.getData());
-    Assertions.assertEquals(AppConstants.STATUS.SUCCESS, response.getStatus().getCode());
+    Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
     Assertions.assertEquals(mockJwtToken(), response.getData().getAccessToken());
     Assertions.assertEquals(mockJwtToken(), response.getData().getAccessToken());
     Assertions.assertFalse(response.getData().getRequireChangePassword());
@@ -320,7 +320,7 @@ class AccountServiceTest extends AbstractAccountTest {
             "authorization", new FinishLinkAccountRequest().accNumber("12345"));
 
     Assertions.assertNotNull(response);
-    Assertions.assertEquals(AppConstants.STATUS.SUCCESS, response.getStatus().getCode());
+    Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
     Assertions.assertFalse(response.getData().getRequireChangePassword());
   }
 

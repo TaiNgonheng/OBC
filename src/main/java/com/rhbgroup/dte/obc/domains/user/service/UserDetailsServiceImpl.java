@@ -25,64 +25,42 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   private final UserRoleRepository userRoleRepository;
   private final AccountRepository accountRepository;
 
-  public UserDetails loadUserByUserId(Long userId, String bakongId) {
+  public UserDetails loadUserByUserIdAndBakongId(Long userId, String bakongId) {
 
     return userProfileRepository
         .findById(userId)
-        .map(
-            user ->
-                userRoleRepository
-                    .findByUserId(user.getId())
-                    .flatMap(
-                        userRole -> {
-                          SimpleGrantedAuthority authority =
-                              new SimpleGrantedAuthority(userRole.getRole());
-                          Set<SimpleGrantedAuthority> authorities =
-                              Collections.singleton(authority);
-                          return Optional.of(
-                              CustomUserDetails.builder()
-                                  .userId(user.getId())
-                                  .username(user.getUsername())
-                                  .bakongId(bakongId)
-                                  .permissions(userRole.getPermissions())
-                                  .password(user.getPassword())
-                                  .authorities(authorities)
-                                  .accountNonLocked(true)
-                                  .accountNonExpired(true)
-                                  .credentialsNonExpired(true)
-                                  .enabled(true)
-                                  .build());
-                        })
-                    .orElseGet(() -> CustomUserDetails.withoutAuthorities(user)))
+        .map(userProfile -> withUserPermission(userProfile, bakongId))
         .orElseThrow(() -> new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
   }
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-    UserProfileEntity userProfile =
-        userProfileRepository
-            .getByUsername(username)
-            .orElseThrow(
-                () -> new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
+    return userProfileRepository
+        .getByUsername(username)
+        .map(userProfile -> withUserPermission(userProfile, null))
+        .orElseThrow(() -> new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
+  }
 
+  private CustomUserDetails withUserPermission(UserProfileEntity userProfile, String bakongId) {
     return userRoleRepository
         .findByUserId(userProfile.getId())
         .flatMap(
             userRole -> {
               SimpleGrantedAuthority authority = new SimpleGrantedAuthority(userRole.getRole());
-              Set<SimpleGrantedAuthority> singleton = Collections.singleton(authority);
+              Set<SimpleGrantedAuthority> authorities = Collections.singleton(authority);
               CustomUserDetails userDetails =
                   CustomUserDetails.builder()
                       .userId(userProfile.getId())
-                      .username(username)
+                      .bakongId(bakongId)
+                      .username(userProfile.getUsername())
                       .permissions(userRole.getPermissions())
                       .password(userProfile.getPassword())
-                      .authorities(singleton)
-                      .accountNonLocked(true)
+                      .authorities(authorities)
+                      .accountNonLocked(userProfile.getLockTime() == null)
                       .accountNonExpired(true)
                       .credentialsNonExpired(true)
-                      .enabled(true)
+                      .enabled(!userProfile.isDeleted())
                       .build();
 
               return Optional.of(userDetails);
@@ -96,7 +74,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                           account ->
                               Optional.of(
                                   userDetail.toBuilder().bakongId(account.getBakongId()).build()))
-                      .orElseGet(() -> userDetail);
+                      .orElse(userDetail);
 
               return Optional.of(customUserDetails);
             })

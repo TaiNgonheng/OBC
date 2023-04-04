@@ -90,7 +90,7 @@ public class PGRestClient {
             ParameterizedTypeReference.forType(PGAuthResponse.class));
 
     if (null != pgAuthResponse.getStatus()
-        && AppConstants.STATUS.SUCCESS != pgAuthResponse.getStatus().getCode()) {
+        && AppConstants.Status.SUCCESS != pgAuthResponse.getStatus().getCode()) {
       throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
 

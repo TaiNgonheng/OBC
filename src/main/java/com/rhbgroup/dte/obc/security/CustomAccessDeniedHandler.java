@@ -27,7 +27,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                 new ResponseStatus()
                     .errorCode(ResponseMessage.AUTHENTICATION_FAILED.getCode().toString())
                     .errorMessage(ResponseMessage.AUTHENTICATION_FAILED.getMsg())
-                    .code(AppConstants.STATUS.ERROR));
+                    .code(AppConstants.Status.ERROR));
 
     response.setStatus(403);
     response.setCharacterEncoding(StandardCharsets.UTF_8.displayName());

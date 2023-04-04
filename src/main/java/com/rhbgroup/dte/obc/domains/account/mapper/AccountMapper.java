@@ -73,7 +73,7 @@ public interface AccountMapper {
     entity.setAccountCcy(accountDetail.getCurrencyCode());
     entity.setLinkedStatus(LinkedStatusEnum.COMPLETED);
     entity.setUpdatedDate(Instant.now());
-    entity.setUpdatedBy(AppConstants.SYSTEM.OPEN_BANKING_CLIENT);
+    entity.setUpdatedBy(AppConstants.System.OPEN_BANKING_CLIENT);
 
     return entity;
   }

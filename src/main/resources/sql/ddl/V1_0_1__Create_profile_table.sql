@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `tbl_obc_profile` (
   `cif_no` varchar(100) DEFAULT NULL,
   `login_attempt` tinyint DEFAULT 0,
   `lock_time` timestamp DEFAULT NULL,
+  `deleted` bit(1) DEFAULT 0,
   `created_date` timestamp DEFAULT CURRENT_TIMESTAMP,
   `updated_date` timestamp DEFAULT NULL,
   `updated_by` varchar(50) DEFAULT NULL,

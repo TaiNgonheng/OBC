@@ -81,7 +81,7 @@ public class AccountServiceImpl implements AccountService {
             Functions.peek(
                 authContext ->
                     userAuthService.checkUserRole(
-                        authContext, Collections.singletonList(AppConstants.ROLE.APP_USER))))
+                        authContext, Collections.singletonList(AppConstants.Role.APP_USER))))
         .andThen(jwtTokenUtils::generateJwtAppUser)
         .andThen(accountMapper::toAuthResponse)
         .apply(request);
@@ -95,7 +95,9 @@ public class AccountServiceImpl implements AccountService {
         Functions.of(accountMapper::toModel)
             .andThen(AccountModel::getUser)
             .andThen(userAuthService::authenticate)
-            .andThen(jwtTokenUtils::generateJwtAppUser)
+            .andThen(
+                authContext ->
+                    jwtTokenUtils.generateJwtAppUser(request.getBakongAccId(), authContext))
             .apply(request);
 
     // Get PG user profile, trigger OTP and build response

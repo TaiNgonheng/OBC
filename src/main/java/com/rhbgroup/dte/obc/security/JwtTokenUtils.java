@@ -78,10 +78,12 @@ public class JwtTokenUtils {
     }
   }
 
-  public String generateJwtAppUser(Authentication authentication) {
+  public String generateJwtAppUser(String bakongId, Authentication authentication) {
     CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-    Claims claims = Jwts.claims().setSubject(userDetails.getBakongId());
+    Claims claims =
+        Jwts.claims()
+            .setSubject(StringUtils.isNotBlank(bakongId) ? bakongId : userDetails.getBakongId());
     if (StringUtils.isNotBlank(userDetails.getPermissions())) {
       claims.put(CLAIMS_AUTHORIZATIONS, userDetails.getPermissions().split(","));
     }
@@ -98,6 +100,10 @@ public class JwtTokenUtils {
         .setClaims(claims)
         .signWith(SignatureAlgorithm.HS512, jwtSecrete)
         .compact();
+  }
+
+  public String generateJwtAppUser(Authentication authentication) {
+    return generateJwtAppUser(null, authentication);
   }
 
   public String generateJwt(Authentication authentication) {

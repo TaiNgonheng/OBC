@@ -55,11 +55,11 @@ public class JwtTokenManager {
     UserDetails userDetails;
 
     try {
-      if (AppConstants.SYSTEM.BAKONG_APP.equals(appName)) {
+      if (AppConstants.System.BAKONG_APP.equals(appName)) {
         // APP_USER
         String bakongId = jwtTokenUtils.getSubject(jwt);
         Long userId = Long.parseLong(jwtTokenUtils.getUserId(jwt));
-        userDetails = userDetailsService.loadUserByUserId(userId, bakongId);
+        userDetails = userDetailsService.loadUserByUserIdAndBakongId(userId, bakongId);
       } else {
         // SYSTEM_USER
         String username = jwtTokenUtils.getSubject(jwt);

@@ -61,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                   new ResponseStatus()
                       .errorCode(message.getCode().toString())
                       .errorMessage(message.getMsg())
-                      .code(AppConstants.STATUS.ERROR));
+                      .code(AppConstants.Status.ERROR));
 
       response.setCharacterEncoding(StandardCharsets.UTF_8.displayName());
       response.setContentType("application/json");

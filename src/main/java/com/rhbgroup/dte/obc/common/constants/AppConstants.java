@@ -7,19 +7,19 @@ import lombok.experimental.UtilityClass;
 public class AppConstants {
 
   @UtilityClass
-  public class ROLE {
+  public class Role {
     public static final String SYSTEM_USER = "SYSTEM_USER";
     public static final String APP_USER = "APP_USER";
   }
 
   @UtilityClass
-  public class AUTHENTICATION {
-    public static final Integer LOCK_SECOND = 28800;
+  public class Authentication {
+    public static final Integer LOCK_IN_SECOND = 8 * 60 * 60; // 8 hours
     public static final Integer AUTHENTICATION_ALLOWED_TIME = 3;
   }
 
   @UtilityClass
-  public class PERMISSION {
+  public class Permission {
     public static final String CAN_TOP_UP = "can_top_up";
     public static final String CAN_GET_BALANCE = "can_get_balance";
     public static final String CAN_EXCHANGE_USER = "can_exchange_user";
@@ -30,22 +30,16 @@ public class AppConstants {
   }
 
   @UtilityClass
-  public class STATUS {
+  public class Status {
     public static final int ERROR = 1;
     public static final int SUCCESS = 0;
   }
 
   @UtilityClass
-  public class SYSTEM {
+  public class System {
     public static final String OPEN_BANKING_CLIENT = "OBC_SYSTEM";
     public static final String GOWAVE = "GOWAVE_SYSTEM";
     public static final String OPEN_BANKING_GATEWAY = "NBC_SYSTEM";
     public static final String BAKONG_APP = "BAKONG";
-  }
-
-  @UtilityClass
-  public class LinkStatus {
-    public static final String PENDING = "PENDING";
-    public static final String COMPLETED = "COMPLETED";
   }
 }

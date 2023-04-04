@@ -208,7 +208,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
     Assertions.assertNotNull(authResponse.getStatus());
     Assertions.assertNull(authResponse.getData());
-    Assertions.assertEquals(AppConstants.STATUS.ERROR, authResponse.getStatus().getCode());
+    Assertions.assertEquals(AppConstants.Status.ERROR, authResponse.getStatus().getCode());
     Assertions.assertEquals(
         ResponseMessage.SESSION_EXPIRED.getMsg(), authResponse.getStatus().getErrorMessage());
     Assertions.assertEquals(
@@ -241,7 +241,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
     Assertions.assertNotNull(authResponse.getStatus());
     Assertions.assertNull(authResponse.getData());
-    Assertions.assertEquals(AppConstants.STATUS.ERROR, authResponse.getStatus().getCode());
+    Assertions.assertEquals(AppConstants.Status.ERROR, authResponse.getStatus().getCode());
     Assertions.assertEquals(
         ResponseMessage.INVALID_TOKEN.getMsg(), authResponse.getStatus().getErrorMessage());
     Assertions.assertEquals(
@@ -271,7 +271,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
     Assertions.assertNotNull(authResponse.getStatus());
     Assertions.assertNull(authResponse.getData());
-    Assertions.assertEquals(AppConstants.STATUS.ERROR, authResponse.getStatus().getCode());
+    Assertions.assertEquals(AppConstants.Status.ERROR, authResponse.getStatus().getCode());
     Assertions.assertEquals(
         ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(),
         authResponse.getStatus().getErrorMessage());
@@ -307,7 +307,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
     Assertions.assertNotNull(authResponse.getStatus());
     Assertions.assertNull(authResponse.getData());
-    Assertions.assertEquals(AppConstants.STATUS.ERROR, authResponse.getStatus().getCode());
+    Assertions.assertEquals(AppConstants.Status.ERROR, authResponse.getStatus().getCode());
     Assertions.assertEquals(
         ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(),
         authResponse.getStatus().getErrorMessage());
@@ -341,7 +341,7 @@ class AccountControllerTest extends AbstractAccountTest {
     Assertions.assertNotNull(authResponse.getStatus());
     Assertions.assertNotNull(authResponse.getData());
 
-    Assertions.assertEquals(AppConstants.STATUS.SUCCESS, authResponse.getStatus().getCode());
+    Assertions.assertEquals(AppConstants.Status.SUCCESS, authResponse.getStatus().getCode());
     Assertions.assertEquals(mockJwtToken(), authResponse.getData().getAccessToken());
     Assertions.assertFalse(authResponse.getData().getRequireChangePassword());
   }
@@ -370,7 +370,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
     Assertions.assertNotNull(authResponse.getStatus());
     Assertions.assertNull(authResponse.getData());
-    Assertions.assertEquals(AppConstants.STATUS.ERROR, authResponse.getStatus().getCode());
+    Assertions.assertEquals(AppConstants.Status.ERROR, authResponse.getStatus().getCode());
     Assertions.assertEquals(
         ResponseMessage.AUTHENTICATION_FAILED.getMsg(), authResponse.getStatus().getErrorMessage());
     Assertions.assertEquals(
@@ -399,7 +399,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
     Assertions.assertNotNull(authResponse.getStatus());
     Assertions.assertNull(authResponse.getData());
-    Assertions.assertEquals(AppConstants.STATUS.ERROR, authResponse.getStatus().getCode());
+    Assertions.assertEquals(AppConstants.Status.ERROR, authResponse.getStatus().getCode());
     Assertions.assertEquals(
         ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(),
         authResponse.getStatus().getErrorMessage());
@@ -435,7 +435,7 @@ class AccountControllerTest extends AbstractAccountTest {
     Assertions.assertNotNull(finishLinkAccountResponse.getData());
 
     Assertions.assertEquals(
-        AppConstants.STATUS.SUCCESS, finishLinkAccountResponse.getStatus().getCode());
+        AppConstants.Status.SUCCESS, finishLinkAccountResponse.getStatus().getCode());
     Assertions.assertFalse(finishLinkAccountResponse.getData().getRequireChangePassword());
   }
 
@@ -466,7 +466,7 @@ class AccountControllerTest extends AbstractAccountTest {
     Assertions.assertNull(finishLinkAccountResponse.getData());
 
     Assertions.assertEquals(
-        AppConstants.STATUS.ERROR, finishLinkAccountResponse.getStatus().getCode());
+        AppConstants.Status.ERROR, finishLinkAccountResponse.getStatus().getCode());
     Assertions.assertEquals(
         ResponseMessage.KYC_NOT_VERIFIED.getCode().toString(),
         finishLinkAccountResponse.getStatus().getErrorCode());
@@ -501,7 +501,7 @@ class AccountControllerTest extends AbstractAccountTest {
     Assertions.assertNull(finishLinkAccountResponse.getData());
 
     Assertions.assertEquals(
-        AppConstants.STATUS.ERROR, finishLinkAccountResponse.getStatus().getCode());
+        AppConstants.Status.ERROR, finishLinkAccountResponse.getStatus().getCode());
     Assertions.assertEquals(
         ResponseMessage.MANDATORY_FIELD_MISSING.getCode().toString(),
         finishLinkAccountResponse.getStatus().getErrorCode());
