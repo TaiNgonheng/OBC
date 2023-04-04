@@ -10,6 +10,8 @@ import com.rhbgroup.dte.obc.model.UserModel;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+
+import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -72,12 +74,10 @@ public class UserAuthService {
     }
   }
 
-  public String getCurrentUser() {
+  public CustomUserDetails getCurrentUser() {
     try {
-      UserDetails principal =
-          (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+      return (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-      return principal.getUsername();
     } catch (Exception ex) {
       throw new BizException(ResponseMessage.SESSION_EXPIRED);
     }
