@@ -18,11 +18,13 @@ properties:
         type: string
       accountStatus:
         type: string
-        description: 1 = Active, 2 = Closed, 4 = New Today, 9 = Dormant
+        description: 1 = Active, 2 = Closed, 4 = New Today, 5 = Do not close on Zero, 7 = Frozen, 9 = Dormant
         enum:
           - 1
           - 2
           - 4
+          - 5
+          - 7
           - 9
       kycStatus:
         type: string

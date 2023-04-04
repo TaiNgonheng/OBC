@@ -25,11 +25,21 @@ public class AccountValidator {
   }
 
   public static void validateCasaAccount(CDRBGetAccountDetailResponse account) {
-    if (!account
-        .getAcct()
-        .getKycStatus()
-        .equals(CDRBGetAccountDetailResponseAcct.KycStatusEnum.F)) {
+
+    // Check if CASA account is not Fully KYC
+    CDRBGetAccountDetailResponseAcct.KycStatusEnum kycStatus = account.getAcct().getKycStatus();
+    if (!kycStatus.equals(CDRBGetAccountDetailResponseAcct.KycStatusEnum.F)) {
       throw new BizException(ResponseMessage.KYC_NOT_VERIFIED);
+    }
+
+    // 1 = Active, 2 = Closed, 4 = New Today, 5 = Do not close on Zero, 7 = Frozen, 9 = Dormant
+    CDRBGetAccountDetailResponseAcct.AccountStatusEnum accountStatus =
+        account.getAcct().getAccountStatus();
+    if (accountStatus.equals(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._2)
+        || accountStatus.equals(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._7)
+        || accountStatus.equals(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._9)) {
+
+      throw new BizException(ResponseMessage.ACCOUNT_DEACTIVATED);
     }
   }
 }
