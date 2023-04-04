@@ -26,8 +26,11 @@ public class JwtTokenUtils {
   public static final String CLAIMS_EXPIRY_DATE = "exp";
   public static final String BEARER_PREFIX = "Bearer ";
 
-  public static final String AES_KEY = "1234567812345678";
-  public static final String AES_IV = "1234567812345678";
+  @Value("${obc.security.aesKey}")
+  public String aesKey;
+
+  @Value("${obc.security.aesIv}")
+  public String aesIv;
 
   @Value("${obc.security.jwt-secret}")
   protected String jwtSecrete;
@@ -49,7 +52,9 @@ public class JwtTokenUtils {
           (String) getClaimFromToken(extractJwt(jwt), claims -> claims.get(CLAIMS_USER));
       return new String(
           AESCryptoUtil.decrypt(
-              CryptoUtil.decodeHex(encUserId), AES_KEY, AES_IV.getBytes(StandardCharsets.UTF_8)),
+              CryptoUtil.decodeHex(encUserId),
+              aesKey,
+              Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8))),
           StandardCharsets.UTF_8);
     } catch (Exception ex) {
       return StringUtils.EMPTY;
@@ -86,8 +91,8 @@ public class JwtTokenUtils {
         CryptoUtil.encodeHexString(
             AESCryptoUtil.encrypt(
                 userDetails.getUserId().toString(),
-                AES_KEY,
-                AES_IV.getBytes(StandardCharsets.UTF_8))));
+                aesKey,
+                Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)))));
 
     return Jwts.builder()
         .setClaims(claims)

@@ -13,7 +13,6 @@ import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetHsmKeyResponse;
 import com.rhbgroup.dte.obc.model.CDRBLoginRequest;
 import com.rhbgroup.dte.obc.model.CDRBLoginResponse;
-import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
@@ -36,7 +35,6 @@ public class CDRBRestClient {
   private static final String GET_ACCOUNT_DETAIL =
       "/corebankingnonfinancialclient/bakong-link-casa/accounts";
 
-  private final JwtTokenUtils jwtTokenUtils;
   private final SpringRestUtil restUtil;
 
   private final CacheUtil cacheUtil;
@@ -53,17 +51,14 @@ public class CDRBRestClient {
   @Value("${obc.cdrb.password}")
   protected String encPassword;
 
-  @Value("${obc.cdrb.aesKey}")
-  protected String aesKey;
-
-  @Value("${obc.cdrb.aesIv}")
-  protected String aesIv;
-
   @Value("${obc.cdrb.hsmZmk}")
   protected String hsmZmkKey;
 
-  @Value("${obc.cdrb.zmkIv}")
-  protected String zmkIv;
+  @Value("${obc.security.aesKey}")
+  protected String aesKey;
+
+  @Value("${obc.security.aesIv}")
+  protected String aesIv;
 
   @PostConstruct
   private void initCache() {
@@ -96,9 +91,9 @@ public class CDRBRestClient {
             Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)));
 
     String passwordStr = new String(passwordDecrypted, StandardCharsets.UTF_8);
-
+    String[] passwords = constructPasswords(passwordStr);
     CDRBLoginRequest loginRequest =
-        new CDRBLoginRequest().username(username).encPwd1(passwordStr).encPwd2(passwordStr);
+        new CDRBLoginRequest().username(username).encPwd1(passwords[0]).encPwd2(passwords[1]);
 
     CDRBLoginResponse cdrbLoginResponse =
         restUtil.sendPost(
@@ -126,7 +121,7 @@ public class CDRBRestClient {
     return tokenFromCache;
   }
 
-  private byte[] padRight(String passwordSplit) {
+  private static byte[] padRight(String passwordSplit) {
     StringBuilder hexString =
         new StringBuilder(
             CryptoUtil.encodeHexString(passwordSplit.getBytes(StandardCharsets.UTF_8)));
@@ -146,32 +141,30 @@ public class CDRBRestClient {
 
     // Decrypt zpk using hsmZmkKey
     String decryptedZpk = decryptZpk(getHsmKey(), hsmZmkKey);
-
+    byte[] zmkIv = new byte[8];
     String passwordEnc1 =
         CryptoUtil.encodeHexString(
                 TripleDESCryptoUtil.encrypt(
-                    padRight(passwordSplits[0]),
-                    addKeyPadding(decryptedZpk),
-                    CryptoUtil.decodeHex(zmkIv)))
+                    padRight(passwordSplits[0]), addKeyPadding(decryptedZpk), zmkIv))
             .toUpperCase();
 
     String passwordEnc2 =
         passwordSplits[1] != null
             ? CryptoUtil.encodeHexString(
                     TripleDESCryptoUtil.encrypt(
-                        padRight(passwordSplits[1]),
-                        addKeyPadding(decryptedZpk),
-                        CryptoUtil.decodeHex(zmkIv)))
+                        padRight(passwordSplits[1]), addKeyPadding(decryptedZpk), zmkIv))
                 .toUpperCase()
             : passwordEnc1;
 
     return new String[] {passwordEnc1, passwordEnc2};
   }
 
-  private String decryptZpk(String hsmKey, String hsmZmkKey) {
-    return CryptoUtil.encodeHexString(
-        TripleDESCryptoUtil.decrypt(
-            CryptoUtil.decodeHex(hsmKey), addKeyPadding(hsmZmkKey), CryptoUtil.decodeHex(zmkIv)));
+  private String decryptZpk(String zpk, String masterKey) {
+    String decryptedZpk =
+        CryptoUtil.encodeHexString(
+            TripleDESCryptoUtil.decryptECB(CryptoUtil.decodeHex(zpk), addKeyPadding(masterKey)));
+
+    return decryptedZpk.toUpperCase();
   }
 
   private String[] splitPassword(String password) {

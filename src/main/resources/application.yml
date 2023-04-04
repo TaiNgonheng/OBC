@@ -40,18 +40,17 @@ obc:
   security:
     jwt-secret: ${JWT_SECRET:my-secret}
     jwt-ttl: ${JWT_TTL:300}
+    aesKey: ${CDRB_AES_KEY:1234567812345678}
+    aesIv: ${CDRB_AES_IV:esdWoBKBeDpHEPBt56qw4g==}
   pg1:
     url: ${PG1_URL:http://10.202.38.27}
     username: ${PG1_USERNAME:soap_user}
     password: ${PG1_PASSWORD:+66xZ_feBcRpYP9e}
   cdrb:
     url: ${CDRB_URL:https://api.dev.cdrb.link}
-    username: ${CDRB_USERNAME:nihaomo}
-    password: ${CDRB_PASSWORD:vybaiwV3k2mx8zX4RKoSNSlKC5YYN/KHAz1ovXdFAYG1Wb1R//1CwdHvN2KOzmMZ}
-    aesKey: ${CDRB_AES_KEY:1234567812345678}
-    aesIv: ${CDRB_AES_IV:ngq+7HnLp1KiU9xp63gRCg==}
+    username: ${CDRB_USERNAME:redRanger}
+    password: ${CDRB_PASSWORD:sflsClYsuxash+qkDIJftkotgkzWmndPi5iR/atfzXQ=}
     hsmZmk: ${CDRB_HSM_ZMK:5497B691458FC1CD31A16116701F57F8}
-    zmkIv: ${CDRB_ZMK_IV:0000000000000000}
     xApiKey: ${CDRB_X_API_KEY:NQrIN7HPBt141uX5yw2SZ4NigpagyHkZ8cG9b2rf}
   infobip:
     url: ${INFOBIP_URL:https://9rmmnv.api.infobip.com}
