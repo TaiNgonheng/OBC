@@ -57,10 +57,10 @@ public class UserExchangeServiceImpl implements UserExchangeService {
             userProfileEntity ->
                 userRoleMapper.toEntity(
                     userProfileEntity,
-                    AppConstants.ROLE.APP_USER,
-                    AppConstants.PERMISSION.concat(
-                        AppConstants.PERMISSION.CAN_GET_BALANCE,
-                        AppConstants.PERMISSION.CAN_TOP_UP)))
+                    AppConstants.Role.APP_USER,
+                    AppConstants.Permission.concat(
+                        AppConstants.Permission.CAN_GET_BALANCE,
+                        AppConstants.Permission.CAN_TOP_UP)))
         .andThen(performUserRoleIfNeeded)
         .andThen(userExchangeMapper::toGwExchangeUserResponse)
         .apply(userModel);

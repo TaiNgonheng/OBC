@@ -1,6 +1,8 @@
 type: object
 description: User Model
 properties:
+  id:
+    type: number
   username:
     type: string
   password:

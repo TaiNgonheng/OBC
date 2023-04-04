@@ -22,14 +22,16 @@ paths:
     $ref: './paths/init-link-account.yml'
   /verify-otp:
     $ref: './paths/verify-otp.yml'
+  /finish-link-account:
+    $ref: './paths/finish-link-account.yml'
   /authenticate:
     $ref: './paths/authenticate.yml'
+  /account-detail:
+    $ref: './paths/account-detail.yml'
   /gw/user-exchange:
     $ref: './paths/user-exchange.yml'
   /gw/login:
     $ref: './paths/gw-login.yml'
-  /unlink-account:
-    $ref: './paths/unlink-account.yml'
 
 components:
   schemas:
@@ -45,6 +47,10 @@ components:
       $ref: './schemas/account/VerifyOtpRequest.yml'
     VerifyOtpResponse:
       $ref: './schemas/account/VerifyOtpResponse.yml'
+    FinishLinkAccountRequest:
+      $ref: './schemas/account/FinishLinkAccountRequest.yml'
+    FinishLinkAccountResponse:
+      $ref: './schemas/account/FinishLinkAccountResponse.yml'
     UnlinkAccountRequest:
       $ref: './schemas/account/UnlinkAccountRequest.yml'
     UnlinkAccountResponse:
@@ -53,6 +59,10 @@ components:
       $ref: './schemas/account/AuthenticationRequest.yml'
     AuthenticationResponse:
       $ref: './schemas/account/AuthenticationResponse.yml'
+    GetAccountDetailRequest:
+      $ref: './schemas/account/GetAccountDetailRequest.yml'
+    GetAccountDetailResponse:
+      $ref: './schemas/account/GetAccountDetailResponse.yml'
     ExchangeAccountRequest:
       $ref: './schemas/user/UserExchangeRequest.yml'
     ExchangeAccountResponse:
@@ -81,6 +91,17 @@ components:
       $ref: './schemas/infoBip/InfoBipVerifyOtpResponse.yml'
     InfoBipLoginResponse:
       $ref: './schemas/infoBip/InfoBipLoginResponse.yml'
+    CDRBLoginRequest:
+      $ref: './schemas/cdrb/CDRBLoginRequest.yml'
+    CDRBLoginResponse:
+      $ref: './schemas/cdrb/CDRBLoginResponse.yml'
+    CDRBGetHsmKeyResponse:
+      $ref: './schemas/cdrb/CDRBGetHsmKeyResponse.yml'
+    CDRBGetAccountDetailRequest:
+      $ref: './schemas/cdrb/CDRBGetAccountDetailRequest.yml'
+    CDRBGetAccountDetailResponse:
+      $ref: './schemas/cdrb/CDRBGetAccountDetailResponse.yml'
+
   securitySchemes:
     bearerAuth:
       type: http

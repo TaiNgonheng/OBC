@@ -2,7 +2,7 @@ package com.rhbgroup.dte.obc.rest;
 
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
-import com.rhbgroup.dte.obc.common.constants.services.ConfigConstants;
+import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.common.util.SpringRestUtil;
 import com.rhbgroup.dte.obc.exceptions.BizException;
@@ -28,6 +28,10 @@ import org.springframework.util.MultiValueMap;
 @RequiredArgsConstructor
 public class InfoBipRestClient {
 
+  private static final String INFO_BIP_SEND_OTP_URL = "/2fa/2/pin";
+  private static final String INFO_BIP_VERIFY_OTP_API_URL = "/2fa/2/pin/{pinId}/verify";
+  private static final String INFO_BIP_LOGIN_API_URL = "/auth/1/oauth2/token";
+
   private final SpringRestUtil restUtil;
   private final CacheUtil cacheUtil;
   private final JwtTokenUtils jwtTokenUtils;
@@ -47,6 +51,9 @@ public class InfoBipRestClient {
   @Value("${obc.infobip.messageId}")
   protected String messageId;
 
+  @Value("${obc.infobip.enabled}")
+  protected boolean otpEnabled;
+
   @PostConstruct
   private void initCache() {
     cacheUtil.createCache(CacheConstants.InfoBipCache.CACHE_NAME, Duration.FIVE_MINUTES);
@@ -54,12 +61,16 @@ public class InfoBipRestClient {
 
   public InfoBipSendOtpResponse sendOtp(String phone, String loginKey) {
 
+    if (!otpEnabled) {
+      return new InfoBipSendOtpResponse().pinId("pinId");
+    }
+
     Map<String, String> headers = new HashMap<>();
     headers.put("Authorization", "Bearer ".concat(getAccessToken()));
 
     InfoBipSendOtpResponse sendSmsOtpResponse =
         restUtil.sendPost(
-            baseUrl.concat(ConfigConstants.InfoBip.INFO_BIP_SEND_OTP_PATH),
+            baseUrl.concat(INFO_BIP_SEND_OTP_URL),
             headers,
             new InfoBipSendOtpRequest()
                 .applicationId(appId)
@@ -78,6 +89,10 @@ public class InfoBipRestClient {
 
   public Boolean verifyOtp(String otp, String loginKey) {
 
+    if (!otpEnabled) {
+      return true;
+    }
+
     String pinId =
         cacheUtil.getValueFromKey(
             CacheConstants.InfoBipCache.CACHE_NAME,
@@ -93,7 +108,7 @@ public class InfoBipRestClient {
     headers.put("Authorization", "Bearer ".concat(getAccessToken()));
     InfoBipVerifyOtpResponse verifyOtpResponse =
         restUtil.sendPost(
-            baseUrl.concat(ConfigConstants.InfoBip.INFO_BIP_VERIFY_OTP_API_PATH),
+            baseUrl.concat(INFO_BIP_VERIFY_OTP_API_URL),
             pathParams,
             null,
             headers,
@@ -113,25 +128,27 @@ public class InfoBipRestClient {
     Map<String, String> headers = new HashMap<>();
     headers.put("Content-Type", "application/x-www-form-urlencoded");
     return restUtil.sendPost(
-        baseUrl.concat(ConfigConstants.InfoBip.INFO_BIP_LOGIN_API_PATH),
+        baseUrl.concat(INFO_BIP_LOGIN_API_URL),
         headers,
         request,
         ParameterizedTypeReference.forType(InfoBipLoginResponse.class));
   }
 
   private String getAccessToken() {
-    String accessToken;
-    String infoBipLoginKey = CacheConstants.InfoBipCache.INFOBIP_LOGIN_KEY.concat(username);
 
     String tokenFromCache =
-        cacheUtil.getValueFromKey(CacheConstants.InfoBipCache.CACHE_NAME, infoBipLoginKey);
+        cacheUtil.getValueFromKey(
+            CacheConstants.InfoBipCache.CACHE_NAME, CacheConstants.InfoBipCache.INFOBIP_LOGIN_KEY);
 
     if (StringUtils.isNotBlank(tokenFromCache)
         && !jwtTokenUtils.isExtTokenExpired(tokenFromCache)) {
       return tokenFromCache;
     }
-    accessToken = login().getAccessToken();
-    cacheUtil.addKey(CacheConstants.InfoBipCache.CACHE_NAME, infoBipLoginKey, accessToken);
+    String accessToken = login().getAccessToken();
+    cacheUtil.addKey(
+        CacheConstants.InfoBipCache.CACHE_NAME,
+        CacheConstants.InfoBipCache.INFOBIP_LOGIN_KEY,
+        accessToken);
     return accessToken;
   }
 }

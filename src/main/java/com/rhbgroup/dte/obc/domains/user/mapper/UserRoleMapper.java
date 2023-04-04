@@ -15,7 +15,7 @@ public interface UserRoleMapper {
     userRoleEntity.setRole(role);
     userRoleEntity.setPermissions(permissions);
     userRoleEntity.setUserId(userProfile.getId());
-    userRoleEntity.setUpdatedBy(AppConstants.SYSTEM.OPEN_BANKING_CLIENT);
+    userRoleEntity.setUpdatedBy(AppConstants.System.OPEN_BANKING_CLIENT);
     userRoleEntity.setCreatedDate(Instant.now());
 
     return userRoleEntity;

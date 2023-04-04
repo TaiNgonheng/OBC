@@ -1,0 +1,44 @@
+allOf:
+  - $ref: '../common/ResponseWrapper.yml'
+  - type: object
+    properties:
+      data:
+        type: object
+        description: Get account detail response
+        properties:
+          accNumber:
+            type: string
+            example: 123456789
+          accName:
+            type: string
+            example: Jonh Smith
+          accPhone:
+            type: string
+            example: 012345678
+          accType:
+            type: string
+            example: SAVINGS
+          accCcy:
+            type: string
+            example: USD
+          accStatus:
+            type: string
+            example: ACTIVE
+          kycStatus:
+            type: string
+            example: FULL
+          country:
+            type: string
+            example: KH
+          balance:
+            type: string
+            example: 1000
+          limit:
+            type: object
+            properties:
+              minTrxAmount:
+                type: string
+                example: 1
+              maxTrxAmount:
+                type: string
+                example: 100
