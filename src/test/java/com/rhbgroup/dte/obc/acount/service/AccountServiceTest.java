@@ -480,10 +480,12 @@ class AccountServiceTest extends AbstractAccountTest {
     when(accountRepository.countByAccountIdAndLinkedStatus(anyString(), any())).thenReturn(0L);
 
     try {
-        accountService.getAccountDetail(mockGetAccountDetailRequest());
+      accountService.getAccountDetail(mockGetAccountDetailRequest());
     } catch (BizException ex) {
-      Assertions.assertEquals(ResponseMessage.NO_ACCOUNT_FOUND.getCode(), ex.getResponseMessage().getCode());
-      Assertions.assertEquals(ResponseMessage.NO_ACCOUNT_FOUND.getMsg(), ex.getResponseMessage().getMsg());
+      Assertions.assertEquals(
+          ResponseMessage.NO_ACCOUNT_FOUND.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.NO_ACCOUNT_FOUND.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 
@@ -493,13 +495,17 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
     when(accountRepository.countByAccountIdAndLinkedStatus(anyString(), any())).thenReturn(1L);
-    when(cdrbRestClient.getAccountDetail(any())).thenThrow(new BizException(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS));
+    when(cdrbRestClient.getAccountDetail(any()))
+        .thenThrow(new BizException(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS));
 
     try {
       accountService.getAccountDetail(mockGetAccountDetailRequest());
     } catch (BizException ex) {
-      Assertions.assertEquals(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS.getCode(), ex.getResponseMessage().getCode());
-      Assertions.assertEquals(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS.getMsg(), ex.getResponseMessage().getMsg());
+      Assertions.assertEquals(
+          ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS.getCode(),
+          ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 }
