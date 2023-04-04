@@ -197,13 +197,16 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public GetAccountDetailResponse getAccountDetail(GetAccountDetailRequest request) {
 
-
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     userProfileService.findByUserId(currentUser.getUserId());
 
     Functions.of(cdrbRestClient::getAccountDetail)
-//        .andThen(accountMapper)
-        .apply(new CDRBGetAccountDetailRequest().cifNo(userProfileService.findByUserId(currentUser.getUserId()).getCifNo()).accountNo(request.getAccNumber()));
+        .andThen(accountMapper::toModel)
+        .apply(
+            new CDRBGetAccountDetailRequest()
+                .cifNo(userProfileService
+                    .findByUserId(currentUser.getUserId()).getCifNo())
+                .accountNo(request.getAccNumber()));
     return new GetAccountDetailResponse();
   }
 }

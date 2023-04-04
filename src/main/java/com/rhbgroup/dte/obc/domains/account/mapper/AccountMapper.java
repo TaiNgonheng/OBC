@@ -13,6 +13,7 @@ import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponseAllOfData;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
@@ -83,4 +84,7 @@ public interface AccountMapper {
         .status(ResponseHandler.ok())
         .data(new FinishLinkAccountResponseAllOfData().requireChangePassword(false));
   }
+
+//  @Mapping()
+  GetAccountDetailResponseAllOfData toAccountDetailResponse(CDRBGetAccountDetailResponse response);
 }
