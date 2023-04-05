@@ -1,6 +1,8 @@
 package com.rhbgroup.dte.obc.acount.service;
 
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -23,6 +25,7 @@ import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
+import com.rhbgroup.dte.obc.model.UnlinkAccountResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
@@ -410,4 +413,33 @@ class AccountServiceTest extends AbstractAccountTest {
           ResponseMessage.NO_ACCOUNT_FOUND.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
+
+  @Test
+  void testUnlinkAccount_Success() {
+    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
+    when(accountRepository.findByAccountIdAndUserId(anyString(), any()))
+        .thenReturn(Optional.of(mockAccountEntityLinked()));
+
+    UnlinkAccountResponse response = accountService.unlinkAccount("authorization", mockUnlinkAccountRequest());
+
+    Assertions.assertEquals(0, response.getStatus().getCode());
+  }
+
+  @Test
+  void testUnlinkAccount_Failed_AccountNotFound() {
+
+    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
+    when(accountRepository.findByAccountIdAndUserId(anyString(), any()))
+        .thenReturn(Optional.empty());
+
+    try {
+      accountService.unlinkAccount("authorization", mockUnlinkAccountRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.NO_ACCOUNT_FOUND.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.NO_ACCOUNT_FOUND.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
 }
+

@@ -36,7 +36,7 @@ import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
-import java.util.Collections;
+import java.util.Collections;import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -204,18 +204,15 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public UnlinkAccountResponse unlinkAccount(
       String authorization, UnlinkAccountRequest unlinkAccountRequest) {
-    return Functions.of(jwtTokenUtils::extractJwt)
-        .andThen(jwtTokenUtils::getUserId)
+    return Functions.of(jwtTokenUtils::getUserId)
         .andThen(
             Functions.peek(
                 userId -> {
                   AccountEntity accountEntity =
-                      accountRepository.getByAccountIdAndUserId(
-                          unlinkAccountRequest.getAccNumber(), userId);
-                  if (accountEntity != null) {
-                    accountEntity.setAccountStatus(AccountStatusEnum.DEACTIVATED.getStatus());
-                    accountRepository.save(accountEntity);
-                  }
+                      accountRepository.findByAccountIdAndUserId(unlinkAccountRequest.getAccNumber(), Long.parseLong(userId))
+                          .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
+                  accountEntity.setLinkedStatus(LinkedStatusEnum.UNLINKED);
+                  accountRepository.save(accountEntity);
                 }))
         .andThen(
             userProfileEntity ->
