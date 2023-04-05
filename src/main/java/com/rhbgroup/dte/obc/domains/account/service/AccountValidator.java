@@ -42,4 +42,12 @@ public class AccountValidator {
       throw new BizException(ResponseMessage.ACCOUNT_DEACTIVATED);
     }
   }
+
+  public static void validateCurrentBalance(
+      CDRBGetAccountDetailResponse account, Double transferAmt) {
+
+    if (transferAmt > account.getAcct().getCurrentBal()) {
+      throw new BizException(ResponseMessage.BALANCE_NOT_ENOUGH);
+    }
+  }
 }

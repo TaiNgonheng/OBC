@@ -1,0 +1,9 @@
+type: object
+properties:
+  transactionType:
+    type: string
+  currencyCode:
+    type: string
+  amount:
+    type: number
+    format: double

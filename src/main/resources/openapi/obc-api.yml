@@ -111,6 +111,10 @@ components:
       $ref: './schemas/cdrb/CDRBGetAccountDetailRequest.yml'
     CDRBGetAccountDetailResponse:
       $ref: './schemas/cdrb/CDRBGetAccountDetailResponse.yml'
+    CDRBFeeAndCashbackRequest:
+      $ref: './schemas/cdrb/CDRBFeeAndCashbackRequest.yml'
+    CDRBFeeAndCashbackResponse:
+      $ref: './schemas/cdrb/CDRBFeeAndCashbackResponse.yml'
 
   securitySchemes:
     bearerAuth:

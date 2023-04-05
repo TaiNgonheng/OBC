@@ -26,7 +26,7 @@ public class TransactionValidator {
     }
 
     if (request.getAmount() < minAmt || request.getAmount() > maxAmt) {
-      throw new BizException(ResponseMessage.BALANCE_NOT_ENOUGH);
+      throw new BizException(ResponseMessage.TRANSACTION_EXCEED_AMOUNT_LIMIT);
     }
 
     if (!request.getCcy().equalsIgnoreCase(accountEntity.getAccountCcy())) {

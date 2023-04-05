@@ -18,6 +18,7 @@ public class CustomUserDetails implements UserDetails {
   private String bakongId;
   private String password;
   private String username;
+  private String cif;
   private boolean accountNonExpired;
   private boolean accountNonLocked;
   private boolean credentialsNonExpired;

@@ -1,0 +1,25 @@
+type: object
+properties:
+  postDate:
+    type: string
+  postJulDate:
+    type: string
+  transactionType:
+    type: string
+  channel:
+    type: string
+  amount:
+    type: number
+    format: double
+  currencyCode:
+    type: string
+  fee:
+    type: number
+    format: double
+  cashBack:
+    type: number
+    format: double
+  startJulDate:
+    type: string
+  endJulDate:
+    type: string

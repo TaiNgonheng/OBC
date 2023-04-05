@@ -22,6 +22,8 @@ import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
+import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
+import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
@@ -50,6 +52,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collections;
+import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -246,6 +249,7 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
+  @Transactional(rollbackOn = RuntimeException.class)
   public InitTransactionResponse initTransaction(InitTransactionRequest request) {
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
@@ -261,14 +265,33 @@ public class AccountServiceImpl implements AccountService {
     TransactionValidator.validateInitTransaction(request, transactionConfig, linkedAccount);
 
     if (request.getType().equals(TransactionType.WALLET)) {
-      PGProfileResponse userProfile =
-          pgRestClient.getUserProfile(Collections.singletonList(currentUser.getBakongId()));
-      if (userProfile == null) {
-        throw new BizException(ResponseMessage.NO_ACCOUNT_FOUND);
+      try {
+        PGProfileResponse userProfile =
+            pgRestClient.getUserProfile(Collections.singletonList(request.getDestinationAcc()));
+
+        // validate destination account
+        log.info("Bakong user profile >> {}", userProfile);
+      } catch (BizException ex) {
+        throw new BizException(ResponseMessage.TRANSACTION_TO_UNAVAILABLE_ACCOUNT);
       }
     }
 
-    // call to CDRD get fee and cashback + validate account balance
+    // Validate account balance
+    CDRBGetAccountDetailResponse casaAccount =
+        cdrbRestClient.getAccountDetail(
+            new CDRBGetAccountDetailRequest()
+                .accountNo(request.getSourceAcc())
+                .cifNo(currentUser.getCif()));
+    AccountValidator.validateCurrentBalance(casaAccount, request.getAmount());
+
+    // Getting fee and cashback
+    CDRBFeeAndCashbackResponse feeAndCashback =
+        cdrbRestClient.getFeeAndCashback(
+            new CDRBFeeAndCashbackRequest()
+                .amount(request.getAmount())
+                .currencyCode(request.getCcy())
+                .transactionType(AppConstants.Transaction.OBC_TOP_UP));
+
     TransactionModel transactionModel =
         new TransactionModel()
             .initRefNumber(RandomGenerator.getDefaultRandom().nextString())
@@ -286,9 +309,13 @@ public class AccountServiceImpl implements AccountService {
             .trxDate(OffsetDateTime.now())
             .trxStatus(TransactionStatus.PENDING);
 
+    // Store PENDING transaction
     transactionService.save(transactionModel);
 
-    // get otp required config
+    // Get otp required config
+    Integer trxOtpEnabled =
+        transactionConfig.getValue(ConfigConstants.Transaction.OTP_REQUIRED, Integer.class);
+
     return new InitTransactionResponse()
         .status(ResponseHandler.ok())
         .data(
@@ -296,7 +323,7 @@ public class AccountServiceImpl implements AccountService {
                 .initRefNumber(transactionModel.getInitRefNumber())
                 .debitAmount(transactionModel.getTrxAmount())
                 .debitCcy(transactionModel.getTrxCcy())
-                .requireOtp(false)
-                .fee(2.0));
+                .requireOtp(1 == trxOtpEnabled)
+                .fee(feeAndCashback.getFee()));
   }
 }
