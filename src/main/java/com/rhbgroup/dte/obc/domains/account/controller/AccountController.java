@@ -11,6 +11,8 @@ import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
+import com.rhbgroup.dte.obc.model.InitTransactionRequest;
+import com.rhbgroup.dte.obc.model.InitTransactionResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import lombok.RequiredArgsConstructor;
@@ -55,5 +57,13 @@ public class AccountController implements AccountApiDelegate {
     return Functions.of(accountService::getAccountDetail)
         .andThen(ResponseEntity::ok)
         .apply(getAccountDetailRequest);
+  }
+
+  @Override
+  public ResponseEntity<InitTransactionResponse> initTransaction(
+      InitTransactionRequest initTransactionRequest) {
+    return Functions.of(accountService::initTransaction)
+        .andThen(ResponseEntity::ok)
+        .apply(initTransactionRequest);
   }
 }

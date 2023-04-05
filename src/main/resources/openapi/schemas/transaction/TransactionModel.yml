@@ -1,0 +1,42 @@
+type: object
+description: Transaction Model
+properties:
+  id:
+    type: number
+    format: long
+  userId:
+    type: number
+    format: long
+  transferType:
+    $ref: '../common/TransactionType.yml'
+  transferMessage:
+    type: string
+  initRefNumber:
+    type: string
+  trxAmount:
+    type: number
+    format: double
+  trxCcy:
+    type: string
+  trxDate:
+    type: string
+    format: date-time
+  trxCompletionDate:
+    type: string
+    format: date-time
+  trxStatus:
+    $ref: '../common/TransactionStatus.yml'
+  fromAccount:
+    type: string
+  payerName:
+    type: string
+  toAccount:
+    type: string
+  recipientBIC:
+    type: string
+  recipientName:
+    type: string
+  creditDebitIndicator:
+    type: string
+
+
