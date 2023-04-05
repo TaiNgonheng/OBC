@@ -1,7 +1,7 @@
 #/init-transaction:
 post:
   tags:
-    - Account
+    - Transaction
   summary: Initialize Topup transaction
   description: Link CASA between NBC and GoWave
   operationId: initTransaction

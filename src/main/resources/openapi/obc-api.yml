@@ -12,6 +12,8 @@ tags:
     description: User profile
   - name: UserExchange
     description: User exchange
+  - name: Transaction
+    description: Account transaction
 
 servers: # context path - /api/v1
   - url: http://localhost:8080

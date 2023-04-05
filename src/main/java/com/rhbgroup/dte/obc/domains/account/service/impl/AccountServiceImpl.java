@@ -6,7 +6,6 @@ import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.common.func.Functions;
-import com.rhbgroup.dte.obc.common.util.RandomGenerator;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapperImpl;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
@@ -15,15 +14,12 @@ import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionService;
-import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
-import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
-import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
@@ -32,13 +28,6 @@ import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
-import com.rhbgroup.dte.obc.model.InitTransactionRequest;
-import com.rhbgroup.dte.obc.model.InitTransactionResponse;
-import com.rhbgroup.dte.obc.model.InitTransactionResponseAllOfData;
-import com.rhbgroup.dte.obc.model.PGProfileResponse;
-import com.rhbgroup.dte.obc.model.TransactionModel;
-import com.rhbgroup.dte.obc.model.TransactionStatus;
-import com.rhbgroup.dte.obc.model.TransactionType;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
@@ -48,11 +37,7 @@ import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.util.Collections;
-import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -246,84 +231,5 @@ public class AccountServiceImpl implements AccountService {
             new CDRBGetAccountDetailRequest()
                 .cifNo(userModel.getCifNo())
                 .accountNo(request.getAccNumber()));
-  }
-
-  @Override
-  @Transactional(rollbackOn = RuntimeException.class)
-  public InitTransactionResponse initTransaction(InitTransactionRequest request) {
-
-    CustomUserDetails currentUser = userAuthService.getCurrentUser();
-    AccountEntity linkedAccount =
-        accountRepository
-            .findByUserIdAndBakongIdAndLinkedStatus(
-                currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.COMPLETED)
-            .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
-
-    ConfigService transactionConfig =
-        this.configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY);
-
-    TransactionValidator.validateInitTransaction(request, transactionConfig, linkedAccount);
-
-    if (request.getType().equals(TransactionType.WALLET)) {
-      try {
-        PGProfileResponse userProfile =
-            pgRestClient.getUserProfile(Collections.singletonList(request.getDestinationAcc()));
-
-        // validate destination account
-        log.info("Bakong user profile >> {}", userProfile);
-      } catch (BizException ex) {
-        throw new BizException(ResponseMessage.TRANSACTION_TO_UNAVAILABLE_ACCOUNT);
-      }
-    }
-
-    // Validate account balance
-    CDRBGetAccountDetailResponse casaAccount =
-        cdrbRestClient.getAccountDetail(
-            new CDRBGetAccountDetailRequest()
-                .accountNo(request.getSourceAcc())
-                .cifNo(currentUser.getCif()));
-    AccountValidator.validateCurrentBalance(casaAccount, request.getAmount());
-
-    // Getting fee and cashback
-    CDRBFeeAndCashbackResponse feeAndCashback =
-        cdrbRestClient.getFeeAndCashback(
-            new CDRBFeeAndCashbackRequest()
-                .amount(request.getAmount())
-                .currencyCode(request.getCcy())
-                .transactionType(AppConstants.Transaction.OBC_TOP_UP));
-
-    TransactionModel transactionModel =
-        new TransactionModel()
-            .initRefNumber(RandomGenerator.getDefaultRandom().nextString())
-            .userId(BigDecimal.valueOf(currentUser.getUserId()))
-            .fromAccount(request.getSourceAcc())
-            .toAccount(request.getDestinationAcc())
-            .creditDebitIndicator("D")
-            .trxCcy(request.getCcy())
-            .payerName(linkedAccount.getAccountName())
-            .recipientBIC("BIC")
-            .recipientName("Name")
-            .transferMessage("Transfer message on " + Instant.now().toString())
-            .transferType(request.getType())
-            .trxAmount(request.getAmount())
-            .trxDate(OffsetDateTime.now())
-            .trxStatus(TransactionStatus.PENDING);
-
-    // Store PENDING transaction
-    transactionService.save(transactionModel);
-
-    // Get otp required config
-    Integer trxOtpEnabled =
-        transactionConfig.getValue(ConfigConstants.Transaction.OTP_REQUIRED, Integer.class);
-
-    return new InitTransactionResponse()
-        .status(ResponseHandler.ok())
-        .data(
-            new InitTransactionResponseAllOfData()
-                .initRefNumber(transactionModel.getInitRefNumber())
-                .debitAmount(transactionModel.getTrxAmount())
-                .debitCcy(transactionModel.getTrxCcy())
-                .requireOtp(1 == trxOtpEnabled)
-                .fee(feeAndCashback.getFee()));
   }
 }
