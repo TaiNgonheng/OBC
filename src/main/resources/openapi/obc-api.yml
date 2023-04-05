@@ -30,6 +30,8 @@ paths:
     $ref: './paths/account-detail.yml'
   /init-transaction:
     $ref: './paths/init-transaction.yml'
+  /finish-transaction:
+    $ref: './paths/finish-transaction.yml'
   /gw/user-exchange:
     $ref: './paths/user-exchange.yml'
   /gw/login:
@@ -53,6 +55,10 @@ components:
       $ref: './schemas/account/FinishLinkAccountRequest.yml'
     FinishLinkAccountResponse:
       $ref: './schemas/account/FinishLinkAccountResponse.yml'
+    FinishTransactionRequest:
+      $ref: './schemas/transaction/FinishTransactionRequest.yml'
+    FinishTransactionResponse:
+      $ref: './schemas/transaction/FinishTransactionResponse.yml'
     AuthenticationRequest:
       $ref: './schemas/account/AuthenticationRequest.yml'
     AuthenticationResponse:

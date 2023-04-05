@@ -2,7 +2,6 @@ package com.rhbgroup.dte.obc.domains.transaction.mapper;
 
 import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionEntity;
 import com.rhbgroup.dte.obc.model.TransactionModel;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
