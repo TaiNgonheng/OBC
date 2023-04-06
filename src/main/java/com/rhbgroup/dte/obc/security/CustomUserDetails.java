@@ -19,6 +19,7 @@ public class CustomUserDetails implements UserDetails {
   private String password;
   private String username;
   private String cif;
+  private String phoneNumber;
   private boolean accountNonExpired;
   private boolean accountNonLocked;
   private boolean credentialsNonExpired;

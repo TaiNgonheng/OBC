@@ -13,6 +13,8 @@ import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
+import com.rhbgroup.dte.obc.model.CasaAccountStatus;
+import com.rhbgroup.dte.obc.model.CasaKYCStatus;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
@@ -26,17 +28,18 @@ import com.rhbgroup.dte.obc.model.UserModel;
 import java.time.Instant;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.springframework.stereotype.Component;
 
 @Component
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
 
-  @Mapping(source = "phoneNumber", target = "mobileNo")
   @Mapping(source = "bakongAccId", target = "bakongId")
   @Mapping(source = "login", target = "user.username")
   @Mapping(source = "key", target = "user.password")
   @Mapping(source = "loginType", target = "user.loginType")
+  @Mapping(source = "phoneNumber", target = "user.mobileNo")
   AccountModel toModel(InitAccountRequest request);
 
   default InitAccountResponse toInitAccountResponse(
@@ -73,7 +76,7 @@ public interface AccountMapper {
 
     entity.setAccountId(accountDetail.getAccountNo());
     entity.setAccountName(accountDetail.getAccountName());
-    entity.setAccountType(accountDetail.getAccountType().getValue());
+    entity.setAccountType(accountDetail.getAccountType());
     entity.setAccountStatus(accountDetail.getAccountStatus().getValue());
     entity.setAccountCcy(accountDetail.getCurrencyCode());
     entity.setLinkedStatus(LinkedStatusEnum.COMPLETED);
@@ -102,27 +105,18 @@ public interface AccountMapper {
       String mobileNo, Double trxMin, Double trxMax, GetAccountDetailResponse response) {
 
     GetAccountDetailResponseAllOfData responseData = response.getData();
-    if (CDRBGetAccountDetailResponseAcct.AccountStatusEnum._1
-            .name()
-            .equals(responseData.getAccStatus())
-        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._4
-            .name()
-            .equals(responseData.getAccStatus())
-        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._5
-            .name()
-            .equals(responseData.getAccStatus())) {
+    if (CasaAccountStatus._1.name().equals(responseData.getAccStatus())
+        || CasaAccountStatus._4.name().equals(responseData.getAccStatus())
+        || CasaAccountStatus._5.name().equals(responseData.getAccStatus())) {
       responseData.setAccStatus(BakongAccountStatusEnum.ACTIVE.name());
     } else {
       responseData.setAccStatus(BakongAccountStatusEnum.CLOSED.name());
     }
 
-    if (CDRBGetAccountDetailResponseAcct.KycStatusEnum.F.getValue()
-        .equals(responseData.getKycStatus())) {
+    if (CasaKYCStatus.F.getValue().equals(responseData.getKycStatus())) {
       responseData.setKycStatus(BakongKYCStatusEnum.FULL.name());
-    } else if (CDRBGetAccountDetailResponseAcct.KycStatusEnum.V.getValue()
-            .equals(responseData.getKycStatus())
-        || CDRBGetAccountDetailResponseAcct.KycStatusEnum.X.getValue()
-            .equals(responseData.getKycStatus())) {
+    } else if (CasaKYCStatus.V.getValue().equals(responseData.getKycStatus())
+        || CasaKYCStatus.X.getValue().equals(responseData.getKycStatus())) {
       responseData.setKycStatus(BakongKYCStatusEnum.PARTIAL.name());
     } else {
       responseData.setKycStatus(BakongKYCStatusEnum.BASIC.name());
@@ -140,5 +134,14 @@ public interface AccountMapper {
     return new GetAccountDetailResponse()
         .status(ResponseHandler.ok())
         .data(toAccountDetailData(response));
+  }
+
+  @Mapping(source = "accountId", target = "accountNo")
+  @Mapping(source = "accountStatus", target = "accountStatus", qualifiedByName = "toAccountStatus")
+  AccountModel entityToModel(AccountEntity entity);
+
+  @Named("toAccountStatus")
+  default CasaAccountStatus toAccountStatus(String status) {
+    return CasaAccountStatus.fromValue(status);
   }
 }

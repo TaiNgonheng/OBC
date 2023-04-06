@@ -4,11 +4,9 @@ import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
-import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.common.util.RandomGenerator;
-import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
-import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
+import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.transaction.mapper.TransactionMapper;
@@ -19,6 +17,8 @@ import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.model.AccountFilterCondition;
+import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
@@ -34,11 +34,11 @@ import com.rhbgroup.dte.obc.model.TransactionStatus;
 import com.rhbgroup.dte.obc.model.TransactionType;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
+import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import javax.transaction.Transactional;
@@ -56,12 +56,13 @@ public class TransactionServiceImpl implements TransactionService {
   private final UserProfileService userProfileService;
   private final UserAuthService userAuthService;
   private final ConfigService configService;
+  private final AccountService accountService;
 
   private final TransactionRepository transactionRepository;
-  private final AccountRepository accountRepository;
 
   private final PGRestClient pgRestClient;
   private final CDRBRestClient cdrbRestClient;
+  private final InfoBipRestClient infoBipRestClient;
 
   private final TransactionMapper transactionMapper = new TransactionMapperImpl();
 
@@ -77,11 +78,12 @@ public class TransactionServiceImpl implements TransactionService {
   public InitTransactionResponse initTransaction(InitTransactionRequest request) {
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
-    AccountEntity linkedAccount =
-        accountRepository
-            .findByUserIdAndBakongIdAndLinkedStatus(
-                currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.COMPLETED)
-            .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
+
+    AccountModel linkedAccount =
+        accountService.getActiveAccountByUserIdAndBakongId(
+            new AccountFilterCondition()
+                .userId(currentUser.getUserId().toString())
+                .bakongId(currentUser.getBakongId()));
 
     ConfigService transactionConfig =
         this.configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY);
@@ -123,12 +125,10 @@ public class TransactionServiceImpl implements TransactionService {
             .userId(BigDecimal.valueOf(currentUser.getUserId()))
             .fromAccount(request.getSourceAcc())
             .toAccount(request.getDestinationAcc())
-            .creditDebitIndicator("D")
+            .creditDebitIndicator(casaAccount.getAcct().getAccountType().getValue())
             .trxCcy(request.getCcy())
             .payerName(linkedAccount.getAccountName())
-            .recipientBIC("BIC")
-            .recipientName("Name")
-            .transferMessage("Transfer message on " + Instant.now().toString())
+            .transferMessage(request.getDesc())
             .transferType(request.getType())
             .trxAmount(request.getAmount())
             .trxDate(OffsetDateTime.now())
@@ -138,8 +138,12 @@ public class TransactionServiceImpl implements TransactionService {
     save(transactionModel);
 
     // Get otp required config
-    Integer trxOtpEnabled =
-        transactionConfig.getValue(ConfigConstants.Transaction.OTP_REQUIRED, Integer.class);
+    boolean trxOtpEnabled =
+        transactionConfig.getValue(ConfigConstants.Transaction.OTP_REQUIRED, Integer.class) == 1;
+
+    if (trxOtpEnabled) {
+      infoBipRestClient.sendOtp(currentUser.getPhoneNumber(), currentUser.getBakongId());
+    }
 
     return new InitTransactionResponse()
         .status(ResponseHandler.ok())
@@ -148,7 +152,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .initRefNumber(transactionModel.getInitRefNumber())
                 .debitAmount(transactionModel.getTrxAmount())
                 .debitCcy(transactionModel.getTrxCcy())
-                .requireOtp(1 == trxOtpEnabled)
+                .requireOtp(trxOtpEnabled)
                 .fee(feeAndCashback.getFee()));
   }
 

@@ -1,0 +1,5 @@
+type: string
+description: D - Debit, S - Saving
+enum:
+  - D
+  - S
