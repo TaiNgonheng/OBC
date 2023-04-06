@@ -544,7 +544,8 @@ class AccountControllerTest extends AbstractAccountTest {
         AppConstants.Status.SUCCESS, accountDetailResponse.getStatus().getCode());
     Assertions.assertEquals(ACC_NUMBER, accountDetailResponse.getData().getAccNumber());
     Assertions.assertEquals(BakongKYCStatus.FULL, accountDetailResponse.getData().getKycStatus());
-    Assertions.assertEquals(BakongAccountStatus.ACTIVE, accountDetailResponse.getData().getAccStatus());
+    Assertions.assertEquals(
+        BakongAccountStatus.ACTIVE, accountDetailResponse.getData().getAccStatus());
   }
 
   @Test

@@ -58,7 +58,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccountByUserIdAndBakongId(any())).thenReturn(mockAccountModel());
-    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY))
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig_NonOTP());
     when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
@@ -89,7 +89,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccountByUserIdAndBakongId(any())).thenReturn(mockAccountModel());
-    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY))
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig_NonOTP());
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
 
@@ -125,7 +125,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
     // Return a CASA account which is not matched with request source account
     when(accountService.getActiveAccountByUserIdAndBakongId(any()))
         .thenReturn(mockAccountModelSourceAccNotMatched());
-    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY))
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig_NonOTP());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
@@ -145,7 +145,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccountByUserIdAndBakongId(any())).thenReturn(mockAccountModel());
-    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY))
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig_NonOTP());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
@@ -171,7 +171,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccountByUserIdAndBakongId(any())).thenReturn(mockAccountModel());
-    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY))
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_KHR))
         .thenReturn(mockTransactionConfig_NonOTP());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
@@ -195,7 +195,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccountByUserIdAndBakongId(any())).thenReturn(mockAccountModel());
-    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY))
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig_NonOTP());
 
     // Mimic CASA account has run out of balance
@@ -222,7 +222,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccountByUserIdAndBakongId(any())).thenReturn(mockAccountModel());
-    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY))
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig_RequireOTP());
 
     when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());

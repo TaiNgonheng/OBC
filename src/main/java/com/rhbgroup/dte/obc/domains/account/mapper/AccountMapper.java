@@ -107,22 +107,6 @@ public interface AccountMapper {
       String mobileNo, Double trxMin, Double trxMax, GetAccountDetailResponse response) {
 
     GetAccountDetailResponseAllOfData responseData = response.getData();
-    if (CasaAccountStatus._1.name().equals(responseData.getAccStatus())
-        || CasaAccountStatus._4.name().equals(responseData.getAccStatus())
-        || CasaAccountStatus._5.name().equals(responseData.getAccStatus())) {
-      responseData.setAccStatus(BakongAccountStatusEnum.ACTIVE.name());
-    } else {
-      responseData.setAccStatus(BakongAccountStatusEnum.CLOSED.name());
-    }
-
-    if (CasaKYCStatus.F.getValue().equals(responseData.getKycStatus())) {
-      responseData.setKycStatus(BakongKYCStatusEnum.FULL.name());
-    } else if (CasaKYCStatus.V.getValue().equals(responseData.getKycStatus())
-        || CasaKYCStatus.X.getValue().equals(responseData.getKycStatus())) {
-      responseData.setKycStatus(BakongKYCStatusEnum.PARTIAL.name());
-    } else {
-      responseData.setKycStatus(BakongKYCStatusEnum.BASIC.name());
-    }
 
     responseData.setAccPhone(mobileNo);
     responseData.setLimit(
@@ -139,27 +123,24 @@ public interface AccountMapper {
             .status(ResponseHandler.ok())
             .data(toAccountDetailData(response));
 
-    if (CDRBGetAccountDetailResponseAcct.AccountStatusEnum._1.equals(response.getAccountStatus())
-        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._4.equals(response.getAccountStatus())
-        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._5.equals(
-            response.getAccountStatus())) {
+    if (CasaAccountStatus._1.equals(response.getAccountStatus())
+        || CasaAccountStatus._4.equals(response.getAccountStatus())
+        || CasaAccountStatus._5.equals(response.getAccountStatus())) {
       mappingData.getData().setAccStatus(BakongAccountStatus.ACTIVE);
 
-    } else if (CDRBGetAccountDetailResponseAcct.AccountStatusEnum._7.equals(
-            response.getAccountStatus())
-        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._9.equals(
-            response.getAccountStatus())) {
+    } else if (CasaAccountStatus._7.equals(response.getAccountStatus())
+        || CasaAccountStatus._9.equals(response.getAccountStatus())) {
       mappingData.getData().setAccStatus(BakongAccountStatus.BLOCKED);
 
     } else {
       mappingData.getData().setAccStatus(BakongAccountStatus.CLOSED);
     }
 
-    if (CDRBGetAccountDetailResponseAcct.KycStatusEnum.F.equals(response.getKycStatus())) {
+    if (CasaKYCStatus.F.equals(response.getKycStatus())) {
       mappingData.getData().setKycStatus(BakongKYCStatus.FULL);
 
-    } else if (CDRBGetAccountDetailResponseAcct.KycStatusEnum.V.equals(response.getKycStatus())
-        || CDRBGetAccountDetailResponseAcct.KycStatusEnum.X.equals(response.getKycStatus())) {
+    } else if (CasaKYCStatus.V.equals(response.getKycStatus())
+        || CasaKYCStatus.X.equals(response.getKycStatus())) {
       mappingData.getData().setKycStatus(BakongKYCStatus.PARTIAL);
 
     } else {

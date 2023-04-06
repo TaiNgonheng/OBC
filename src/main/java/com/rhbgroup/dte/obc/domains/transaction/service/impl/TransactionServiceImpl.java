@@ -86,7 +86,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .bakongId(currentUser.getBakongId()));
 
     ConfigService transactionConfig =
-        this.configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY);
+        this.configService.loadJSONValue(ConfigConstants.Transaction.mapCurrency(request.getCcy()));
 
     // Validate transaction request
     TransactionValidator.validateInitTransaction(request, transactionConfig, linkedAccount);
