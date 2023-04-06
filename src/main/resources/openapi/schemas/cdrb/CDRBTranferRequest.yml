@@ -1,0 +1,62 @@
+type: object
+properties:
+  amount:
+    type: number
+    format: double
+  buyRate:
+    type: number
+    format: double
+  cashBack:
+    type: number
+    format: double
+  cashBackTransactionCurrencyAmount:
+    type: number
+    format: double
+  currencyCode:
+    type: string
+  feeAmountInUSD:
+    type: number
+    format: double
+  feeTransactionCurrencyAmount:
+    type: number
+    format: double
+  fees:
+    type: number
+    format: double
+  fromAccountNo:
+    type: string
+  fromAccountType:
+    type: string
+    description: Account type to identify current (D) or savings (S) account
+    enum:
+      - D
+      - S
+  recipientBIC:
+    type: string
+  recipientName:
+    type: string
+  sellRate:
+    type: number
+    format: double
+  toAccountNo:
+    type: string
+  toAccountCurrency:
+    type: string
+  transactionAmountInUSD:
+    type: number
+    format: double
+  transactionCurrencyAmount:
+    type: number
+    format: double
+  transferMessage:
+    type: string
+  transferType:
+    type: string
+    description: Account type to identify current (D) or savings (S) account
+    enum:
+      - D
+      - S
+  accountCurrencyCode:
+    type: string
+  cashBackAmountInUSD:
+    type: string

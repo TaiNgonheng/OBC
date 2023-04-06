@@ -1,0 +1,66 @@
+type: object
+description: CDRB tranfer response
+properties:
+  correlationId:
+    type: string
+    example: 414d5120444b484344524230322020205f9f4d6105dc5d27
+  status:
+    type: string
+    example: PENDING
+  fromAccountNumber:
+    type: string
+    example: 1010002000009171
+  toAccountNumber:
+    type: string
+    example: huy_oung@oski
+  transferDate:
+    type: string
+    example: 2025-04-06T16:37:11.17495+07:00
+  transferType:
+    type: string
+    example: BAKONG_EWALLET
+  toAccountCurrency:
+    type: string
+    example: KHR
+  currencyCode:
+    type: string
+    example: KHR
+  payerName:
+    type: string
+    example: CBA10
+  acctCurrencyCode:
+    type: string
+    example: USD
+  transferMessage:
+    type: string
+    example: firstbakongtransfer
+  recipientBIC:
+    type: string
+    example:
+  recipientName:
+    type: string
+    example: ABC
+  fees:
+    type: number
+    format: double
+  feeTransactionCurrencyAmount:
+    type: number
+    format: double
+  transferAmount:
+    type: number
+    format: double
+  cashBack:
+    type: number
+    format: double
+  cashBackTransactionCurrencyAmount:
+    type: number
+    format: double
+  amount:
+    type: number
+    format: double
+  buyRate:
+    type: number
+    format: double
+  sellRate:
+    type: number
+    format: double

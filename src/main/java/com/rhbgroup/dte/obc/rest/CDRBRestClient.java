@@ -15,6 +15,8 @@ import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetHsmKeyResponse;
 import com.rhbgroup.dte.obc.model.CDRBLoginRequest;
 import com.rhbgroup.dte.obc.model.CDRBLoginResponse;
+import com.rhbgroup.dte.obc.model.CDRBTranferRequest;
+import com.rhbgroup.dte.obc.model.CDRBTranferResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
@@ -38,6 +40,7 @@ public class CDRBRestClient {
       "/corebankingnonfinancialclient/bakong-link-casa/accounts";
   private static final String GET_FEE_AND_CASHBACK =
       "/corebankingnonfinancialclient/feeAndCashBack";
+  private static final String TRANFER = "/corebankingfinancialclient/transfer";
 
   private final SpringRestUtil restUtil;
 
@@ -94,6 +97,18 @@ public class CDRBRestClient {
           request,
           ParameterizedTypeReference.forType(CDRBFeeAndCashbackResponse.class));
 
+    } catch (BizException ex) {
+      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  public CDRBTranferResponse tranfer(CDRBTranferRequest request) {
+    try {
+      return restUtil.sendPost(
+          baseUrl.concat(TRANFER),
+          buildHeader(getAccessToken()),
+          request,
+          ParameterizedTypeReference.forType(CDRBTranferResponse.class));
     } catch (BizException ex) {
       throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }

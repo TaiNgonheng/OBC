@@ -3,3 +3,4 @@ enum:
   - FAILED
   - PENDING
   - SUCCESSFUL
+  - COMPLETE
