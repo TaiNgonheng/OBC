@@ -2,8 +2,6 @@ package com.rhbgroup.dte.obc.domains.account.mapper;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
-import com.rhbgroup.dte.obc.common.enums.BakongAccountStatusEnum;
-import com.rhbgroup.dte.obc.common.enums.BakongKYCStatusEnum;
 import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.common.util.ObcStringUtils;
 import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
@@ -11,6 +9,9 @@ import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
+import com.rhbgroup.dte.obc.model.BakongAccountStatus;
+import com.rhbgroup.dte.obc.model.BakongAccountType;
+import com.rhbgroup.dte.obc.model.BakongKYCStatus;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
 import com.rhbgroup.dte.obc.model.CasaAccountStatus;
@@ -95,10 +96,11 @@ public interface AccountMapper {
   @Mapping(source = "accountNo", target = "accNumber")
   @Mapping(source = "accountName", target = "accName")
   @Mapping(source = "accountType", target = "accType")
-  @Mapping(source = "currencyCode", target = "accCcy")
-  @Mapping(source = "accountStatus", target = "accStatus")
   @Mapping(source = "ctryCitizen", target = "country")
   @Mapping(source = "currentBal", target = "balance")
+  @Mapping(source = "currencyCode", target = "accCcy")
+  @Mapping(source = "accountStatus", target = "accStatus", ignore = true)
+  @Mapping(source = "kycStatus", target = "kycStatus", ignore = true)
   GetAccountDetailResponseAllOfData toAccountDetailData(CDRBGetAccountDetailResponseAcct response);
 
   default GetAccountDetailResponse mappingMobileNoAndAccStatus(
@@ -131,9 +133,44 @@ public interface AccountMapper {
 
   default GetAccountDetailResponse toAccountDetailResponse(
       CDRBGetAccountDetailResponseAcct response) {
-    return new GetAccountDetailResponse()
-        .status(ResponseHandler.ok())
-        .data(toAccountDetailData(response));
+
+    GetAccountDetailResponse mappingData =
+        new GetAccountDetailResponse()
+            .status(ResponseHandler.ok())
+            .data(toAccountDetailData(response));
+
+    if (CDRBGetAccountDetailResponseAcct.AccountStatusEnum._1.equals(response.getAccountStatus())
+        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._4.equals(response.getAccountStatus())
+        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._5.equals(
+            response.getAccountStatus())) {
+      mappingData.getData().setAccStatus(BakongAccountStatus.ACTIVE);
+
+    } else if (CDRBGetAccountDetailResponseAcct.AccountStatusEnum._7.equals(
+            response.getAccountStatus())
+        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._9.equals(
+            response.getAccountStatus())) {
+      mappingData.getData().setAccStatus(BakongAccountStatus.BLOCKED);
+
+    } else {
+      mappingData.getData().setAccStatus(BakongAccountStatus.CLOSED);
+    }
+
+    if (CDRBGetAccountDetailResponseAcct.KycStatusEnum.F.equals(response.getKycStatus())) {
+      mappingData.getData().setKycStatus(BakongKYCStatus.FULL);
+
+    } else if (CDRBGetAccountDetailResponseAcct.KycStatusEnum.V.equals(response.getKycStatus())
+        || CDRBGetAccountDetailResponseAcct.KycStatusEnum.X.equals(response.getKycStatus())) {
+      mappingData.getData().setKycStatus(BakongKYCStatus.PARTIAL);
+
+    } else {
+      mappingData.getData().setKycStatus(BakongKYCStatus.BASIC);
+    }
+
+    mappingData
+        .getData()
+        .setAccType(BakongAccountType.fromValue(response.getAccountType().getValue()));
+
+    return mappingData;
   }
 
   @Mapping(source = "accountId", target = "accountNo")
