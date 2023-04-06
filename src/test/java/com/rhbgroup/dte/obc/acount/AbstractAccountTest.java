@@ -8,11 +8,18 @@ import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
+import com.rhbgroup.dte.obc.model.BakongAccountStatus;
+import com.rhbgroup.dte.obc.model.BakongAccountType;
+import com.rhbgroup.dte.obc.model.BakongKYCStatus;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
+import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponseAllOfData;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponseAllOfDataLimit;
 import com.rhbgroup.dte.obc.model.InfoBipSendOtpResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
@@ -169,7 +176,7 @@ public abstract class AbstractAccountTest {
     return new CDRBGetAccountDetailResponse()
         .acct(
             new CDRBGetAccountDetailResponseAcct()
-                .accountNo("123xxx")
+                .accountNo(ACC_NUMBER)
                 .accountType(CDRBGetAccountDetailResponseAcct.AccountTypeEnum.D)
                 .accountStatus(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._1)
                 .accountName("name")
@@ -185,8 +192,16 @@ public abstract class AbstractAccountTest {
     return new CDRBGetAccountDetailResponse()
         .acct(
             new CDRBGetAccountDetailResponseAcct()
-                .accountNo("123xxx")
-                .kycStatus(CDRBGetAccountDetailResponseAcct.KycStatusEnum.V));
+                .accountNo(ACC_NUMBER)
+                .accountType(CDRBGetAccountDetailResponseAcct.AccountTypeEnum.S)
+                .accountStatus(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._7)
+                .accountName("name")
+                .cifNo("123")
+                .currentBal(1.2)
+                .availBal(1.2)
+                .currencyCode("USD")
+                .ctryCitizen("KH")
+                .kycStatus(CDRBGetAccountDetailResponseAcct.KycStatusEnum.X));
   }
 
   protected AccountEntity mockAccountEntityLinked() {
@@ -207,5 +222,38 @@ public abstract class AbstractAccountTest {
     accountEntity.setLinkedStatus(LinkedStatusEnum.PENDING);
 
     return accountEntity;
+  }
+
+  protected CustomUserDetails mockCustomUserDetails() {
+    return CustomUserDetails.builder()
+        .userId(1L)
+        .username("name")
+        .bakongId("name@oski")
+        .password("password")
+        .enabled(true)
+        .build();
+  }
+
+  public static final String ACC_NUMBER = "123xxx";
+
+  protected GetAccountDetailRequest mockGetAccountDetailRequest() {
+    return new GetAccountDetailRequest().accNumber(ACC_NUMBER);
+  }
+
+  protected GetAccountDetailResponse mockGetAccountDetailResponse() {
+    return new GetAccountDetailResponse()
+        .status(ResponseHandler.ok())
+        .data(
+            new GetAccountDetailResponseAllOfData()
+                .accCcy("USD")
+                .accNumber(ACC_NUMBER)
+                .accStatus(BakongAccountStatus.ACTIVE)
+                .limit(
+                    new GetAccountDetailResponseAllOfDataLimit()
+                        .maxTrxAmount(100.0)
+                        .minTrxAmount(1.0))
+                .kycStatus(BakongKYCStatus.FULL)
+                .accType(BakongAccountType.D)
+                .accName("ACC1"));
   }
 }
