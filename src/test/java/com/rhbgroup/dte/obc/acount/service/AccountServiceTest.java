@@ -1,8 +1,6 @@
 package com.rhbgroup.dte.obc.acount.service;
 
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -423,11 +421,12 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testUnlinkAccount_Success() {
-    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
-    when(accountRepository.findByAccountIdAndUserId(anyString(), any()))
+    when(jwtTokenUtils.getSubject(anyString())).thenReturn("bakongId@oski");
+    when(accountRepository.findByAccountIdAndBakongId(anyString(), anyString()))
         .thenReturn(Optional.of(mockAccountEntityLinked()));
 
-    UnlinkAccountResponse response = accountService.unlinkAccount("authorization", mockUnlinkAccountRequest());
+    UnlinkAccountResponse response =
+        accountService.unlinkAccount("authorization", mockUnlinkAccountRequest());
 
     Assertions.assertEquals(0, response.getStatus().getCode());
   }
@@ -435,8 +434,8 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testUnlinkAccount_Failed_AccountNotFound() {
 
-    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
-    when(accountRepository.findByAccountIdAndUserId(anyString(), any()))
+    when(jwtTokenUtils.getSubject(anyString())).thenReturn("bakongId@oski");
+    when(accountRepository.findByAccountIdAndBakongId(anyString(), anyString()))
         .thenReturn(Optional.empty());
 
     try {
@@ -542,4 +541,3 @@ class AccountServiceTest extends AbstractAccountTest {
     }
   }
 }
-

@@ -29,7 +29,7 @@ import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.UnlinkAccountRequest;
 import com.rhbgroup.dte.obc.model.UnlinkAccountResponse;
-import com.rhbgroup.dte.obc.model.UnlinkAccountResponseAllOf;import com.rhbgroup.dte.obc.model.UserModel;
+import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
@@ -130,13 +130,13 @@ public abstract class AbstractAccountTest {
         .status(ResponseHandler.ok())
         .data(new FinishLinkAccountResponseAllOfData().requireChangePassword(false));
   }
+
   protected UnlinkAccountRequest mockUnlinkAccountRequest() {
     return new UnlinkAccountRequest().accNumber("10000xxx");
   }
+
   protected UnlinkAccountResponse mockUnlinkAccountResponse() {
-    return new UnlinkAccountResponse()
-        .status(ResponseHandler.ok())
-        .data(null);
+    return new UnlinkAccountResponse().status(ResponseHandler.ok()).data(null);
   }
 
   protected InfoBipSendOtpResponse mockInfoBipSendOtpResponse() {

@@ -3,7 +3,6 @@ package com.rhbgroup.dte.obc.domains.user.service.impl;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.domains.user.mapper.UserProfileMapper;
 import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
-import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.UserModel;

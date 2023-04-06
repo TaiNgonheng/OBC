@@ -3,7 +3,6 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
-import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.common.func.Functions;
@@ -39,7 +38,8 @@ import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
-import java.util.Collections;import java.util.Optional;
+import java.util.Collections;
+import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -236,17 +236,22 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
+  @Transactional
   public UnlinkAccountResponse unlinkAccount(
       String authorization, UnlinkAccountRequest unlinkAccountRequest) {
-    return Functions.of(jwtTokenUtils::getUserId)
+    return Functions.of(jwtTokenUtils::getSubject)
         .andThen(
             Functions.peek(
-                userId -> {
+                bakongId -> {
                   AccountEntity accountEntity =
-                      accountRepository.findByAccountIdAndUserId(unlinkAccountRequest.getAccNumber(), Long.parseLong(userId))
+                      accountRepository
+                          .findByAccountIdAndBakongId(unlinkAccountRequest.getAccNumber(), bakongId)
                           .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
-                  accountEntity.setLinkedStatus(LinkedStatusEnum.UNLINKED);
-                  accountRepository.save(accountEntity);
+
+                  if (!LinkedStatusEnum.UNLINKED.equals(accountEntity.getLinkedStatus())) {
+                    accountEntity.setLinkedStatus(LinkedStatusEnum.UNLINKED);
+                    accountRepository.save(accountEntity);
+                  }
                 }))
         .andThen(
             userProfileEntity ->
