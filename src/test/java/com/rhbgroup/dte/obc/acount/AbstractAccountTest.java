@@ -8,6 +8,9 @@ import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
+import com.rhbgroup.dte.obc.model.BakongAccountStatus;
+import com.rhbgroup.dte.obc.model.BakongAccountType;
+import com.rhbgroup.dte.obc.model.BakongKYCStatus;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
@@ -234,13 +237,13 @@ public abstract class AbstractAccountTest {
             new GetAccountDetailResponseAllOfData()
                 .accCcy("USD")
                 .accNumber(ACC_NUMBER)
-                .accStatus("ACTIVE")
+                .accStatus(BakongAccountStatus.ACTIVE)
                 .limit(
                     new GetAccountDetailResponseAllOfDataLimit()
                         .maxTrxAmount(100.0)
                         .minTrxAmount(1.0))
-                .kycStatus("FULL")
-                .accType("D")
+                .kycStatus(BakongKYCStatus.FULL)
+                .accType(BakongAccountType.D)
                 .accName("ACC1"));
   }
 }

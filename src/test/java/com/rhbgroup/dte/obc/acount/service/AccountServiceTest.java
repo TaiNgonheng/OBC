@@ -22,6 +22,8 @@ import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
+import com.rhbgroup.dte.obc.model.BakongAccountStatus;
+import com.rhbgroup.dte.obc.model.BakongKYCStatus;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
@@ -438,8 +440,8 @@ class AccountServiceTest extends AbstractAccountTest {
 
     Assertions.assertNotNull(response.getData());
     Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
-    Assertions.assertEquals("ACTIVE", response.getData().getAccStatus());
-    Assertions.assertEquals("FULL", response.getData().getKycStatus());
+    Assertions.assertEquals(BakongAccountStatus.ACTIVE, response.getData().getAccStatus());
+    Assertions.assertEquals(BakongKYCStatus.FULL, response.getData().getKycStatus());
     Assertions.assertEquals(minAmt, response.getData().getLimit().getMinTrxAmount());
     Assertions.assertEquals(maxAmt, response.getData().getLimit().getMaxTrxAmount());
   }
@@ -466,8 +468,8 @@ class AccountServiceTest extends AbstractAccountTest {
 
     Assertions.assertNotNull(response.getData());
     Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
-    Assertions.assertEquals("BLOCKED", response.getData().getAccStatus());
-    Assertions.assertEquals("PARTIAL", response.getData().getKycStatus());
+    Assertions.assertEquals(BakongAccountStatus.BLOCKED, response.getData().getAccStatus());
+    Assertions.assertEquals(BakongKYCStatus.PARTIAL, response.getData().getKycStatus());
     Assertions.assertEquals(minAmt, response.getData().getLimit().getMinTrxAmount());
     Assertions.assertEquals(maxAmt, response.getData().getLimit().getMaxTrxAmount());
   }
