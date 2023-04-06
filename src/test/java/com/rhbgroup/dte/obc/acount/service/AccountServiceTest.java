@@ -422,7 +422,7 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testUnlinkAccount_Success() {
     when(jwtTokenUtils.getSubject(anyString())).thenReturn("bakongId@oski");
-    when(accountRepository.findByAccountIdAndBakongId(anyString(), anyString()))
+    when(accountRepository.findByAccountIdAndLinkedStatus(anyString(), any()))
         .thenReturn(Optional.of(mockAccountEntityLinked()));
 
     UnlinkAccountResponse response =
@@ -435,7 +435,7 @@ class AccountServiceTest extends AbstractAccountTest {
   void testUnlinkAccount_Failed_AccountNotFound() {
 
     when(jwtTokenUtils.getSubject(anyString())).thenReturn("bakongId@oski");
-    when(accountRepository.findByAccountIdAndBakongId(anyString(), anyString()))
+    when(accountRepository.findByAccountIdAndLinkedStatus(anyString(), any()))
         .thenReturn(Optional.empty());
 
     try {

@@ -245,13 +245,12 @@ public class AccountServiceImpl implements AccountService {
                 bakongId -> {
                   AccountEntity accountEntity =
                       accountRepository
-                          .findByAccountIdAndBakongId(unlinkAccountRequest.getAccNumber(), bakongId)
+                          .findByAccountIdAndLinkedStatus(
+                              unlinkAccountRequest.getAccNumber(), LinkedStatusEnum.COMPLETED)
                           .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
 
-                  if (!LinkedStatusEnum.UNLINKED.equals(accountEntity.getLinkedStatus())) {
-                    accountEntity.setLinkedStatus(LinkedStatusEnum.UNLINKED);
-                    accountRepository.save(accountEntity);
-                  }
+                  accountEntity.setLinkedStatus(LinkedStatusEnum.UNLINKED);
+                  accountRepository.save(accountEntity);
                 }))
         .andThen(
             userProfileEntity ->
