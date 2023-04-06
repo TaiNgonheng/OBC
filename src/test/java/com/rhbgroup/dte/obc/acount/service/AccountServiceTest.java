@@ -430,7 +430,7 @@ class AccountServiceTest extends AbstractAccountTest {
     Double minAmt = 1.0;
     mockConfig.setJsonValue(new JSONObject().put("txMinAmt", minAmt).put("txMaxAmt", maxAmt));
 
-    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY))
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockConfig);
 
     GetAccountDetailResponse response =
@@ -458,7 +458,7 @@ class AccountServiceTest extends AbstractAccountTest {
     Double minAmt = 1.0;
     mockConfig.setJsonValue(new JSONObject().put("txMinAmt", minAmt).put("txMaxAmt", maxAmt));
 
-    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY))
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockConfig);
 
     GetAccountDetailResponse response =
@@ -466,7 +466,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
     Assertions.assertNotNull(response.getData());
     Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
-    Assertions.assertEquals("CLOSED", response.getData().getAccStatus());
+    Assertions.assertEquals("BLOCKED", response.getData().getAccStatus());
     Assertions.assertEquals("PARTIAL", response.getData().getKycStatus());
     Assertions.assertEquals(minAmt, response.getData().getLimit().getMinTrxAmount());
     Assertions.assertEquals(maxAmt, response.getData().getLimit().getMaxTrxAmount());

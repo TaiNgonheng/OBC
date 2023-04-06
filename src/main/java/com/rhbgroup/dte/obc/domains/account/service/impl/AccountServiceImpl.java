@@ -215,15 +215,17 @@ public class AccountServiceImpl implements AccountService {
         .andThen(CDRBGetAccountDetailResponse::getAcct)
         .andThen(accountMapper::toAccountDetailResponse)
         .andThen(
-            response -> {
+            casaAccountResponse -> {
               ConfigService transactionConfig =
-                  this.configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY);
+                  this.configService.loadJSONValue(
+                      ConfigConstants.Transaction.mapCurrency(
+                          casaAccountResponse.getData().getAccCcy()));
 
               return accountMapper.mappingMobileNoAndAccStatus(
                   userModel.getMobileNo(),
                   transactionConfig.getValue(ConfigConstants.Transaction.MIN_AMOUNT, Double.class),
                   transactionConfig.getValue(ConfigConstants.Transaction.MAX_AMOUNT, Double.class),
-                  response);
+                  casaAccountResponse);
             })
         .apply(
             new CDRBGetAccountDetailRequest()

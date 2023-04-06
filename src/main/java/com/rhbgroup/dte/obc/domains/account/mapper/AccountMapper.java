@@ -112,6 +112,15 @@ public interface AccountMapper {
             .name()
             .equals(responseData.getAccStatus())) {
       responseData.setAccStatus(BakongAccountStatusEnum.ACTIVE.name());
+
+    } else if (CDRBGetAccountDetailResponseAcct.AccountStatusEnum._7
+            .name()
+            .equals(responseData.getAccStatus())
+        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._9
+            .name()
+            .equals(responseData.getAccStatus())) {
+      responseData.setAccStatus(BakongAccountStatusEnum.BLOCKED.name());
+
     } else {
       responseData.setAccStatus(BakongAccountStatusEnum.CLOSED.name());
     }
