@@ -29,13 +29,14 @@ public abstract class AbstractTransactionTest {
   private static final String BAKONG_ACCOUNT_TEST = "bakong@oski";
   private static final String CURRENCY_USD = "USD";
   private static final String PHONE_NUMBER = "85500000000";
+  private static final Double TRX_AMOUNT = 1.0;
 
   protected InitTransactionRequest mockInitTransactionRequest() {
     return new InitTransactionRequest()
         .type(TransactionType.WALLET)
         .sourceAcc(CASA_ACCOUNT_TEST)
         .destinationAcc(BAKONG_ACCOUNT_TEST)
-        .amount(1.0)
+        .amount(TRX_AMOUNT)
         .ccy(CURRENCY_USD)
         .desc("Desc");
   }
@@ -49,7 +50,7 @@ public abstract class AbstractTransactionTest {
                 .initRefNumber(RandomGenerator.getDefaultRandom().nextString())
                 .requireOtp(false)
                 .debitCcy(CURRENCY_USD)
-                .debitAmount(12.0));
+                .debitAmount(TRX_AMOUNT));
   }
 
   protected String mockBearerString() {
@@ -115,7 +116,6 @@ public abstract class AbstractTransactionTest {
       return null;
     }
   }
-
 
   protected CDRBGetAccountDetailResponse mockCdrbAccountResponse() {
     return new CDRBGetAccountDetailResponse()

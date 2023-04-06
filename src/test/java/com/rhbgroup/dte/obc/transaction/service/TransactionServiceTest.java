@@ -33,34 +33,25 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.verification.VerificationMode;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest extends AbstractTransactionTest {
 
-  @InjectMocks
-  TransactionServiceImpl transactionService;
+  @InjectMocks TransactionServiceImpl transactionService;
 
-  @Mock
-  TransactionRepository transactionRepository;
+  @Mock TransactionRepository transactionRepository;
 
-  @Mock
-  UserAuthService userAuthService;
+  @Mock UserAuthService userAuthService;
 
-  @Mock
-  ConfigService configService;
+  @Mock ConfigService configService;
 
-  @Mock
-  PGRestClient pgRestClient;
+  @Mock PGRestClient pgRestClient;
 
-  @Mock
-  CDRBRestClient cdrbRestClient;
+  @Mock CDRBRestClient cdrbRestClient;
 
-  @Mock
-  AccountService accountService;
+  @Mock AccountService accountService;
 
-  @Mock
-  InfoBipRestClient infoBipRestClient;
+  @Mock InfoBipRestClient infoBipRestClient;
 
   @Test
   void testInitTransaction_Success_CASA_TO_WALLET() {
@@ -132,7 +123,8 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
 
     // Return a CASA account which is not matched with request source account
-    when(accountService.getActiveAccountByUserIdAndBakongId(any())).thenReturn(mockAccountModelSourceAccNotMatched());
+    when(accountService.getActiveAccountByUserIdAndBakongId(any()))
+        .thenReturn(mockAccountModelSourceAccNotMatched());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY))
         .thenReturn(mockTransactionConfig_NonOTP());
 
@@ -165,8 +157,12 @@ class TransactionServiceTest extends AbstractTransactionTest {
       assertNotNull(initTransactionResponse);
 
     } catch (BizException ex) {
-      assertEquals(ResponseMessage.TRANSACTION_EXCEED_AMOUNT_LIMIT.getCode(), ex.getResponseMessage().getCode());
-      assertEquals(ResponseMessage.TRANSACTION_EXCEED_AMOUNT_LIMIT.getMsg(), ex.getResponseMessage().getMsg());
+      assertEquals(
+          ResponseMessage.TRANSACTION_EXCEED_AMOUNT_LIMIT.getCode(),
+          ex.getResponseMessage().getCode());
+      assertEquals(
+          ResponseMessage.TRANSACTION_EXCEED_AMOUNT_LIMIT.getMsg(),
+          ex.getResponseMessage().getMsg());
     }
   }
 
@@ -187,8 +183,10 @@ class TransactionServiceTest extends AbstractTransactionTest {
       assertNotNull(initTransactionResponse);
 
     } catch (BizException ex) {
-      assertEquals(ResponseMessage.MANDATORY_FIELD_MISSING.getCode(), ex.getResponseMessage().getCode());
-      assertEquals(ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(), ex.getResponseMessage().getMsg());
+      assertEquals(
+          ResponseMessage.MANDATORY_FIELD_MISSING.getCode(), ex.getResponseMessage().getCode());
+      assertEquals(
+          ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 
