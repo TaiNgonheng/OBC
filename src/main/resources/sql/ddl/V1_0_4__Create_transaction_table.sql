@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `tbl_obc_transaction` (
   `from_account` varchar(50) NOT NULL,
   `payer_name` varchar(30) DEFAULT NULL,
   `to_account` varchar(50) NOT NULL,
+  `to_account_currency` varchar(5) NOT NULL,
   `recipient_bic` varchar(30) DEFAULT NULL,
   `recipient_name` varchar(30) DEFAULT NULL,
   `credit_debit_indicator` varchar(5) NULL,

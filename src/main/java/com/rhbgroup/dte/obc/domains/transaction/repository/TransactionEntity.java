@@ -70,7 +70,7 @@ public class TransactionEntity {
   @Column(name = "to_account", length = 50, nullable = false)
   private String toAccount;
 
-  @Column(name = "to_account_currency", length = 50, nullable = false)
+  @Column(name = "to_account_currency", length = 5, nullable = false)
   private String toAccountCurrency;
 
   @Column(name = "recipient_bic", length = 30)
