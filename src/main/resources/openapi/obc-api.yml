@@ -83,6 +83,8 @@ components:
       $ref: './schemas/user/GWAuthenticationResponse.yml'
     AccountModel:
       $ref: './schemas/account/AccountModel.yml'
+    AccountFilterCondition:
+      $ref: './schemas/account/AccountFilterCondition.yml'
     UserModel:
       $ref: './schemas/user/UserModel.yml'
     TransactionModel:

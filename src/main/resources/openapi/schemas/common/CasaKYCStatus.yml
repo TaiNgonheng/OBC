@@ -1,0 +1,6 @@
+type: string
+description: F = Full KYC, V = Partial KYC with Validation, X = Partial KYC without Validation
+enum:
+  - F
+  - V
+  - X

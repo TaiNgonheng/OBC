@@ -16,6 +16,8 @@ import com.rhbgroup.dte.obc.exceptions.GlobalExceptionHandler;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
+import com.rhbgroup.dte.obc.model.BakongAccountStatus;
+import com.rhbgroup.dte.obc.model.BakongKYCStatus;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
@@ -541,8 +543,9 @@ class AccountControllerTest extends AbstractAccountTest {
     Assertions.assertEquals(
         AppConstants.Status.SUCCESS, accountDetailResponse.getStatus().getCode());
     Assertions.assertEquals(ACC_NUMBER, accountDetailResponse.getData().getAccNumber());
-    Assertions.assertEquals("FULL", accountDetailResponse.getData().getKycStatus());
-    Assertions.assertEquals("ACTIVE", accountDetailResponse.getData().getAccStatus());
+    Assertions.assertEquals(BakongKYCStatus.FULL, accountDetailResponse.getData().getKycStatus());
+    Assertions.assertEquals(
+        BakongAccountStatus.ACTIVE, accountDetailResponse.getData().getAccStatus());
   }
 
   @Test

@@ -1,0 +1,17 @@
+type: object
+description: Account filter condition
+properties:
+  userId:
+    type: string
+  bakongId:
+    type: string
+  accountNo:
+    type: string
+  accountype:
+    type: string
+  account_status:
+    type: string
+  linkedStatus:
+    type: string
+  active:
+    type: boolean

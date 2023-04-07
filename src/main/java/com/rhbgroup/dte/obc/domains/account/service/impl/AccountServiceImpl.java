@@ -13,10 +13,10 @@ import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
-import com.rhbgroup.dte.obc.domains.transaction.service.TransactionService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.model.AccountFilterCondition;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
@@ -58,7 +58,6 @@ public class AccountServiceImpl implements AccountService {
   private final InfoBipRestClient infoBipRestClient;
   private final CDRBRestClient cdrbRestClient;
   private final ConfigService configService;
-  private final TransactionService transactionService;
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
   @Value("${obc.infobip.enabled}")
@@ -217,19 +216,33 @@ public class AccountServiceImpl implements AccountService {
         .andThen(CDRBGetAccountDetailResponse::getAcct)
         .andThen(accountMapper::toAccountDetailResponse)
         .andThen(
-            response -> {
+            casaAccountResponse -> {
               ConfigService transactionConfig =
-                  this.configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY);
+                  this.configService.loadJSONValue(
+                      ConfigConstants.Transaction.mapCurrency(
+                          casaAccountResponse.getData().getAccCcy()));
 
               return accountMapper.mappingMobileNoAndAccStatus(
                   userModel.getMobileNo(),
                   transactionConfig.getValue(ConfigConstants.Transaction.MIN_AMOUNT, Double.class),
                   transactionConfig.getValue(ConfigConstants.Transaction.MAX_AMOUNT, Double.class),
-                  response);
+                  casaAccountResponse);
             })
         .apply(
             new CDRBGetAccountDetailRequest()
                 .cifNo(userModel.getCifNo())
                 .accountNo(request.getAccNumber()));
+  }
+
+  @Override
+  public AccountModel getActiveAccountByUserIdAndBakongId(AccountFilterCondition condition) {
+
+    return accountRepository
+        .findByUserIdAndBakongIdAndLinkedStatus(
+            Long.parseLong(condition.getUserId()),
+            condition.getBakongId(),
+            LinkedStatusEnum.COMPLETED)
+        .map(accountMapper::entityToModel)
+        .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
   }
 }

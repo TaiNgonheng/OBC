@@ -15,17 +15,14 @@ allOf:
             type: string
             example: 855xxxxxxxx
           accType:
-            type: string
-            example: SAVINGS
+            $ref: '../common/BakongAccountType.yml'
           accCcy:
             type: string
             example: USD
           accStatus:
-            type: string
-            example: ACTIVE
+            $ref: '../common/BakongAccountStatus.yml'
           kycStatus:
-            type: string
-            example: FULL
+            $ref: '../common/BakongKYCStatus.yml'
           country:
             type: string
             example: KH
