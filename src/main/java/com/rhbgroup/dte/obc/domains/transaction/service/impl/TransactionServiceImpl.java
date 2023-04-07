@@ -1,16 +1,19 @@
 package com.rhbgroup.dte.obc.domains.transaction.service.impl;
 
+import static com.rhbgroup.dte.obc.common.func.Functions.of;
+import static com.rhbgroup.dte.obc.common.func.Functions.peek;
+
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
-import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.common.util.RandomGenerator;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.transaction.mapper.TransactionMapper;
 import com.rhbgroup.dte.obc.domains.transaction.mapper.TransactionMapperImpl;
+import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionEntity;
 import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionRepository;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionService;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
@@ -22,8 +25,7 @@ import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
-import com.rhbgroup.dte.obc.model.CDRBTransferRequest;
-import com.rhbgroup.dte.obc.model.CDRBTransferResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransferInquiryRequest;
 import com.rhbgroup.dte.obc.model.CDRBTransferType;
 import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
@@ -67,9 +69,7 @@ public class TransactionServiceImpl implements TransactionService {
 
   @Override
   public void save(TransactionModel transactionModel) {
-    Functions.of(transactionMapper::toEntity)
-        .andThen(transactionRepository::save)
-        .apply(transactionModel);
+    of(transactionMapper::toEntity).andThen(transactionRepository::save).apply(transactionModel);
   }
 
   @Override
@@ -161,59 +161,68 @@ public class TransactionServiceImpl implements TransactionService {
   public FinishTransactionResponse finishTransaction(FinishTransactionRequest request) {
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
-
     // Authenticate again to confirm password
     userAuthService.authenticate(
         new UserModel().username(currentUser.getUsername()).password(request.getKey()));
 
-    Functions.of(transactionRepository::findByInitRefNumber)
-        .andThen(
-            optional ->
-                optional.orElseThrow(() -> new BizException(ResponseMessage.INTERNAL_SERVER_ERROR)))
-        .andThen(
-            Functions.peek(
-                transaction -> {
-                  if (TransactionStatus.COMPLETE.equals(transaction.getTrxStatus())) {
-                    throw new BizException(ResponseMessage.DUPLICATE_SUBMISSION_ID);
-                  }
+    // Validate transaction & OTP
+    TransactionEntity transaction =
+        of(transactionRepository::findByInitRefNumber)
+            .andThen(
+                trxOptional ->
+                    trxOptional.orElseThrow(
+                        () -> new BizException(ResponseMessage.INTERNAL_SERVER_ERROR)))
+            .andThen(peek(TransactionValidator::validateTransactionStatus))
+            .andThen(
+                peek(
+                    entity -> {
+                      ConfigService transactionConfig =
+                          this.configService.loadJSONValue(
+                              ConfigConstants.Transaction.mapCurrency(entity.getTrxCcy()));
+                      // Verify OTP
+                      boolean otpRequired =
+                          transactionConfig.getValue(
+                                  ConfigConstants.Transaction.OTP_REQUIRED, Integer.class)
+                              == 1;
+                      if (otpRequired
+                          && Boolean.FALSE.equals(
+                              infoBipRestClient.verifyOtp(
+                                  request.getOtpCode(), currentUser.getBakongId()))) {
+                        throw new BizException(ResponseMessage.INVALID_TOKEN);
+                      }
+                    }))
+            .apply(request.getInitRefNumber());
 
-                  ConfigService transactionConfig =
-                      this.configService.loadJSONValue(
-                          ConfigConstants.Transaction.mapCurrency(transaction.getTrxCcy()));
-                  // Verify OTP
-                  boolean otpRequired =
-                      transactionConfig.getValue(
-                              ConfigConstants.Transaction.OTP_REQUIRED, Integer.class)
-                          == 1;
-                  if (otpRequired
-                      && Boolean.FALSE.equals(
-                          infoBipRestClient.verifyOtp(
-                              request.getOtpCode(), currentUser.getBakongId()))) {
-                    throw new BizException(ResponseMessage.INVALID_TOKEN);
-                  }
-                }))
+    // Execute transfer
+    of(transactionMapper::toCDRBTransferRequest)
         .andThen(
-            transaction -> {
-              // Execute transfer
-              CDRBTransferResponse cdrbTransferResponse =
-                  cdrbRestClient.transfer(
-                      new CDRBTransferRequest()
-                          .obcUserId(BigDecimal.valueOf(currentUser.getUserId()))
-                          .amount(transaction.getTrxAmount())
-                          .fees(transaction.getTrxFee())
-                          .cashBack(transaction.getTrxCashback())
-                          .fromAccountNo(transaction.getFromAccount())
-                          .recipientBIC(transaction.getRecipientBIC())
-                          .recipientName(transaction.getRecipientName())
-                          .toAccountNo(transaction.getToAccount())
-                          .toAccountCurrency(transaction.getToAccountCurrency())
-                          .transferType(CDRBTransferType.BAKONG_LINK_CASA_EWALLET));
+            transferRequest -> {
+              transferRequest.setTransferType(CDRBTransferType.BAKONG_LINK_CASA_EWALLET);
+              transferRequest.setObcUserId(BigDecimal.valueOf(currentUser.getUserId()));
+              transferRequest.setToAccountCurrency(transferRequest.getCurrencyCode());
 
-              log.info("CDRB request >> {}", cdrbTransferResponse);
-              return cdrbTransferResponse;
+              return transferRequest;
             })
-        .apply(request.getInitRefNumber());
+        .andThen(cdrbRestClient::transfer)
+        //        .andThen(transactionMapper::toCDRBTransactionInquiryRequest)
+        //        .andThen(this::transactionInquiry)
+        //        .andThen(inquiryResponse -> new
+        // FinishTransactionResponse().status(ResponseHandler.ok()).data(new
+        // FinishTransactionResponseAllOfData("").transactionDate(1).transactionId("trxId").transactionHash("hash"));
+        .apply(transaction);
 
     return new FinishTransactionResponse().status(ResponseHandler.ok());
+  }
+
+  private Object transactionInquiry(CDRBTransferInquiryRequest request) {
+    // Object response = cdrbRestClient.transactionInquiry(request);
+    // if ("PENDING".equals(response.getStatus)) {
+    //    transactionInquiry(request);
+    // } else {
+    //    recordTransactionResult();
+    //    return object;
+    // }
+    // return transactionInquiry
+    return null;
   }
 }

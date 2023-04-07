@@ -8,10 +8,7 @@ allOf:
         properties:
           transactionId:
             type: string
-            example: 123456789
           transactionDate:
-            type: integer
-            example: 1624585517749
+            type: string
           transactionHash:
             type: string
-            example: xxxxxxxxx

@@ -123,6 +123,8 @@ components:
       $ref: './schemas/cdrb/CDRBTransferRequest.yml'
     CDRBTransferResponse:
       $ref: './schemas/cdrb/CDRBTransferResponse.yml'
+    CDRBTransferInquiryRequest:
+      $ref: './schemas/cdrb/CDRBTransferInquiryRequest.yml'
 
   securitySchemes:
     bearerAuth:

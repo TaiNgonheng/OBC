@@ -1,6 +1,7 @@
 package com.rhbgroup.dte.obc.domains.transaction.mapper;
 
 import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionEntity;
+import com.rhbgroup.dte.obc.model.CDRBTransferRequest;
 import com.rhbgroup.dte.obc.model.TransactionModel;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -37,4 +38,13 @@ public interface TransactionMapper {
   default Instant toInstant(OffsetDateTime offsetDateTime) {
     return null == offsetDateTime ? null : offsetDateTime.toInstant();
   }
+
+  @Mapping(source = "trxAmount", target = "amount")
+  @Mapping(source = "trxFee", target = "fees")
+  @Mapping(source = "trxCashback", target = "cashBack")
+  @Mapping(source = "trxCcy", target = "currencyCode")
+  @Mapping(source = "fromAccount", target = "fromAccountNo")
+  @Mapping(source = "toAccount", target = "toAccountNo")
+  @Mapping(target = "transferType", ignore = true)
+  CDRBTransferRequest toCDRBTransferRequest(TransactionEntity entity);
 }
