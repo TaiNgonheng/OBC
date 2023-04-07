@@ -1,5 +1,7 @@
 type: object
 properties:
+  obcUserId:
+    type: number
   amount:
     type: number
     format: double

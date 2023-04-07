@@ -119,10 +119,10 @@ components:
       $ref: './schemas/cdrb/CDRBFeeAndCashbackRequest.yml'
     CDRBFeeAndCashbackResponse:
       $ref: './schemas/cdrb/CDRBFeeAndCashbackResponse.yml'
-    CDRBTranferRequest:
-      $ref: './schemas/cdrb/CDRBTranferRequest.yml'
-    CDRBTranferResponse:
-      $ref: './schemas/cdrb/CDRBTranferResponse.yml'
+    CDRBTransferRequest:
+      $ref: './schemas/cdrb/CDRBTransferRequest.yml'
+    CDRBTransferResponse:
+      $ref: './schemas/cdrb/CDRBTransferResponse.yml'
 
   securitySchemes:
     bearerAuth:

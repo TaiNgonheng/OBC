@@ -22,8 +22,8 @@ import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
-import com.rhbgroup.dte.obc.model.CDRBTranferRequest;
-import com.rhbgroup.dte.obc.model.CDRBTranferResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransferRequest;
+import com.rhbgroup.dte.obc.model.CDRBTransferResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferType;
 import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
@@ -180,7 +180,6 @@ public class TransactionServiceImpl implements TransactionService {
                   ConfigService transactionConfig =
                       this.configService.loadJSONValue(
                           ConfigConstants.Transaction.mapCurrency(transaction.getTrxCcy()));
-
                   // Verify OTP
                   boolean otpRequired =
                       transactionConfig.getValue(
@@ -195,10 +194,11 @@ public class TransactionServiceImpl implements TransactionService {
                 }))
         .andThen(
             transaction -> {
-              // execute transfer
-              CDRBTranferResponse cdrbTranferResponse =
+              // Execute transfer
+              CDRBTransferResponse cdrbTransferResponse =
                   cdrbRestClient.transfer(
-                      new CDRBTranferRequest()
+                      new CDRBTransferRequest()
+                          .obcUserId(BigDecimal.valueOf(currentUser.getUserId()))
                           .amount(transaction.getTrxAmount())
                           .fees(transaction.getTrxFee())
                           .cashBack(transaction.getTrxCashback())
@@ -209,8 +209,8 @@ public class TransactionServiceImpl implements TransactionService {
                           .toAccountCurrency(transaction.getToAccountCurrency())
                           .transferType(CDRBTransferType.BAKONG_LINK_CASA_EWALLET));
 
-              log.info("CDRB request >> {}", cdrbTranferResponse);
-              return transaction;
+              log.info("CDRB request >> {}", cdrbTransferResponse);
+              return cdrbTransferResponse;
             })
         .apply(request.getInitRefNumber());
 

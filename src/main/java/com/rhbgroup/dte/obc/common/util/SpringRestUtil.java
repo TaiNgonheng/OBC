@@ -139,6 +139,7 @@ public class SpringRestUtil {
       ParameterizedTypeReference<T> parameterizedTypeReference) {
 
     try {
+      log.info("Internal API request >> {}", body);
       HttpEntity<Object> httpEntity = new HttpEntity<>(body, buildHeader(header));
       ResponseEntity<T> response =
           restTemplate.exchange(url, method, httpEntity, parameterizedTypeReference);

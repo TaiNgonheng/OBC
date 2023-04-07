@@ -15,8 +15,8 @@ import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetHsmKeyResponse;
 import com.rhbgroup.dte.obc.model.CDRBLoginRequest;
 import com.rhbgroup.dte.obc.model.CDRBLoginResponse;
-import com.rhbgroup.dte.obc.model.CDRBTranferRequest;
-import com.rhbgroup.dte.obc.model.CDRBTranferResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransferRequest;
+import com.rhbgroup.dte.obc.model.CDRBTransferResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
@@ -102,13 +102,13 @@ public class CDRBRestClient {
     }
   }
 
-  public CDRBTranferResponse transfer(CDRBTranferRequest request) {
+  public CDRBTransferResponse transfer(CDRBTransferRequest request) {
     try {
       return restUtil.sendPost(
           baseUrl.concat(TRANFER),
           buildHeader(getAccessToken()),
           request,
-          ParameterizedTypeReference.forType(CDRBTranferResponse.class));
+          ParameterizedTypeReference.forType(CDRBTransferResponse.class));
     } catch (BizException ex) {
       throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
