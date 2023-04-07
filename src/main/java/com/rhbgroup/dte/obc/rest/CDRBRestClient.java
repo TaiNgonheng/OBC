@@ -102,7 +102,7 @@ public class CDRBRestClient {
     }
   }
 
-  public CDRBTranferResponse tranfer(CDRBTranferRequest request) {
+  public CDRBTranferResponse transfer(CDRBTranferRequest request) {
     try {
       return restUtil.sendPost(
           baseUrl.concat(TRANFER),
@@ -124,6 +124,8 @@ public class CDRBRestClient {
             Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)));
 
     String passwordStr = new String(passwordDecrypted, StandardCharsets.UTF_8);
+
+    // Construct password and split password into 2 parts as per condition
     String[] passwords = constructPasswords(passwordStr);
     CDRBLoginRequest loginRequest =
         new CDRBLoginRequest().username(username).encPwd1(passwords[0]).encPwd2(passwords[1]);

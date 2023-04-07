@@ -26,11 +26,7 @@ properties:
   fromAccountNo:
     type: string
   fromAccountType:
-    type: string
-    description: Account type to identify current (D) or savings (S) account
-    enum:
-      - D
-      - S
+    $ref: '../common/CasaAccountType.yml'
   recipientBIC:
     type: string
   recipientName:
@@ -51,12 +47,9 @@ properties:
   transferMessage:
     type: string
   transferType:
-    type: string
-    description: Account type to identify current (D) or savings (S) account
-    enum:
-      - D
-      - S
+    $ref: '../common/CDRBTransferType.yml'
   accountCurrencyCode:
     type: string
   cashBackAmountInUSD:
-    type: string
+    type: number
+    format: double

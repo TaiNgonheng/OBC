@@ -24,6 +24,7 @@ import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBTranferRequest;
 import com.rhbgroup.dte.obc.model.CDRBTranferResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransferType;
 import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
@@ -186,27 +187,27 @@ public class TransactionServiceImpl implements TransactionService {
                               ConfigConstants.Transaction.OTP_REQUIRED, Integer.class)
                           == 1;
                   if (otpRequired
-                      && !infoBipRestClient.verifyOtp(
-                          request.getOtpCode(), currentUser.getUsername())) {
+                      && Boolean.FALSE.equals(
+                          infoBipRestClient.verifyOtp(
+                              request.getOtpCode(), currentUser.getBakongId()))) {
                     throw new BizException(ResponseMessage.INVALID_TOKEN);
                   }
                 }))
         .andThen(
             transaction -> {
-              CDRBTranferRequest.TransferTypeEnum transactionType =
-                  CDRBTranferRequest.TransferTypeEnum.fromValue(
-                      transaction.getTransferType().getValue());
               // execute transfer
               CDRBTranferResponse cdrbTranferResponse =
-                  cdrbRestClient.tranfer(
+                  cdrbRestClient.transfer(
                       new CDRBTranferRequest()
                           .amount(transaction.getTrxAmount())
+                          .fees(transaction.getTrxFee())
+                          .cashBack(transaction.getTrxCashback())
                           .fromAccountNo(transaction.getFromAccount())
                           .recipientBIC(transaction.getRecipientBIC())
                           .recipientName(transaction.getRecipientName())
                           .toAccountNo(transaction.getToAccount())
                           .toAccountCurrency(transaction.getToAccountCurrency())
-                          .transferType(transactionType));
+                          .transferType(CDRBTransferType.BAKONG_LINK_CASA_EWALLET));
 
               log.info("CDRB request >> {}", cdrbTranferResponse);
               return transaction;
