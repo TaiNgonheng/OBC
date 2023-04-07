@@ -11,12 +11,10 @@ import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.transaction.mapper.TransactionMapper;
 import com.rhbgroup.dte.obc.domains.transaction.mapper.TransactionMapperImpl;
-import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionEntity;
 import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionRepository;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionService;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
-import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.AccountFilterCondition;
 import com.rhbgroup.dte.obc.model.AccountModel;
@@ -40,7 +38,6 @@ import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
-import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -54,8 +51,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class TransactionServiceImpl implements TransactionService {
 
-  private final JwtTokenUtils jwtTokenUtils;
-  private final UserProfileService userProfileService;
   private final UserAuthService userAuthService;
   private final ConfigService configService;
   private final AccountService accountService;
@@ -159,38 +154,62 @@ public class TransactionServiceImpl implements TransactionService {
   }
 
   @Override
-  public FinishTransactionResponse finishTransaction(
-      String authorization, FinishTransactionRequest finishTransactionRequest) {
-    Long userId = Long.parseLong(jwtTokenUtils.getUserId(authorization));
-    UserModel userProfile = userProfileService.findByUserId(userId);
-    if (finishTransactionRequest.getKey().equals(userProfile.getPassword())) {
-      throw new BizException(ResponseMessage.AUTHENTICATION_FAILED);
-    }
-    TransactionEntity transaction =
-        transactionRepository
-            .findByInitRefNumber(finishTransactionRequest.getInitRefNumber())
-            .orElseThrow(() -> new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
-    if (TransactionStatus.COMPLETE.equals(transaction.getTrxStatus()))
-      throw new BizException(ResponseMessage.TRANSACTION_WAS_COMPLETED);
-    ConfigService transactionConfig =
-        this.configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY);
-    // verify infoBip Otp
-    if (transactionConfig.getValue(ConfigConstants.Transaction.OTP_REQUIRED, Boolean.class)
-    && !infoBipRestClient.verifyOtp(finishTransactionRequest.getOtpCode(), userProfile.getUsername())) {
-        throw new BizException(ResponseMessage.OTP_EXPIRED);
-    }
-    // execute transfer
-    CDRBTranferResponse cdrbTranferResponse =
-        cdrbRestClient.tranfer(
-            new CDRBTranferRequest()
-                .amount(transaction.getTrxAmount())
-                .fromAccountNo(transaction.getFromAccount())
-                .recipientBIC(transaction.getRecipientBIC())
-                .recipientName(transaction.getRecipientName())
-                .toAccountNo(transaction.getToAccount())
-                .toAccountCurrency(transaction.getToAccountCurrency())
-                .transferType(transaction.getTransferType().getValue()));
-    // TODO get transaction detail
+  public FinishTransactionResponse finishTransaction(FinishTransactionRequest request) {
+
+    CustomUserDetails currentUser = userAuthService.getCurrentUser();
+
+    // Authenticate again to confirm password
+    userAuthService.authenticate(
+        new UserModel().username(currentUser.getUsername()).password(request.getKey()));
+
+    Functions.of(transactionRepository::findByInitRefNumber)
+        .andThen(
+            optional ->
+                optional.orElseThrow(() -> new BizException(ResponseMessage.INTERNAL_SERVER_ERROR)))
+        .andThen(
+            Functions.peek(
+                transaction -> {
+                  if (TransactionStatus.COMPLETE.equals(transaction.getTrxStatus())) {
+                    throw new BizException(ResponseMessage.DUPLICATE_SUBMISSION_ID);
+                  }
+
+                  ConfigService transactionConfig =
+                      this.configService.loadJSONValue(
+                          ConfigConstants.Transaction.mapCurrency(transaction.getTrxCcy()));
+
+                  // Verify OTP
+                  boolean otpRequired =
+                      transactionConfig.getValue(
+                              ConfigConstants.Transaction.OTP_REQUIRED, Integer.class)
+                          == 1;
+                  if (otpRequired
+                      && !infoBipRestClient.verifyOtp(
+                          request.getOtpCode(), currentUser.getUsername())) {
+                    throw new BizException(ResponseMessage.INVALID_TOKEN);
+                  }
+                }))
+        .andThen(
+            transaction -> {
+              CDRBTranferRequest.TransferTypeEnum transactionType =
+                  CDRBTranferRequest.TransferTypeEnum.fromValue(
+                      transaction.getTransferType().getValue());
+              // execute transfer
+              CDRBTranferResponse cdrbTranferResponse =
+                  cdrbRestClient.tranfer(
+                      new CDRBTranferRequest()
+                          .amount(transaction.getTrxAmount())
+                          .fromAccountNo(transaction.getFromAccount())
+                          .recipientBIC(transaction.getRecipientBIC())
+                          .recipientName(transaction.getRecipientName())
+                          .toAccountNo(transaction.getToAccount())
+                          .toAccountCurrency(transaction.getToAccountCurrency())
+                          .transferType(transactionType));
+
+              log.info("CDRB request >> {}", cdrbTranferResponse);
+              return transaction;
+            })
+        .apply(request.getInitRefNumber());
+
     return new FinishTransactionResponse().status(ResponseHandler.ok());
   }
 }
