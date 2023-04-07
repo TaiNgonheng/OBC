@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.domains.transaction.repository;
 
+import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
 import com.rhbgroup.dte.obc.model.TransactionType;
 import java.time.Instant;
@@ -35,10 +36,19 @@ public class TransactionEntity {
   @Column(name = "init_ref_number", length = 32, nullable = false, unique = true)
   private String initRefNumber;
 
+  @Column(name = "trx_hash", length = 50, nullable = false, unique = true)
+  private String trxHash;
+
   @Column(name = "trx_amount", nullable = false)
   private Double trxAmount;
 
-  @Column(name = "trx_ccy", length = 5)
+  @Column(name = "trx_fee", nullable = false)
+  private Double trxFee;
+
+  @Column(name = "trx_cashback", nullable = false)
+  private Double trxCashback;
+
+  @Column(name = "trx_ccy", length = 3)
   private String trxCcy;
 
   @Column(name = "trx_date", insertable = false, updatable = false)
@@ -70,5 +80,6 @@ public class TransactionEntity {
   private String recipientName;
 
   @Column(name = "credit_debit_indicator", length = 5, nullable = false)
-  private String creditDebitIndicator;
+  @Enumerated(EnumType.STRING)
+  private CreditDebitIndicator creditDebitIndicator;
 }

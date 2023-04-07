@@ -3,17 +3,23 @@ description: Transaction Model
 properties:
   id:
     type: number
-    format: long
   userId:
     type: number
-    format: long
   transferType:
     $ref: '../common/TransactionType.yml'
   transferMessage:
     type: string
   initRefNumber:
     type: string
+  trxHash:
+    type: string
   trxAmount:
+    type: number
+    format: double
+  trxFee:
+    type: number
+    format: double
+  trxCashback:
     type: number
     format: double
   trxCcy:
@@ -37,6 +43,6 @@ properties:
   recipientName:
     type: string
   creditDebitIndicator:
-    type: string
+    $ref: '../common/CreditDebitIndicator.yml'
 
 

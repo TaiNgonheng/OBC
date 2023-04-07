@@ -24,6 +24,7 @@ import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBTranferRequest;
 import com.rhbgroup.dte.obc.model.CDRBTranferResponse;
+import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;
@@ -122,12 +123,14 @@ public class TransactionServiceImpl implements TransactionService {
             .userId(BigDecimal.valueOf(currentUser.getUserId()))
             .fromAccount(request.getSourceAcc())
             .toAccount(request.getDestinationAcc())
-            .creditDebitIndicator(casaAccount.getAcct().getAccountType().getValue())
+            .creditDebitIndicator(CreditDebitIndicator.D)
             .trxCcy(request.getCcy())
             .payerName(linkedAccount.getAccountName())
             .transferMessage(request.getDesc())
             .transferType(request.getType())
             .trxAmount(request.getAmount())
+            .trxFee(feeAndCashback.getFee())
+            .trxCashback(feeAndCashback.getCashBack())
             .trxDate(OffsetDateTime.now())
             .trxStatus(TransactionStatus.PENDING);
 

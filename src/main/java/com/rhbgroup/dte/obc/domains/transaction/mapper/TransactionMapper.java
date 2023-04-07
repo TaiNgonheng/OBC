@@ -2,7 +2,6 @@ package com.rhbgroup.dte.obc.domains.transaction.mapper;
 
 import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionEntity;
 import com.rhbgroup.dte.obc.model.TransactionModel;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -27,7 +26,6 @@ public interface TransactionMapper {
       source = "trxCompletionDate",
       target = "trxCompletionDate",
       qualifiedByName = "toInstant")
-  @Mapping(source = "userId", target = "userId", qualifiedByName = "toDouble")
   TransactionEntity toEntity(TransactionModel model);
 
   @Named("toOffsetDateTime")
@@ -38,10 +36,5 @@ public interface TransactionMapper {
   @Named("toInstant")
   default Instant toInstant(OffsetDateTime offsetDateTime) {
     return null == offsetDateTime ? null : offsetDateTime.toInstant();
-  }
-
-  @Named("toDouble")
-  default Double toDouble(BigDecimal bigDecimal) {
-    return bigDecimal == null ? null : bigDecimal.doubleValue();
   }
 }
