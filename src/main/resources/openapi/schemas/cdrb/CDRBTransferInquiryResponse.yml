@@ -1,5 +1,9 @@
 type: object
 properties:
+  correlationId:
+    type: string
+  status:
+    type: string
   fromAccountNumber:
     type: string
   toAccountNumber:

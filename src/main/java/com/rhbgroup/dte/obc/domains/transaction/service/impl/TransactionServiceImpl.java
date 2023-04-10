@@ -26,13 +26,11 @@ import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryRequest;
-import com.rhbgroup.dte.obc.model.CDRBTransferType;
+import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
 import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
-import com.rhbgroup.dte.obc.model.FinishTransactionResponseAllOfData;
 import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
-import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.InitTransactionResponse;
 import com.rhbgroup.dte.obc.model.InitTransactionResponseAllOfData;
@@ -48,8 +46,10 @@ import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -198,50 +198,46 @@ public class TransactionServiceImpl implements TransactionService {
             .apply(request.getInitRefNumber());
 
     // Execute transfer
-    of(transactionMapper::toCDRBTransferRequest)
+    return of(transactionMapper::toCDRBTransferRequestBaseMapping)
         .andThen(
-            transferRequest -> {
-              GetAccountDetailResponse accountDetail =
-                  accountService.getAccountDetail(
-                      new GetAccountDetailRequest().accNumber(transferRequest.getFromAccountNo()));
-
-              transferRequest.setTransferType(CDRBTransferType.BAKONG_LINK_CASA_EWALLET);
-              transferRequest.setCifNumber(currentUser.getCif());
-              transferRequest.setObcUserId(BigDecimal.valueOf(currentUser.getUserId()));
-              transferRequest.setToAccuntCurrency(transferRequest.getCurrencyCode());
-              transferRequest.setTransactionCurrencyAmount(transferRequest.getAmount());
-              transferRequest.setAccountCurrencyCode(accountDetail.getData().getAccCcy());
-
-              return transferRequest;
-            })
+            transferRequest ->
+                transactionMapper.toCDRBTransferRequestAdditionalMapping(
+                    transferRequest,
+                    currentUser,
+                    accountService.getAccountDetail(
+                        new GetAccountDetailRequest()
+                            .accNumber(transferRequest.getFromAccountNo()))))
         .andThen(cdrbRestClient::transfer)
         .andThen(
             transferResponse ->
                 new CDRBTransferInquiryRequest().correlationId(transferResponse.getCorrelationId()))
-        .andThen(this::transactionInquiry)
         .andThen(
-            inquiryResponse ->
-                new FinishTransactionResponse()
-                    .status(ResponseHandler.ok())
-                    .data(
-                        new FinishTransactionResponseAllOfData()
-                            .transactionDate("")
-                            .transactionId("trxId")
-                            .transactionHash("hash")))
-        .apply(transaction);
+            getTrxRequest -> transactionInquiryRecursive(getTrxRequest, request.getInitRefNumber()))
 
-    return new FinishTransactionResponse().status(ResponseHandler.ok());
+        .andThen(transactionMapper::toFinishTransactionResponse)
+        .apply(transaction);
   }
 
-  private Object transactionInquiry(CDRBTransferInquiryRequest request) {
-    //     Object response = cdrbRestClient.transactionInquiry(request);
-    //     if ("PENDING".equals(response.getStatus)) {
-    //        transactionInquiry(request);
-    //     } else {
-    //        recordTransactionResult();
-    //        return object;
-    //     }
-    //     return transactionInquiry
-    return null;
+  @SneakyThrows
+  private CDRBTransferInquiryResponse transactionInquiryRecursive(
+      CDRBTransferInquiryRequest request, String initRef) {
+
+    CDRBTransferInquiryResponse response = cdrbRestClient.getTransferDetail(request);
+
+    if (TransactionStatus.PENDING.getValue().equals(response.getStatus())) {
+      transactionInquiryRecursive(request, initRef);
+
+      TimeUnit.SECONDS.sleep(1);
+
+    } else {
+      transactionRepository
+          .findByInitRefNumber(initRef)
+          .ifPresent(
+              trx -> {
+                trx.setTrxStatus(TransactionStatus.fromValue(response.getStatus()));
+                transactionRepository.save(trx);
+              });
+    }
+    return response;
   }
 }

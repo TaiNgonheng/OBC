@@ -139,12 +139,13 @@ public class SpringRestUtil {
       ParameterizedTypeReference<T> parameterizedTypeReference) {
 
     try {
-      log.info("Internal API request >> {}", body);
       HttpEntity<Object> httpEntity = new HttpEntity<>(body, buildHeader(header));
       ResponseEntity<T> response =
           restTemplate.exchange(url, method, httpEntity, parameterizedTypeReference);
 
+      log.info("System response >> {}", response.getBody());
       return response.getBody();
+
     } catch (RestClientException ex) {
       log.error("Internal API response with error >> {}", ex.getMessage());
       throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
