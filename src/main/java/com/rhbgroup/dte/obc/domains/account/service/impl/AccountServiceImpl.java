@@ -237,13 +237,10 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
-  public AccountModel getActiveAccountByUserIdAndBakongId(AccountFilterCondition condition) {
+  public AccountModel getActiveAccount(AccountFilterCondition condition) {
 
     return accountRepository
-        .findByUserIdAndBakongIdAndLinkedStatus(
-            Long.parseLong(condition.getUserId()),
-            condition.getBakongId(),
-            LinkedStatusEnum.COMPLETED)
+        .findByAccountIdAndLinkedStatus(condition.getAccountNo(), LinkedStatusEnum.COMPLETED)
         .map(accountMapper::entityToModel)
         .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
   }

@@ -28,7 +28,7 @@ public interface AccountService {
 
   GetAccountDetailResponse getAccountDetail(GetAccountDetailRequest request);
 
-  AccountModel getActiveAccountByUserIdAndBakongId(AccountFilterCondition condition);
+  AccountModel getActiveAccount(AccountFilterCondition condition);
 
   UnlinkAccountResponse unlinkAccount(
       String authorization, UnlinkAccountRequest unlinkAccountRequest);
