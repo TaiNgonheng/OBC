@@ -26,6 +26,8 @@ paths:
     $ref: './paths/verify-otp.yml'
   /finish-link-account:
     $ref: './paths/finish-link-account.yml'
+  /unlink-account:
+    $ref: './paths/unlink-account.yml'
   /authenticate:
     $ref: './paths/authenticate.yml'
   /account-detail:
@@ -57,6 +59,10 @@ components:
       $ref: './schemas/account/FinishLinkAccountRequest.yml'
     FinishLinkAccountResponse:
       $ref: './schemas/account/FinishLinkAccountResponse.yml'
+    UnlinkAccountRequest:
+      $ref: './schemas/account/UnlinkAccountRequest.yml'
+    UnlinkAccountResponse:
+      $ref: './schemas/account/UnlinkAccountResponse.yml'
     FinishTransactionRequest:
       $ref: './schemas/transaction/FinishTransactionRequest.yml'
     FinishTransactionResponse:

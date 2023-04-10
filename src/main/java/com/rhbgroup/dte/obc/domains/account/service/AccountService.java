@@ -10,6 +10,8 @@ import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
+import com.rhbgroup.dte.obc.model.UnlinkAccountRequest;
+import com.rhbgroup.dte.obc.model.UnlinkAccountResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 
@@ -27,4 +29,7 @@ public interface AccountService {
   GetAccountDetailResponse getAccountDetail(GetAccountDetailRequest request);
 
   AccountModel getActiveAccountByUserIdAndBakongId(AccountFilterCondition condition);
+
+  UnlinkAccountResponse unlinkAccount(
+      String authorization, UnlinkAccountRequest unlinkAccountRequest);
 }

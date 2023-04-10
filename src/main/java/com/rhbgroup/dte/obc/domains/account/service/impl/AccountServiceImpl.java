@@ -28,6 +28,8 @@ import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
+import com.rhbgroup.dte.obc.model.UnlinkAccountRequest;
+import com.rhbgroup.dte.obc.model.UnlinkAccountResponse;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
@@ -38,6 +40,7 @@ import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Collections;
+import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -50,7 +53,6 @@ import org.springframework.stereotype.Service;
 public class AccountServiceImpl implements AccountService {
 
   private final JwtTokenUtils jwtTokenUtils;
-
   private final UserAuthService userAuthService;
   private final UserProfileService userProfileService;
   private final AccountRepository accountRepository;
@@ -244,5 +246,28 @@ public class AccountServiceImpl implements AccountService {
             LinkedStatusEnum.COMPLETED)
         .map(accountMapper::entityToModel)
         .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
+  }
+
+  @Override
+  @Transactional
+  public UnlinkAccountResponse unlinkAccount(
+      String authorization, UnlinkAccountRequest unlinkAccountRequest) {
+    return Functions.of(jwtTokenUtils::getSubject)
+        .andThen(
+            Functions.peek(
+                bakongId -> {
+                  AccountEntity accountEntity =
+                      accountRepository
+                          .findByAccountIdAndLinkedStatus(
+                              unlinkAccountRequest.getAccNumber(), LinkedStatusEnum.COMPLETED)
+                          .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
+
+                  accountEntity.setLinkedStatus(LinkedStatusEnum.UNLINKED);
+                  accountRepository.save(accountEntity);
+                }))
+        .andThen(
+            userProfileEntity ->
+                new UnlinkAccountResponse().status(ResponseHandler.ok()).data(null))
+        .apply(authorization);
   }
 }
