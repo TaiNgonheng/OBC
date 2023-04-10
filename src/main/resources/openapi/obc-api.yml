@@ -32,6 +32,8 @@ paths:
     $ref: './paths/user-exchange.yml'
   /gw/login:
     $ref: './paths/gw-login.yml'
+  /scheduler:
+    $ref: './paths/scheduler-job.yml'
 
 components:
   schemas:
@@ -97,6 +99,8 @@ components:
       $ref: './schemas/cdrb/CDRBGetAccountDetailRequest.yml'
     CDRBGetAccountDetailResponse:
       $ref: './schemas/cdrb/CDRBGetAccountDetailResponse.yml'
+    SchedulerJobRequest:
+      $ref: './schemas/scheduler/JobRequest.yml'
 
   securitySchemes:
     bearerAuth:

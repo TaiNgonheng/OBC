@@ -1,0 +1,14 @@
+type: object
+properties:
+  jobName:
+    type: string
+  jobGroup:
+    type: string
+  jobStatus:
+    type: string
+  jobClass:
+    type: string
+  cronExpression:
+    type: string
+  description:
+    type: string

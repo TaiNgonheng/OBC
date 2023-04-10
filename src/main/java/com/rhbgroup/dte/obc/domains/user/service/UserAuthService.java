@@ -87,7 +87,7 @@ public class UserAuthService {
     profile.setLoginAttempt(attempt);
     profile.setLockTime(null);
     if (attempt >= AppConstants.Authentication.AUTHENTICATION_ALLOWED_TIME) {
-      //reset login time for next authentication
+      // reset login time for next authentication
       profile.setLoginAttempt(0);
       profile.setLockTime(Instant.now().plusSeconds(AppConstants.Authentication.LOCK_IN_SECOND));
     }
