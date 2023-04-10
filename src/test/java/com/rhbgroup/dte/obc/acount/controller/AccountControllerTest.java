@@ -21,6 +21,7 @@ import com.rhbgroup.dte.obc.model.BakongKYCStatus;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
+import com.rhbgroup.dte.obc.model.UnlinkAccountResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Assertions;
@@ -514,6 +515,84 @@ class AccountControllerTest extends AbstractAccountTest {
   }
 
   @Test
+  void testUnlinkAccount_Success_200() throws Exception {
+    when(accountApiDelegate.unlinkAccount(anyString(), any()))
+        .thenReturn(ResponseEntity.ok(mockUnlinkAccountResponse()));
+    MockHttpServletResponse response =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/unlink-account")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding(StandardCharsets.UTF_8)
+                    .content(objectMapper.writeValueAsBytes(mockUnlinkAccountRequest())))
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+            .andReturn()
+            .getResponse();
+
+    String contentAsString = response.getContentAsString();
+    UnlinkAccountResponse unlinkAccountResponse =
+        objectMapper.readValue(contentAsString, UnlinkAccountResponse.class);
+
+    Assertions.assertNotNull(unlinkAccountResponse.getStatus());
+    Assertions.assertNull(unlinkAccountResponse.getData());
+
+    Assertions.assertEquals(
+        AppConstants.Status.SUCCESS, unlinkAccountResponse.getStatus().getCode());
+  }
+
+  @Test
+  void testUnlinkAccount_Failed_MissingMandatoryFields_400() throws Exception {
+    when(accountApiDelegate.unlinkAccount(anyString(), any()))
+        .thenThrow(new BizException(ResponseMessage.MANDATORY_FIELD_MISSING));
+
+    MockHttpServletResponse response =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/unlink-account")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding(StandardCharsets.UTF_8)
+                    .content(objectMapper.writeValueAsBytes(mockUnlinkAccountRequest())))
+            .andExpect(MockMvcResultMatchers.status().isBadRequest())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+            .andReturn()
+            .getResponse();
+
+    String contentAsString = response.getContentAsString();
+    UnlinkAccountResponse unlinkAccountResponse =
+        objectMapper.readValue(contentAsString, UnlinkAccountResponse.class);
+
+    Assertions.assertNotNull(unlinkAccountResponse.getStatus());
+    Assertions.assertNull(unlinkAccountResponse.getData());
+
+    Assertions.assertEquals(AppConstants.Status.ERROR, unlinkAccountResponse.getStatus().getCode());
+    Assertions.assertEquals(
+        ResponseMessage.MANDATORY_FIELD_MISSING.getCode().toString(),
+        unlinkAccountResponse.getStatus().getErrorCode());
+    Assertions.assertEquals(
+        ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(),
+        unlinkAccountResponse.getStatus().getErrorMessage());
+  }
+
+  @Test
+  void testUnlinkAccount_Failed_Unauthorized_401() throws Exception {
+    when(accountApiDelegate.unlinkAccount(anyString(), any()))
+        .thenThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/unlink-account")
+                .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8)
+                .content(objectMapper.writeValueAsBytes(mockUnlinkAccountRequest())))
+        .andExpect(MockMvcResultMatchers.status().isUnauthorized())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists());
+  }
+
+  @Test
   void testGetAccountDetail_Success_200() throws Exception {
 
     when(accountApiDelegate.getAccountDetail(any()))
@@ -544,7 +623,8 @@ class AccountControllerTest extends AbstractAccountTest {
         AppConstants.Status.SUCCESS, accountDetailResponse.getStatus().getCode());
     Assertions.assertEquals(ACC_NUMBER, accountDetailResponse.getData().getAccNumber());
     Assertions.assertEquals(BakongKYCStatus.FULL, accountDetailResponse.getData().getKycStatus());
-    Assertions.assertEquals(BakongAccountStatus.ACTIVE, accountDetailResponse.getData().getAccStatus());
+    Assertions.assertEquals(
+        BakongAccountStatus.ACTIVE, accountDetailResponse.getData().getAccStatus());
   }
 
   @Test
