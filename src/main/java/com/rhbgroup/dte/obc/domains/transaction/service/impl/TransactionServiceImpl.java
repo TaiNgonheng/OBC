@@ -15,7 +15,6 @@ import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionRepository
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionService;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
-import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.AccountFilterCondition;
 import com.rhbgroup.dte.obc.model.AccountModel;
@@ -33,12 +32,10 @@ import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.TransactionModel;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
 import com.rhbgroup.dte.obc.model.TransactionType;
-import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
-import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -52,9 +49,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class TransactionServiceImpl implements TransactionService {
 
-  private final JwtTokenUtils jwtTokenUtils;
-
-  private final UserProfileService userProfileService;
   private final UserAuthService userAuthService;
   private final ConfigService configService;
   private final AccountService accountService;
@@ -162,11 +156,6 @@ public class TransactionServiceImpl implements TransactionService {
   @Override
   public FinishTransactionResponse finishTransaction(
       String authorization, FinishTransactionRequest finishTransactionRequest) {
-    Long userId = Long.parseLong(jwtTokenUtils.getUserId(authorization));
-    UserModel userProfile = userProfileService.findByUserId(userId);
-    if (finishTransactionRequest.getKey().equals(userProfile.getPassword())) {
-      throw new BizException(ResponseMessage.AUTHENTICATION_FAILED);
-    }
     return null;
   }
 }
