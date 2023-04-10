@@ -11,17 +11,22 @@ import static org.mockito.Mockito.when;
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
 import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.impl.AccountServiceImpl;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
+import com.rhbgroup.dte.obc.domains.config.service.impl.ConfigServiceImpl;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
+import com.rhbgroup.dte.obc.model.BakongAccountStatus;
+import com.rhbgroup.dte.obc.model.BakongKYCStatus;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
@@ -29,6 +34,8 @@ import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Optional;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -408,6 +415,99 @@ class AccountServiceTest extends AbstractAccountTest {
           ResponseMessage.NO_ACCOUNT_FOUND.getCode(), ex.getResponseMessage().getCode());
       Assertions.assertEquals(
           ResponseMessage.NO_ACCOUNT_FOUND.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testGetAccountDetail_Success() throws JSONException {
+
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
+    when(accountRepository.countByAccountIdAndLinkedStatus(anyString(), any())).thenReturn(1L);
+    when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
+
+    ConfigServiceImpl mockConfig = new ConfigServiceImpl(null);
+
+    Double maxAmt = 1000.0;
+    Double minAmt = 1.0;
+    mockConfig.setJsonValue(new JSONObject().put("txMinAmt", minAmt).put("txMaxAmt", maxAmt));
+
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
+        .thenReturn(mockConfig);
+
+    GetAccountDetailResponse response =
+        accountService.getAccountDetail(mockGetAccountDetailRequest());
+
+    Assertions.assertNotNull(response.getData());
+    Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
+    Assertions.assertEquals(BakongAccountStatus.ACTIVE, response.getData().getAccStatus());
+    Assertions.assertEquals(BakongKYCStatus.FULL, response.getData().getKycStatus());
+    Assertions.assertEquals(minAmt, response.getData().getLimit().getMinTrxAmount());
+    Assertions.assertEquals(maxAmt, response.getData().getLimit().getMaxTrxAmount());
+  }
+
+  @Test
+  void testGetAccountDetail_Success_AccountNotFullyKYC() throws JSONException {
+
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
+    when(accountRepository.countByAccountIdAndLinkedStatus(anyString(), any())).thenReturn(1L);
+    when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponseNotKYC());
+
+    ConfigServiceImpl mockConfig = new ConfigServiceImpl(null);
+
+    Double maxAmt = 1000.0;
+    Double minAmt = 1.0;
+    mockConfig.setJsonValue(new JSONObject().put("txMinAmt", minAmt).put("txMaxAmt", maxAmt));
+
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
+        .thenReturn(mockConfig);
+
+    GetAccountDetailResponse response =
+        accountService.getAccountDetail(mockGetAccountDetailRequest());
+
+    Assertions.assertNotNull(response.getData());
+    Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
+    Assertions.assertEquals(BakongAccountStatus.BLOCKED, response.getData().getAccStatus());
+    Assertions.assertEquals(BakongKYCStatus.PARTIAL, response.getData().getKycStatus());
+    Assertions.assertEquals(minAmt, response.getData().getLimit().getMinTrxAmount());
+    Assertions.assertEquals(maxAmt, response.getData().getLimit().getMaxTrxAmount());
+  }
+
+  @Test
+  void testGetAccountDetail_Failed_NoAccountFound() {
+
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
+    when(accountRepository.countByAccountIdAndLinkedStatus(anyString(), any())).thenReturn(0L);
+
+    try {
+      accountService.getAccountDetail(mockGetAccountDetailRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.NO_ACCOUNT_FOUND.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.NO_ACCOUNT_FOUND.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testGetAccountDetail_FailedWhenFetchingCasaAccountDetail() {
+
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
+    when(accountRepository.countByAccountIdAndLinkedStatus(anyString(), any())).thenReturn(1L);
+    when(cdrbRestClient.getAccountDetail(any()))
+        .thenThrow(new BizException(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS));
+
+    try {
+      accountService.getAccountDetail(mockGetAccountDetailRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS.getCode(),
+          ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 }

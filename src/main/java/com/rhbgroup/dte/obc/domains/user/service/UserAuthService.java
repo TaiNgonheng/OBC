@@ -7,6 +7,7 @@ import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.UserModel;
+import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -17,7 +18,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -72,12 +72,11 @@ public class UserAuthService {
     }
   }
 
-  public String getCurrentUser() {
+  public CustomUserDetails getCurrentUser() {
     try {
-      UserDetails principal =
-          (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+      return (CustomUserDetails)
+          SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-      return principal.getUsername();
     } catch (Exception ex) {
       throw new BizException(ResponseMessage.SESSION_EXPIRED);
     }
@@ -87,7 +86,7 @@ public class UserAuthService {
     profile.setLoginAttempt(attempt);
     profile.setLockTime(null);
     if (attempt >= AppConstants.Authentication.AUTHENTICATION_ALLOWED_TIME) {
-      //reset login time for next authentication
+      // reset login time for next authentication
       profile.setLoginAttempt(0);
       profile.setLockTime(Instant.now().plusSeconds(AppConstants.Authentication.LOCK_IN_SECOND));
     }
