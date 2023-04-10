@@ -40,7 +40,7 @@ public class CDRBRestClient {
       "/corebankingnonfinancialclient/bakong-link-casa/accounts";
   private static final String GET_FEE_AND_CASHBACK =
       "/corebankingnonfinancialclient/feeAndCashBack";
-  private static final String TRANFER = "/corebankingfinancialclient/transfer";
+  private static final String TRANSFER = "/corebankingfinancialclient/transfer";
 
   private final SpringRestUtil restUtil;
 
@@ -105,7 +105,7 @@ public class CDRBRestClient {
   public CDRBTransferResponse transfer(CDRBTransferRequest request) {
     try {
       return restUtil.sendPost(
-          baseUrl.concat(TRANFER),
+          baseUrl.concat(TRANSFER),
           buildHeader(getAccessToken()),
           request,
           ParameterizedTypeReference.forType(CDRBTransferResponse.class));
@@ -113,6 +113,8 @@ public class CDRBRestClient {
       throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
   }
+
+  //  public CDRBAcco
 
   private String login() {
 

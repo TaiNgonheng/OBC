@@ -30,6 +30,9 @@ import com.rhbgroup.dte.obc.model.CDRBTransferType;
 import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
+import com.rhbgroup.dte.obc.model.FinishTransactionResponseAllOfData;
+import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.InitTransactionResponse;
 import com.rhbgroup.dte.obc.model.InitTransactionResponseAllOfData;
@@ -124,6 +127,7 @@ public class TransactionServiceImpl implements TransactionService {
             .userId(BigDecimal.valueOf(currentUser.getUserId()))
             .fromAccount(request.getSourceAcc())
             .toAccount(request.getDestinationAcc())
+            .toAccountCurrency(request.getCcy())
             .creditDebitIndicator(CreditDebitIndicator.D)
             .trxCcy(request.getCcy())
             .payerName(linkedAccount.getAccountName())
@@ -197,32 +201,47 @@ public class TransactionServiceImpl implements TransactionService {
     of(transactionMapper::toCDRBTransferRequest)
         .andThen(
             transferRequest -> {
+              GetAccountDetailResponse accountDetail =
+                  accountService.getAccountDetail(
+                      new GetAccountDetailRequest().accNumber(transferRequest.getFromAccountNo()));
+
               transferRequest.setTransferType(CDRBTransferType.BAKONG_LINK_CASA_EWALLET);
+              transferRequest.setCifNumber(currentUser.getCif());
               transferRequest.setObcUserId(BigDecimal.valueOf(currentUser.getUserId()));
-              transferRequest.setToAccountCurrency(transferRequest.getCurrencyCode());
+              transferRequest.setToAccuntCurrency(transferRequest.getCurrencyCode());
+              transferRequest.setTransactionCurrencyAmount(transferRequest.getAmount());
+              transferRequest.setAccountCurrencyCode(accountDetail.getData().getAccCcy());
 
               return transferRequest;
             })
         .andThen(cdrbRestClient::transfer)
-        //        .andThen(transactionMapper::toCDRBTransactionInquiryRequest)
-        //        .andThen(this::transactionInquiry)
-        //        .andThen(inquiryResponse -> new
-        // FinishTransactionResponse().status(ResponseHandler.ok()).data(new
-        // FinishTransactionResponseAllOfData("").transactionDate(1).transactionId("trxId").transactionHash("hash"));
+        .andThen(
+            transferResponse ->
+                new CDRBTransferInquiryRequest().correlationId(transferResponse.getCorrelationId()))
+        .andThen(this::transactionInquiry)
+        .andThen(
+            inquiryResponse ->
+                new FinishTransactionResponse()
+                    .status(ResponseHandler.ok())
+                    .data(
+                        new FinishTransactionResponseAllOfData()
+                            .transactionDate("")
+                            .transactionId("trxId")
+                            .transactionHash("hash")))
         .apply(transaction);
 
     return new FinishTransactionResponse().status(ResponseHandler.ok());
   }
 
   private Object transactionInquiry(CDRBTransferInquiryRequest request) {
-    // Object response = cdrbRestClient.transactionInquiry(request);
-    // if ("PENDING".equals(response.getStatus)) {
-    //    transactionInquiry(request);
-    // } else {
-    //    recordTransactionResult();
-    //    return object;
-    // }
-    // return transactionInquiry
+    //     Object response = cdrbRestClient.transactionInquiry(request);
+    //     if ("PENDING".equals(response.getStatus)) {
+    //        transactionInquiry(request);
+    //     } else {
+    //        recordTransactionResult();
+    //        return object;
+    //     }
+    //     return transactionInquiry
     return null;
   }
 }

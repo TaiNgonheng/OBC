@@ -38,6 +38,8 @@ properties:
     type: string
   toAccount:
     type: string
+  toAccountCurrency:
+    type: string
   recipientBIC:
     type: string
   recipientName:

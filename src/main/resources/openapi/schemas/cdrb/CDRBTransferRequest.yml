@@ -2,47 +2,29 @@ type: object
 properties:
   obcUserId:
     type: number
+  cifNumber:
+    type: string
   amount:
-    type: number
-    format: double
-  buyRate:
     type: number
     format: double
   cashBack:
     type: number
     format: double
-  cashBackTransactionCurrencyAmount:
-    type: number
-    format: double
   currencyCode:
     type: string
-  feeAmountInUSD:
-    type: number
-    format: double
-  feeTransactionCurrencyAmount:
-    type: number
-    format: double
   fees:
     type: number
     format: double
   fromAccountNo:
     type: string
-  fromAccountType:
-    $ref: '../common/CasaAccountType.yml'
   recipientBIC:
     type: string
   recipientName:
     type: string
-  sellRate:
-    type: number
-    format: double
   toAccountNo:
     type: string
-  toAccountCurrency:
+  toAccuntCurrency:
     type: string
-  transactionAmountInUSD:
-    type: number
-    format: double
   transactionCurrencyAmount:
     type: number
     format: double
@@ -52,6 +34,3 @@ properties:
     $ref: '../common/CDRBTransferType.yml'
   accountCurrencyCode:
     type: string
-  cashBackAmountInUSD:
-    type: number
-    format: double
