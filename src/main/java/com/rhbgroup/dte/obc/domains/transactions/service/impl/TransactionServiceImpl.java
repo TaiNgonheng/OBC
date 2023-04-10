@@ -3,6 +3,7 @@ package com.rhbgroup.dte.obc.domains.transactions.service.impl;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.util.SFTPUtil;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.transactions.mapper.TransactionMapper;
@@ -31,15 +32,15 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class TransactionServiceImpl implements TransactionService {
 
-  private final ConfigService configService;
   private final SFTPUtil sftpUtil;
   private final TransactionMapper transactionMapper;
   private final SIBSTransactionRepository sibsTransactionRepository;
   private final BatchReportRepository batchReportRepository;
+  private final ApplicationProperties applicationProperties;
 
   private static final String TRANSACTION_FILE_PREFIX = "OBCDailyTrx_";
-  private static final String SIBS_SYNC_DATE_KEY = "SIBS_SYNC_DATE_CONFIG";
-  private static final String DDMMYYYY = "ddMMyyyy";
+  private static final String DATE_FORMAT_DDMMYYYY = "ddMMyyyy";
+  private static final String DATE_FORMAT_YYYYMMDD = "yyyyMMdd";
   private static final String TRANSACTION_FILE_EXTENSION = ".csv";
   private static final int MAX_STACK_TRACE_LENGTH = 19999;
 
@@ -49,6 +50,10 @@ public class TransactionServiceImpl implements TransactionService {
     BatchReport report = batchReportRepository.findByDate(date);
     if (ObjectUtils.isNotEmpty(report) && !report.getStatus().equals(BatchReportStatus.FAILED)) {
       throw new IllegalArgumentException("The file input date has been processed");
+    }
+    if(ObjectUtils.isEmpty(report)) {
+      report = new BatchReport();
+      report.setDate(date);
     }
     report.setStatus(BatchReportStatus.PENDING);
     batchReportRepository.saveAndFlush(report);
@@ -75,12 +80,10 @@ public class TransactionServiceImpl implements TransactionService {
   private LocalDate getProcessingDate(TransactionBatchFileProcessingRequest request) {
     LocalDate date = request.getDate();
     if (request.getDate() == null) {
-      SIBSSyncDateConfig sibsSyncDateConfig =
-          configService.getByConfigKey(SIBS_SYNC_DATE_KEY, SIBSSyncDateConfig.class);
       date = LocalDate.now().minusDays(1);
-      if (Boolean.TRUE.equals(sibsSyncDateConfig.getUseSIBSSyncDate())) {
+      if (Boolean.TRUE.equals(applicationProperties.getUseSIBSSyncDate())) {
         date =
-            LocalDate.parse(sibsSyncDateConfig.getSibsSyncDate(), DateTimeFormatter.ISO_DATE)
+            LocalDate.parse(applicationProperties.getSibsSyncDate(), DateTimeFormatter.ofPattern(DATE_FORMAT_YYYYMMDD))
                 .minusDays(1);
       }
     }
@@ -88,7 +91,7 @@ public class TransactionServiceImpl implements TransactionService {
   }
 
   private String generateTransactionHistoryFilename(LocalDate date) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DDMMYYYY);
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT_DDMMYYYY);
     return TRANSACTION_FILE_PREFIX + formatter.format(date) + TRANSACTION_FILE_EXTENSION;
   }
 

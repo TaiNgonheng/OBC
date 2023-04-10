@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
           new ResponseWrapper()
               .status(
                   new ResponseStatus()
-                      .code(AppConstants.STATUS.ERROR)
+                      .code(AppConstants.Status.ERROR)
                       .errorCode(ResponseMessage.CONSTRAINT_VIOLATION_ERROR.getCode().toString())
                       .errorMessage(message));
 
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
           new ResponseWrapper()
               .status(
                   new ResponseStatus()
-                      .code(AppConstants.STATUS.ERROR)
+                      .code(AppConstants.Status.ERROR)
                       .errorCode(ResponseMessage.CONSTRAINT_VIOLATION_ERROR.getCode().toString())
                       .errorMessage(exception.getMessage()));
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
 
     ResponseStatus status =
         new ResponseStatus()
-            .code(AppConstants.STATUS.ERROR)
+            .code(AppConstants.Status.ERROR)
             .errorCode(ex.getResponseMessage().getCode().toString())
             .errorMessage(ex.getResponseMessage().getMsg());
 
@@ -67,7 +67,7 @@ public class GlobalExceptionHandler {
 
     ResponseStatus status =
         new ResponseStatus()
-            .code(AppConstants.STATUS.ERROR)
+            .code(AppConstants.Status.ERROR)
             .errorCode(ex.getResponseMessage().getCode().toString())
             .errorMessage(ex.getResponseMessage().getMsg());
 
@@ -79,7 +79,7 @@ public class GlobalExceptionHandler {
 
     ResponseStatus status =
         new ResponseStatus()
-            .code(AppConstants.STATUS.ERROR)
+            .code(AppConstants.Status.ERROR)
             .errorCode(ResponseMessage.MANDATORY_FIELD_MISSING.getCode().toString())
             .errorMessage(ResponseMessage.MANDATORY_FIELD_MISSING.getMsg());
 
@@ -91,7 +91,7 @@ public class GlobalExceptionHandler {
 
     ResponseStatus status =
         new ResponseStatus()
-            .code(AppConstants.STATUS.ERROR)
+            .code(AppConstants.Status.ERROR)
             .errorCode(ResponseMessage.INTERNAL_SERVER_ERROR.getCode().toString())
             .errorMessage(ResponseMessage.INTERNAL_SERVER_ERROR.getMsg());
 

@@ -51,13 +51,13 @@ public class WhitelistUrlManager {
   private static void initMatchers() {
 
     AntMatchers gowaveMatcher =
-        new AntMatchers().urls(List.of("/gw/**")).role(AppConstants.ROLE.SYSTEM_USER);
+        new AntMatchers().urls(List.of("/gw/**")).role(AppConstants.Role.SYSTEM_USER);
 
     AntMatchers nbcMatcher =
-        new AntMatchers().urls(List.of("/**")).role(AppConstants.ROLE.APP_USER);
+        new AntMatchers().urls(List.of("/**")).role(AppConstants.Role.APP_USER);
 
-    requestMatchers.put(AppConstants.SYSTEM.GOWAVE, gowaveMatcher);
-    requestMatchers.put(AppConstants.SYSTEM.OPEN_BANKING_GATEWAY, nbcMatcher);
+    requestMatchers.put(AppConstants.System.GOWAVE, gowaveMatcher);
+    requestMatchers.put(AppConstants.System.OPEN_BANKING_GATEWAY, nbcMatcher);
   }
 
   @Getter

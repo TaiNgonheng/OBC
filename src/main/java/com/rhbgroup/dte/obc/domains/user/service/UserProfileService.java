@@ -1,8 +1,10 @@
 package com.rhbgroup.dte.obc.domains.user.service;
 
-import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
+import com.rhbgroup.dte.obc.model.UserModel;
 
 public interface UserProfileService {
 
-  UserProfileEntity getByUsername(String username);
+  UserModel findByUsername(String username);
+
+  UserModel findByUserId(Long userId);
 }
