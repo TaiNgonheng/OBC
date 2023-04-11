@@ -2,11 +2,9 @@ type: object
 properties:
   jobName:
     type: string
+    enum:
+      - TRXN_BATCH_PROCESSING
   jobGroup:
-    type: string
-  jobStatus:
-    type: string
-  jobClass:
     type: string
   cronExpression:
     type: string

@@ -12,7 +12,8 @@ public interface SchedulerJobCreator {
       boolean isDurable,
       ApplicationContext context,
       String jobName,
-      String jobGroup);
+      String jobGroup,
+      String description);
 
   CronTrigger createCronTrigger(
       String triggerName, Date startTime, String cronExpression, int misFireInstruction);

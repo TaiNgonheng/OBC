@@ -1,8 +1,6 @@
 package com.rhbgroup.dte.obc.domains.scheduler.service.impl;
 
 import com.rhbgroup.dte.obc.domains.scheduler.job.CronJob;
-import com.rhbgroup.dte.obc.domains.scheduler.mapper.SchedulerMapper;
-import com.rhbgroup.dte.obc.domains.scheduler.repository.JobInfoRepository;
 import com.rhbgroup.dte.obc.domains.scheduler.service.SchedulerJobCreator;
 import com.rhbgroup.dte.obc.domains.scheduler.service.SchedulerJobService;
 import com.rhbgroup.dte.obc.model.JobRequest;
@@ -21,9 +19,7 @@ public class SchedulerJobServiceImpl implements SchedulerJobService {
 
   private final SchedulerFactoryBean schedulerFactoryBean;
   private final SchedulerJobCreator schedulerJobCreator;
-  private final JobInfoRepository schedulerInfoRepository;
   private final ApplicationContext applicationContext;
-  private final SchedulerMapper schedulerMapper;
 
   @Override
   public void createSchedulerJob(JobRequest request) {
@@ -31,29 +27,46 @@ public class SchedulerJobServiceImpl implements SchedulerJobService {
       Scheduler scheduler = schedulerFactoryBean.getScheduler();
       JobDetail jobDetail =
           JobBuilder.newJob(CronJob.class)
-              .withIdentity(request.getJobName(), request.getJobGroup())
+              .withIdentity(request.getJobName().getValue(), request.getJobGroup())
               .build();
       if (scheduler.checkExists(jobDetail.getKey())) {
         log.debug("Job already exists");
+        return;
       }
       jobDetail =
           schedulerJobCreator.createJob(
               CronJob.class,
               false,
               applicationContext,
-              request.getJobName(),
-              request.getJobGroup());
+              request.getJobName().getValue(),
+              request.getJobGroup(),
+              request.getDescription());
       Trigger trigger =
           schedulerJobCreator.createCronTrigger(
-              request.getJobName(),
+              request.getJobName().getValue(),
               new Date(),
               request.getCronExpression(),
               SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
       scheduler.scheduleJob(jobDetail, trigger);
-      request.setJobStatus("SCHEDULED");
-      schedulerInfoRepository.save(schedulerMapper.toJobInfo(request));
     } catch (Exception e) {
       log.error("Something went wrong", e);
+    }
+  }
+
+  @Override
+  public void updateSchedulerJob(JobRequest request) {
+    Trigger newTrigger =
+        schedulerJobCreator.createCronTrigger(
+            request.getJobName().getValue(),
+            new Date(),
+            request.getCronExpression(),
+            SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
+    try {
+      schedulerFactoryBean
+          .getScheduler()
+          .rescheduleJob(TriggerKey.triggerKey(request.getJobName().getValue()), newTrigger);
+    } catch (SchedulerException e) {
+      log.error(e.getMessage(), e);
     }
   }
 }

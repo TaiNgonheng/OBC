@@ -24,6 +24,11 @@ spring:
   jackson:
     default-property-inclusion: ALWAYS
 
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: embedded
+
   application:
     name: ${APP_NAME:obc-sit}
 
