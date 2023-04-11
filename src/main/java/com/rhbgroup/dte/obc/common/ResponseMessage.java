@@ -26,6 +26,7 @@ public enum ResponseMessage {
   KYC_NOT_VERIFIED(14, "Cannot link account due to your account not yet verified."),
   ACCOUNT_ALREADY_LINKED(15, "This account is already linked to another Bakong account."),
   AUTHENTICATION_LOCKED(16, "Too many incorrect authentication attempts. Please try again later."),
+
   // CDRB error messages
   NO_SUCH_USER_FOUND(100, "User not found."),
   USER_ALREADY_EXIST(101, "User already exist."),
@@ -34,6 +35,7 @@ public enum ResponseMessage {
   CONSTRAINT_VIOLATION_ERROR(300, "Constraint violation exception."),
   DATA_NOT_FOUND(301, "Data not found."),
   DATA_STRUCTURE_INVALID(302, "Data structure invalid."),
+  OPERATION_NOT_SUPPORTED(303, "Operation is not supported."),
   ;
 
   private final Integer code;

@@ -20,6 +20,7 @@ import com.rhbgroup.dte.obc.domains.config.service.impl.ConfigServiceImpl;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.exceptions.InternalException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.BakongAccountStatus;
@@ -181,11 +182,11 @@ class AccountServiceTest extends AbstractAccountTest {
   void testInitLinkAccount_Failed_3rdServiceUnavailable() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(pgRestClient.getUserProfile(anyList()))
-        .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
+        .thenThrow(new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {
       accountService.initLinkAccount(mockInitAccountRequest());
-    } catch (BizException ex) {
+    } catch (InternalException ex) {
       Assertions.assertEquals(
           ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
       Assertions.assertEquals(
@@ -199,11 +200,11 @@ class AccountServiceTest extends AbstractAccountTest {
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
     lenient()
         .when(infoBipRestClient.sendOtp(anyString(), anyString()))
-        .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
+        .thenThrow(new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {
       accountService.initLinkAccount(mockInitAccountRequest());
-    } catch (BizException ex) {
+    } catch (InternalException ex) {
       Assertions.assertEquals(
           ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
       Assertions.assertEquals(
@@ -235,11 +236,11 @@ class AccountServiceTest extends AbstractAccountTest {
   void testVerifyOTP_Failed_InfoBipServiceUnavailable() {
     when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
     when(infoBipRestClient.verifyOtp(anyString(), anyString()))
-        .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
+        .thenThrow(new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {
       accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
-    } catch (BizException ex) {
+    } catch (InternalException ex) {
       Assertions.assertEquals(
           ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
       Assertions.assertEquals(

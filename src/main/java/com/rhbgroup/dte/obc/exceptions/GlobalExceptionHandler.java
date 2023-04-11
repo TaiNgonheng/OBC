@@ -74,6 +74,19 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(new ResponseWrapper().status(status), HttpStatus.BAD_REQUEST);
   }
 
+  @ExceptionHandler(InternalException.class)
+  public ResponseEntity<ResponseWrapper> internalException(InternalException ex) {
+
+    ResponseStatus status =
+        new ResponseStatus()
+            .code(AppConstants.Status.ERROR)
+            .errorCode(ex.getResponseMessage().getCode().toString())
+            .errorMessage(ex.getResponseMessage().getMsg());
+
+    return new ResponseEntity<>(
+        new ResponseWrapper().status(status), HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ResponseWrapper> argMissingException(MethodArgumentNotValidException ex) {
 

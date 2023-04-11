@@ -8,6 +8,7 @@ import com.rhbgroup.dte.obc.common.util.crypto.AESCryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.CryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.TripleDESCryptoUtil;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.exceptions.InternalException;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
@@ -106,7 +107,7 @@ public class CDRBRestClient {
           ParameterizedTypeReference.forType(CDRBFeeAndCashbackResponse.class));
 
     } catch (BizException ex) {
-      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+      throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -118,7 +119,7 @@ public class CDRBRestClient {
           request,
           ParameterizedTypeReference.forType(CDRBTransferResponse.class));
     } catch (BizException ex) {
-      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+      throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -131,7 +132,7 @@ public class CDRBRestClient {
           request,
           ParameterizedTypeReference.forType(CDRBTransferInquiryResponse.class));
     } catch (BizException ex) {
-      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+      throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
   }
 

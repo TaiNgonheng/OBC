@@ -9,6 +9,6 @@ allOf:
           transactionId:
             type: string
           transactionDate:
-            type: string
+            type: number
           transactionHash:
             type: string

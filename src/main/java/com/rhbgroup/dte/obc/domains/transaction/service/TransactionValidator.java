@@ -8,6 +8,7 @@ import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
+import com.rhbgroup.dte.obc.model.TransactionType;
 
 public class TransactionValidator {
 
@@ -15,6 +16,11 @@ public class TransactionValidator {
 
   public static void validateInitTransaction(
       InitTransactionRequest request, ConfigService transactionConfig, AccountModel accountModel) {
+
+    // Only support CASA_TO_WALLET for now
+    if (TransactionType.CASA.equals(request.getType())) {
+      throw new BizException(ResponseMessage.OPERATION_NOT_SUPPORTED);
+    }
 
     Double minAmt =
         transactionConfig.getValue(ConfigConstants.Transaction.MIN_AMOUNT, Double.class);
@@ -35,7 +41,7 @@ public class TransactionValidator {
   }
 
   public static void validateTransactionStatus(TransactionEntity transaction) {
-    if (TransactionStatus.COMPLETE.equals(transaction.getTrxStatus())) {
+    if (TransactionStatus.COMPLETED.equals(transaction.getTrxStatus())) {
       throw new BizException(ResponseMessage.DUPLICATE_SUBMISSION_ID);
     }
   }

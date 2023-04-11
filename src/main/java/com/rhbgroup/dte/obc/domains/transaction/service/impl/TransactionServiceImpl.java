@@ -7,7 +7,6 @@ import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
-import com.rhbgroup.dte.obc.common.util.RandomGenerator;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
@@ -19,6 +18,7 @@ import com.rhbgroup.dte.obc.domains.transaction.service.TransactionService;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.exceptions.InternalException;
 import com.rhbgroup.dte.obc.model.AccountFilterCondition;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
@@ -27,7 +27,6 @@ import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryRequest;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
-import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
@@ -37,20 +36,16 @@ import com.rhbgroup.dte.obc.model.InitTransactionResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.TransactionModel;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
-import com.rhbgroup.dte.obc.model.TransactionType;
+import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
-import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -75,7 +70,7 @@ public class TransactionServiceImpl implements TransactionService {
   }
 
   @Override
-  @Transactional(rollbackOn = RuntimeException.class)
+  @Transactional
   public InitTransactionResponse initTransaction(InitTransactionRequest request) {
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
@@ -90,18 +85,16 @@ public class TransactionServiceImpl implements TransactionService {
     // Validate transaction request
     TransactionValidator.validateInitTransaction(request, transactionConfig, linkedAccount);
 
-    PGProfileResponse userProfile = null;
-    if (TransactionType.WALLET.equals(request.getType())) {
-      try {
-        userProfile =
-            pgRestClient.getUserProfile(Collections.singletonList(request.getDestinationAcc()));
+    PGProfileResponse userProfile;
+    try {
+      userProfile =
+          pgRestClient.getUserProfile(Collections.singletonList(request.getDestinationAcc()));
 
-        // Validate destination account
-        AccountValidator.validateAccount(userProfile);
+      // Validate destination account
+      AccountValidator.validateAccount(userProfile);
 
-      } catch (BizException ex) {
-        throw new BizException(ResponseMessage.TRANSACTION_TO_UNAVAILABLE_ACCOUNT);
-      }
+    } catch (BizException ex) {
+      throw new BizException(ResponseMessage.TRANSACTION_TO_UNAVAILABLE_ACCOUNT);
     }
 
     // Validate CASA account balance
@@ -120,27 +113,15 @@ public class TransactionServiceImpl implements TransactionService {
                 .currencyCode(request.getCcy())
                 .transactionType(AppConstants.Transaction.OBC_TOP_UP));
 
-    TransactionModel transactionModel =
-        new TransactionModel()
-            .initRefNumber(RandomGenerator.getDefaultRandom().nextString())
-            .userId(BigDecimal.valueOf(currentUser.getUserId()))
-            .fromAccount(request.getSourceAcc())
-            .toAccount(request.getDestinationAcc())
-            .toAccountCurrency(request.getCcy())
-            .creditDebitIndicator(CreditDebitIndicator.D)
-            .trxCcy(request.getCcy())
-            .payerName(linkedAccount.getAccountName())
-            .transferMessage(request.getDesc())
-            .transferType(request.getType())
-            .trxAmount(request.getAmount())
-            .trxFee(feeAndCashback.getFee())
-            .trxCashback(feeAndCashback.getCashBack())
-            .trxDate(OffsetDateTime.now())
-            .recipientName(null == userProfile ? null : userProfile.getAccountName())
-            .trxStatus(TransactionStatus.PENDING);
-
     // Store PENDING transaction
-    save(transactionModel);
+    TransactionModel pendingTransaction =
+        transactionMapper.toPendingTransactionModel(
+            currentUser.getUserId(),
+            request,
+            userProfile,
+            linkedAccount.getAccountName(),
+            feeAndCashback);
+    save(pendingTransaction);
 
     // Get otp required config
     boolean trxOtpEnabled =
@@ -154,14 +135,15 @@ public class TransactionServiceImpl implements TransactionService {
         .status(ResponseHandler.ok())
         .data(
             new InitTransactionResponseAllOfData()
-                .initRefNumber(transactionModel.getInitRefNumber())
-                .debitAmount(transactionModel.getTrxAmount())
-                .debitCcy(transactionModel.getTrxCcy())
+                .initRefNumber(pendingTransaction.getInitRefNumber())
+                .debitAmount(pendingTransaction.getTrxAmount())
+                .debitCcy(pendingTransaction.getTrxCcy())
                 .requireOtp(trxOtpEnabled)
                 .fee(feeAndCashback.getFee()));
   }
 
   @Override
+  @Transactional
   public FinishTransactionResponse finishTransaction(FinishTransactionRequest request) {
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
@@ -175,7 +157,7 @@ public class TransactionServiceImpl implements TransactionService {
             .andThen(
                 trxOptional ->
                     trxOptional.orElseThrow(
-                        () -> new BizException(ResponseMessage.INTERNAL_SERVER_ERROR)))
+                        () -> new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR)))
             .andThen(peek(TransactionValidator::validateTransactionStatus))
             .andThen(
                 peek(
@@ -213,31 +195,33 @@ public class TransactionServiceImpl implements TransactionService {
                 new CDRBTransferInquiryRequest().correlationId(transferResponse.getCorrelationId()))
         .andThen(
             getTrxRequest -> transactionInquiryRecursive(getTrxRequest, request.getInitRefNumber()))
-
         .andThen(transactionMapper::toFinishTransactionResponse)
         .apply(transaction);
   }
 
-  @SneakyThrows
   private CDRBTransferInquiryResponse transactionInquiryRecursive(
       CDRBTransferInquiryRequest request, String initRef) {
 
     CDRBTransferInquiryResponse response = cdrbRestClient.getTransferDetail(request);
 
     if (TransactionStatus.PENDING.getValue().equals(response.getStatus())) {
-      transactionInquiryRecursive(request, initRef);
-
-      TimeUnit.SECONDS.sleep(1);
-
-    } else {
-      transactionRepository
-          .findByInitRefNumber(initRef)
-          .ifPresent(
-              trx -> {
-                trx.setTrxStatus(TransactionStatus.fromValue(response.getStatus()));
-                transactionRepository.save(trx);
-              });
+      // Wait 0.5s before continuously recursive this function
+      try {
+        Thread.sleep(500L);
+      } catch (InterruptedException ex) {
+        Thread.currentThread().interrupt();
+      }
+      return transactionInquiryRecursive(request, initRef);
     }
+
+    transactionRepository
+        .findByInitRefNumber(initRef)
+        .ifPresent(
+            trx -> {
+              trx.setTrxStatus(TransactionStatus.fromValue(response.getStatus()));
+              transactionRepository.save(trx);
+            });
+
     return response;
   }
 }
