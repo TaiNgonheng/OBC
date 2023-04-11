@@ -32,6 +32,8 @@ paths:
     $ref: './paths/user-exchange.yml'
   /gw/login:
     $ref: './paths/gw-login.yml'
+  /transaction-processing:
+    $ref: './paths/transaction-processing.yml'
   /scheduler:
     $ref: './paths/scheduler-job.yml'
 
@@ -101,6 +103,14 @@ components:
       $ref: './schemas/cdrb/CDRBGetAccountDetailResponse.yml'
     SchedulerJobRequest:
       $ref: './schemas/scheduler/JobRequest.yml'
+    SFTPConfig:
+      $ref: './schemas/config/SFTPConfig.yml'
+    SIBSSyncDateConfig:
+      $ref: './schemas/config/SIBSSyncDateConfig.yml'
+    TransactionBatchFileProcessingRequest:
+      $ref: './schemas/transaction/TransactionBatchFileProcessingRequest.yml'
+    BatchReportStatus:
+      $ref: './schemas/transaction/BatchReportStatus.yml'
 
   securitySchemes:
     bearerAuth:

@@ -1,6 +1,6 @@
 package com.rhbgroup.dte.obc.domains.scheduler.service.impl;
 
-import com.rhbgroup.dte.obc.domains.scheduler.job.CronJob;
+import com.rhbgroup.dte.obc.domains.scheduler.job.impl.CronJob;
 import com.rhbgroup.dte.obc.domains.scheduler.service.SchedulerJobCreator;
 import com.rhbgroup.dte.obc.domains.scheduler.service.SchedulerJobService;
 import com.rhbgroup.dte.obc.model.JobRequest;
