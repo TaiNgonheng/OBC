@@ -1,0 +1,7 @@
+type: object
+description: CDRB transaction history request
+properties:
+  cifNumber:
+    type: string
+  accountNumber:
+    type: accountNumber
