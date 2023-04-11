@@ -11,6 +11,8 @@ import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
+import com.rhbgroup.dte.obc.model.UnlinkAccountRequest;
+import com.rhbgroup.dte.obc.model.UnlinkAccountResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,14 @@ public class AccountController implements AccountApiDelegate {
     return Functions.of(accountService::finishLinkAccount)
         .andThen(ResponseEntity::ok)
         .apply(authorization, request);
+  }
+
+  @Override
+  public ResponseEntity<UnlinkAccountResponse> unlinkAccount(
+      String authorization, UnlinkAccountRequest unlinkAccountRequest) {
+    return Functions.of(accountService::unlinkAccount)
+        .andThen(ResponseEntity::ok)
+        .apply(authorization, unlinkAccountRequest);
   }
 
   @Override

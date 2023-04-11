@@ -1,0 +1,50 @@
+#/verify-otp:
+post:
+  tags:
+    - Account
+  summary: Unlink account between PG1 and CDRB
+  description: Unlink account between PG1 and CDRB
+  operationId: unlinkAccount
+  parameters:
+    - in: header
+      name: Authorization
+      schema:
+        type: string
+        format: String
+      required: true
+  requestBody:
+    description: Unlink account request
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/account/UnlinkAccountRequest.yml'
+    required: true
+  responses:
+    '200':
+      description: Ok
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/account/UnlinkAccountResponse.yml'
+    '400':
+      description: Bad Request
+    '401':
+      description: Unauthorized
+    '403':
+      description: Forbidden
+    '404':
+      description: Not found
+    '405':
+      description: Method not allow
+    '409':
+      description: Conflict
+    '411':
+      description: Length Required
+    '412':
+      description: Precondition failed
+    '429':
+      description: To many requests
+    '500':
+      description: Internal server error
+    '503':
+      description: Service unavailable

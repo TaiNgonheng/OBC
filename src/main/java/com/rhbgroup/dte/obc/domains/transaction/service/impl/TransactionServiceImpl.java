@@ -38,7 +38,6 @@ import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.TransactionModel;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
 import com.rhbgroup.dte.obc.model.TransactionType;
-import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
@@ -82,10 +81,8 @@ public class TransactionServiceImpl implements TransactionService {
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
 
     AccountModel linkedAccount =
-        accountService.getActiveAccountByUserIdAndBakongId(
-            new AccountFilterCondition()
-                .userId(currentUser.getUserId().toString())
-                .bakongId(currentUser.getBakongId()));
+        accountService.getActiveAccount(
+            new AccountFilterCondition().accountNo(request.getSourceAcc()));
 
     ConfigService transactionConfig =
         this.configService.loadJSONValue(ConfigConstants.Transaction.mapCurrency(request.getCcy()));
@@ -93,13 +90,15 @@ public class TransactionServiceImpl implements TransactionService {
     // Validate transaction request
     TransactionValidator.validateInitTransaction(request, transactionConfig, linkedAccount);
 
-    if (request.getType().equals(TransactionType.WALLET)) {
+    PGProfileResponse userProfile = null;
+    if (TransactionType.WALLET.equals(request.getType())) {
       try {
-        PGProfileResponse userProfile =
+        userProfile =
             pgRestClient.getUserProfile(Collections.singletonList(request.getDestinationAcc()));
 
         // Validate destination account
-        log.info("Bakong user profile >> {}", userProfile);
+        AccountValidator.validateAccount(userProfile);
+
       } catch (BizException ex) {
         throw new BizException(ResponseMessage.TRANSACTION_TO_UNAVAILABLE_ACCOUNT);
       }
@@ -137,6 +136,7 @@ public class TransactionServiceImpl implements TransactionService {
             .trxFee(feeAndCashback.getFee())
             .trxCashback(feeAndCashback.getCashBack())
             .trxDate(OffsetDateTime.now())
+            .recipientName(null == userProfile ? null : userProfile.getAccountName())
             .trxStatus(TransactionStatus.PENDING);
 
     // Store PENDING transaction
