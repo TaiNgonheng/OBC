@@ -5,7 +5,7 @@ import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.common.util.RandomGenerator;
 import com.rhbgroup.dte.obc.domains.config.service.impl.ConfigServiceImpl;
-import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionEntity;
+import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionEntity;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;

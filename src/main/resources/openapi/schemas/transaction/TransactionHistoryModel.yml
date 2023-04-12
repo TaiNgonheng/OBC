@@ -1,0 +1,26 @@
+type: object
+properties:
+  type:
+    $ref: '../common/TransactionType.yml'
+  sourceAcc:
+    type: string
+  destinationAcc:
+    type: string
+  amount:
+    type: number
+    format: double
+  ccy:
+    type: string
+  desc:
+    type: string
+  status:
+    $ref: '../common/BakongTransactionStatus.yml'
+  cdtDbtInd:
+    $ref: '../common/CreditDebitIndicator.yml'
+  transactionId:
+    type: string
+  transactionDate:
+    type: integer
+    format: int64
+  transactionHash:
+    type: string

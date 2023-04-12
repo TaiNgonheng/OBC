@@ -36,6 +36,8 @@ paths:
     $ref: './paths/init-transaction.yml'
   /finish-transaction:
     $ref: './paths/finish-transaction.yml'
+  /account-transactions:
+    $ref: './paths/account-transactions.yml'
   /gw/user-exchange:
     $ref: './paths/user-exchange.yml'
   /gw/login:
@@ -76,9 +78,13 @@ components:
     GetAccountDetailResponse:
       $ref: './schemas/account/GetAccountDetailResponse.yml'
     InitTransactionRequest:
-      $ref: './schemas/account/InitTransactionRequest.yml'
+      $ref: './schemas/transaction/InitTransactionRequest.yml'
     InitTransactionResponse:
-      $ref: './schemas/account/InitTransactionResponse.yml'
+      $ref: './schemas/transaction/InitTransactionResponse.yml'
+    GetAccountTransactionsRequest:
+      $ref: './schemas/transaction/GetAccountTransactionsRequest.yml'
+    GetAccountTransactionsResponse:
+      $ref: './schemas/transaction/GetAccountTransactionsResponse.yml'
     ExchangeAccountRequest:
       $ref: './schemas/user/UserExchangeRequest.yml'
     ExchangeAccountResponse:
@@ -95,6 +101,8 @@ components:
       $ref: './schemas/user/UserModel.yml'
     TransactionModel:
       $ref: './schemas/transaction/TransactionModel.yml'
+    TransactionHistoryModel:
+      $ref: './schemas/transaction/TransactionHistoryModel.yml'
     PGAuthRequest:
       $ref: './schemas/pg/PGAuthRequest.yml'
     PGAuthResponse:

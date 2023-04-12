@@ -1,0 +1,13 @@
+type: object
+properties:
+  account:
+    type: object
+    properties:
+      accountNumber:
+        type: string
+      accountType:
+        ref: '../common/CasaAccountType.yml'
+  transactions:
+    type: array
+    items:
+      ref: '../transaction/TransactionHistoryModel.yml'

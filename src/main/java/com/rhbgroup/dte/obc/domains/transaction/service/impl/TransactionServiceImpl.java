@@ -1,8 +1,5 @@
 package com.rhbgroup.dte.obc.domains.transaction.service.impl;
 
-import static com.rhbgroup.dte.obc.common.func.Functions.of;
-import static com.rhbgroup.dte.obc.common.func.Functions.peek;
-
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
@@ -12,8 +9,10 @@ import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.transaction.mapper.TransactionMapper;
 import com.rhbgroup.dte.obc.domains.transaction.mapper.TransactionMapperImpl;
-import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionEntity;
+import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionHistoryRepository;
 import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionRepository;
+import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionEntity;
+import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionHistoryEntity;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionService;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
@@ -27,25 +26,40 @@ import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryRequest;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
+import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
+import com.rhbgroup.dte.obc.model.GetAccountTransactionsRequest;
+import com.rhbgroup.dte.obc.model.GetAccountTransactionsResponse;
+import com.rhbgroup.dte.obc.model.GetAccountTransactionsResponseAllOfData;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.InitTransactionResponse;
 import com.rhbgroup.dte.obc.model.InitTransactionResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
+import com.rhbgroup.dte.obc.model.TransactionHistoryModel;
 import com.rhbgroup.dte.obc.model.TransactionModel;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
+import com.rhbgroup.dte.obc.model.TransactionType;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
-import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.rhbgroup.dte.obc.common.func.Functions.of;
+import static com.rhbgroup.dte.obc.common.func.Functions.peek;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +71,7 @@ public class TransactionServiceImpl implements TransactionService {
   private final AccountService accountService;
 
   private final TransactionRepository transactionRepository;
+  private final TransactionHistoryRepository transactionHistoryRepository;
 
   private final PGRestClient pgRestClient;
   private final CDRBRestClient cdrbRestClient;
@@ -223,5 +238,70 @@ public class TransactionServiceImpl implements TransactionService {
             });
 
     return response;
+  }
+
+  @Override
+  @Transactional
+  public GetAccountTransactionsResponse queryTransactionHistory(
+      GetAccountTransactionsRequest request) {
+
+    return of(accountService::getActiveAccount)
+        .andThen(peek(model -> updateTodayTransaction(request.getPage(), model)))
+        .andThen(
+            accountModel ->
+                transactionHistoryRepository.queryByFromAccount(
+                    request.getAccNumber(),
+                    PageRequest.of(
+                        request.getPage() - 1,
+                        request.getSize(),
+                        Sort.by(Sort.Order.desc("trxDate")))))
+        .andThen(
+            resultPage -> {
+              List<TransactionHistoryModel> items =
+                  resultPage
+                      .get()
+                      .map(transactionMapper::toTransactionHistoryModel)
+                      .collect(Collectors.toList());
+
+              return new GetAccountTransactionsResponse()
+                  .status(ResponseHandler.ok())
+                  .data(
+                      new GetAccountTransactionsResponseAllOfData()
+                          .transactions(items)
+                          .totalElement(resultPage.getTotalElements()));
+            })
+        .apply(new AccountFilterCondition().accountNo(request.getAccNumber()));
+  }
+
+  private void updateTodayTransaction(Integer currentPage, AccountModel model) {
+
+    if (currentPage > 1) {
+      return;
+    }
+
+    Long refreshedRecords =
+        transactionHistoryRepository.deleteByFromAccountAndNewToday(model.getAccountNo(), 1);
+    log.info(
+        "Refresh transaction history table, cleaning all the newly added by today record {}",
+        refreshedRecords);
+
+    // Mimic CDRB result
+    TransactionHistoryEntity newEntity = new TransactionHistoryEntity();
+    newEntity.setFromAccount(model.getAccountNo());
+    newEntity.setUserId(5L);
+    newEntity.setTransferType(TransactionType.WALLET);
+    newEntity.setCreditDebitIndicator(CreditDebitIndicator.D);
+    newEntity.setTransferMessage("desc");
+    newEntity.setToAccount("samrith@oski");
+    newEntity.setTrxHash("123456");
+    newEntity.setTrxId("123469");
+    newEntity.setTrxAmount(1.0);
+    newEntity.setTrxCcy("USD");
+    newEntity.setTrxDate(Instant.now());
+    newEntity.setTrxCompletionDate(Instant.now());
+    newEntity.setTrxStatus(TransactionStatus.FAILED);
+    newEntity.setNewToday(1);
+
+    transactionHistoryRepository.save(newEntity);
   }
 }

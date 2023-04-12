@@ -3,7 +3,7 @@ package com.rhbgroup.dte.obc.domains.transaction.service;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
-import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionEntity;
+import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionEntity;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;

@@ -2,7 +2,9 @@ package com.rhbgroup.dte.obc.domains.transaction.mapper;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.util.RandomGenerator;
-import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionEntity;
+import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionEntity;
+import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionHistoryEntity;
+import com.rhbgroup.dte.obc.model.BakongTransactionStatus;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferRequest;
@@ -13,6 +15,7 @@ import com.rhbgroup.dte.obc.model.FinishTransactionResponseAllOfData;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
+import com.rhbgroup.dte.obc.model.TransactionHistoryModel;
 import com.rhbgroup.dte.obc.model.TransactionModel;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
@@ -124,5 +127,40 @@ public interface TransactionMapper {
                         : BigDecimal.valueOf(completionDate.toInstant().toEpochMilli()))
                 .transactionId(inquiryResponse.getCorrelationId())
                 .transactionHash(null == extRef ? null : inquiryResponse.getExternalSytemRef()));
+  }
+
+  @Mapping(source = "fromAccount", target = "sourceAcc")
+  @Mapping(source = "toAccount", target = "destinationAcc")
+  @Mapping(source = "transferType", target = "type")
+  @Mapping(source = "trxAmount", target = "amount")
+  @Mapping(source = "trxCcy", target = "ccy")
+  @Mapping(source = "transferMessage", target = "desc")
+  @Mapping(source = "trxStatus", target = "status", qualifiedByName = "toBakongStatusEnum")
+  @Mapping(source = "creditDebitIndicator", target = "cdtDbtInd")
+  @Mapping(source = "trxId", target = "transactionId")
+  @Mapping(
+      source = "trxCompletionDate",
+      target = "transactionDate",
+      qualifiedByName = "getDateInMillis")
+  @Mapping(source = "trxHash", target = "transactionHash")
+  TransactionHistoryModel toTransactionHistoryModel(TransactionHistoryEntity entity);
+
+  @Named("getDateInMillis")
+  default Long getDateInMillis(Instant instant) {
+    return instant == null ? null : instant.toEpochMilli();
+  }
+
+  @Named("toBakongStatusEnum")
+  default BakongTransactionStatus toBakongStatusEnum(TransactionStatus status) {
+    switch (status) {
+      case PENDING:
+        return BakongTransactionStatus.PENDING;
+      case FAILED:
+        return BakongTransactionStatus.FAILED;
+      case COMPLETED:
+        return BakongTransactionStatus.SUCCESS;
+    }
+
+    return null;
   }
 }
