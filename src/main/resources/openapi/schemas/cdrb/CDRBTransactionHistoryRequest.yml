@@ -4,4 +4,4 @@ properties:
   cifNumber:
     type: string
   accountNumber:
-    type: accountNumber
+    type: string

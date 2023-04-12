@@ -1,5 +1,8 @@
 package com.rhbgroup.dte.obc.domains.transaction.service.impl;
 
+import static com.rhbgroup.dte.obc.common.func.Functions.of;
+import static com.rhbgroup.dte.obc.common.func.Functions.peek;
+
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
@@ -24,6 +27,8 @@ import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryRequest;
+import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryRequest;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
 import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
@@ -46,20 +51,16 @@ import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.rhbgroup.dte.obc.common.func.Functions.of;
-import static com.rhbgroup.dte.obc.common.func.Functions.peek;
 
 @Service
 @RequiredArgsConstructor
@@ -245,8 +246,13 @@ public class TransactionServiceImpl implements TransactionService {
   public GetAccountTransactionsResponse queryTransactionHistory(
       GetAccountTransactionsRequest request) {
 
+    CustomUserDetails currentUser = userAuthService.getCurrentUser();
     return of(accountService::getActiveAccount)
-        .andThen(peek(model -> updateTodayTransaction(request.getPage(), model)))
+        .andThen(
+            peek(
+                model ->
+                    updateTodayTransaction(
+                        request.getPage(), model.getAccountNo(), currentUser.getCif())))
         .andThen(
             accountModel ->
                 transactionHistoryRepository.queryByFromAccount(
@@ -273,21 +279,27 @@ public class TransactionServiceImpl implements TransactionService {
         .apply(new AccountFilterCondition().accountNo(request.getAccNumber()));
   }
 
-  private void updateTodayTransaction(Integer currentPage, AccountModel model) {
+  private void updateTodayTransaction(Integer currentPage, String accountNum, String cif) {
 
     if (currentPage > 1) {
       return;
     }
 
     Long refreshedRecords =
-        transactionHistoryRepository.deleteByFromAccountAndNewToday(model.getAccountNo(), 1);
+        transactionHistoryRepository.deleteByFromAccountAndNewToday(accountNum, 1);
     log.info(
         "Refresh transaction history table, cleaning all the newly added by today record {}",
         refreshedRecords);
 
+    CDRBTransactionHistoryResponse todayTransactions =
+        cdrbRestClient.fetchTodayTransactionHistory(
+            new CDRBTransactionHistoryRequest().accountNumber(accountNum).cifNumber(cif));
+
+    log.info("Today transaction >> {}", todayTransactions);
+
     // Mimic CDRB result
     TransactionHistoryEntity newEntity = new TransactionHistoryEntity();
-    newEntity.setFromAccount(model.getAccountNo());
+    newEntity.setFromAccount(accountNum);
     newEntity.setUserId(5L);
     newEntity.setTransferType(TransactionType.WALLET);
     newEntity.setCreditDebitIndicator(CreditDebitIndicator.D);
@@ -302,6 +314,6 @@ public class TransactionServiceImpl implements TransactionService {
     newEntity.setTrxStatus(TransactionStatus.FAILED);
     newEntity.setNewToday(1);
 
-    transactionHistoryRepository.save(newEntity);
+    transactionHistoryRepository.saveAll(Collections.singletonList(newEntity));
   }
 }

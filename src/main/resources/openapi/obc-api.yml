@@ -141,6 +141,10 @@ components:
       $ref: './schemas/cdrb/CDRBTransferInquiryRequest.yml'
     CDRBTransferInquiryResponse:
       $ref: './schemas/cdrb/CDRBTransferInquiryResponse.yml'
+    CDRBTransactionHistoryRequest:
+      $ref: './schemas/cdrb/CDRBTransactionHistoryRequest.yml'
+    CDRBTransactionHistoryResponse:
+      $ref: './schemas/cdrb/CDRBTransactionHistoryResponse.yml'
 
   securitySchemes:
     bearerAuth:
