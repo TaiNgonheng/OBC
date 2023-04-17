@@ -4,14 +4,17 @@ import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
+import com.rhbgroup.dte.obc.common.util.ObcDateUtils;
 import com.rhbgroup.dte.obc.common.util.SpringRestUtil;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.InfoBipLoginResponse;
 import com.rhbgroup.dte.obc.model.InfoBipSendOtpRequest;
+import com.rhbgroup.dte.obc.model.InfoBipSendOtpRequestPlaceholders;
 import com.rhbgroup.dte.obc.model.InfoBipSendOtpResponse;
 import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.InfoBipVerifyOtpResponse;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.PostConstruct;
@@ -31,6 +34,8 @@ public class InfoBipRestClient {
   private static final String INFO_BIP_SEND_OTP_URL = "/2fa/2/pin";
   private static final String INFO_BIP_VERIFY_OTP_API_URL = "/2fa/2/pin/{pinId}/verify";
   private static final String INFO_BIP_LOGIN_API_URL = "/auth/1/oauth2/token";
+
+  private static final String INFO_BIP_DATE_FORMAT = "hh:mm dd/MM/yy";
 
   private final SpringRestUtil restUtil;
   private final CacheUtil cacheUtil;
@@ -76,7 +81,10 @@ public class InfoBipRestClient {
                 .applicationId(appId)
                 .messageId(messageId)
                 .to(phone)
-                .from(ConfigConstants.InfoBip.INFO_BIP_SENDER_NAME),
+                .from(ConfigConstants.InfoBip.INFO_BIP_SENDER_NAME)
+                .placeholders(
+                    new InfoBipSendOtpRequestPlaceholders()
+                        .timestamp(ObcDateUtils.toDateString(new Date(), INFO_BIP_DATE_FORMAT))),
             ParameterizedTypeReference.forType(InfoBipSendOtpResponse.class));
 
     cacheUtil.addKey(

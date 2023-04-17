@@ -14,3 +14,9 @@ properties:
     type: string
   to:
     type: string
+  placeholders:
+    type: object
+    properties:
+      timestamp:
+        type: string
+        example: hh:mm dd/MM/yy

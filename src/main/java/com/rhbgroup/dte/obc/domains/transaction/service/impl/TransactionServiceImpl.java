@@ -83,7 +83,7 @@ public class TransactionServiceImpl implements TransactionService {
         this.configService.loadJSONValue(ConfigConstants.Transaction.mapCurrency(request.getCcy()));
 
     // Validate transaction request
-    TransactionValidator.validateInitTransaction(request, transactionConfig, linkedAccount);
+    TransactionValidator.validateTransactionLimit(request, transactionConfig, linkedAccount);
 
     PGProfileResponse userProfile;
     try {
@@ -103,7 +103,7 @@ public class TransactionServiceImpl implements TransactionService {
             new CDRBGetAccountDetailRequest()
                 .accountNo(request.getSourceAcc())
                 .cifNo(currentUser.getCif()));
-    AccountValidator.validateCurrentBalance(casaAccount, request.getAmount());
+    AccountValidator.validateBalanceAndCurrency(casaAccount, request);
 
     // Getting fee and cashback
     CDRBFeeAndCashbackResponse feeAndCashback =
