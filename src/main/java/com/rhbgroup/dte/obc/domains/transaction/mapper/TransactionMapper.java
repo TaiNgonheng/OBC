@@ -18,6 +18,7 @@ import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.TransactionHistoryModel;
 import com.rhbgroup.dte.obc.model.TransactionModel;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
+import com.rhbgroup.dte.obc.model.TransactionType;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -162,5 +163,26 @@ public interface TransactionMapper {
     }
 
     return null;
+  }
+
+  default TransactionHistoryEntity toTransactionHistoryEntity(Object model) {
+    // Mimic CDRB result
+    TransactionHistoryEntity newEntity = new TransactionHistoryEntity();
+    newEntity.setFromAccount("123xxx");
+    newEntity.setUserId(5L);
+    newEntity.setTransferType(TransactionType.WALLET);
+    newEntity.setCreditDebitIndicator(CreditDebitIndicator.D);
+    newEntity.setTransferMessage("desc");
+    newEntity.setToAccount("samrith@oski");
+    newEntity.setTrxHash("123456");
+    newEntity.setTrxId("123469");
+    newEntity.setTrxAmount(1.0);
+    newEntity.setTrxCcy("USD");
+    newEntity.setTrxDate(Instant.now());
+    newEntity.setTrxCompletionDate(Instant.now());
+    newEntity.setTrxStatus(TransactionStatus.FAILED);
+    newEntity.setNewToday(1);
+
+    return newEntity;
   }
 }

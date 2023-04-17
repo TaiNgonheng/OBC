@@ -15,7 +15,6 @@ import com.rhbgroup.dte.obc.domains.transaction.mapper.TransactionMapperImpl;
 import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionHistoryRepository;
 import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionRepository;
 import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionEntity;
-import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionHistoryEntity;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionService;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
@@ -31,7 +30,6 @@ import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryRequest;
 import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryRequest;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
-import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
@@ -45,13 +43,11 @@ import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.TransactionHistoryModel;
 import com.rhbgroup.dte.obc.model.TransactionModel;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
-import com.rhbgroup.dte.obc.model.TransactionType;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -280,40 +276,23 @@ public class TransactionServiceImpl implements TransactionService {
   }
 
   private void updateTodayTransaction(Integer currentPage, String accountNum, String cif) {
-
     if (currentPage > 1) {
+      log.info("Page = {}, skip fetching newly record.", currentPage);
       return;
     }
 
     Long refreshedRecords =
         transactionHistoryRepository.deleteByFromAccountAndNewToday(accountNum, 1);
-    log.info(
-        "Refresh transaction history table, cleaning all the newly added by today record {}",
-        refreshedRecords);
+    log.info("Cleaning all the newly added by today record {}", refreshedRecords);
 
-    CDRBTransactionHistoryResponse todayTransactions =
-        cdrbRestClient.fetchTodayTransactionHistory(
-            new CDRBTransactionHistoryRequest().accountNumber(accountNum).cifNumber(cif));
-
-    log.info("Today transaction >> {}", todayTransactions);
-
-    // Mimic CDRB result
-    TransactionHistoryEntity newEntity = new TransactionHistoryEntity();
-    newEntity.setFromAccount(accountNum);
-    newEntity.setUserId(5L);
-    newEntity.setTransferType(TransactionType.WALLET);
-    newEntity.setCreditDebitIndicator(CreditDebitIndicator.D);
-    newEntity.setTransferMessage("desc");
-    newEntity.setToAccount("samrith@oski");
-    newEntity.setTrxHash("123456");
-    newEntity.setTrxId("123469");
-    newEntity.setTrxAmount(1.0);
-    newEntity.setTrxCcy("USD");
-    newEntity.setTrxDate(Instant.now());
-    newEntity.setTrxCompletionDate(Instant.now());
-    newEntity.setTrxStatus(TransactionStatus.FAILED);
-    newEntity.setNewToday(1);
-
-    transactionHistoryRepository.saveAll(Collections.singletonList(newEntity));
+    of(cdrbRestClient::fetchTodayTransactionHistory)
+        .andThen(CDRBTransactionHistoryResponse::getTransactions)
+        .andThen(
+            transactions ->
+                transactions.stream()
+                    .map(transactionMapper::toTransactionHistoryEntity)
+                    .collect(Collectors.toList()))
+        .andThen(peek(transactionHistoryRepository::saveAll))
+        .apply(new CDRBTransactionHistoryRequest().accountNumber(accountNum).cifNumber(cif));
   }
 }

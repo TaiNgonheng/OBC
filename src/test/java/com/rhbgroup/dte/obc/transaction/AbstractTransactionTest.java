@@ -6,6 +6,7 @@ import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.common.util.RandomGenerator;
 import com.rhbgroup.dte.obc.domains.config.service.impl.ConfigServiceImpl;
 import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionEntity;
+import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionHistoryEntity;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
@@ -18,10 +19,14 @@ import com.rhbgroup.dte.obc.model.CasaKYCStatus;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponseAllOfData;
+import com.rhbgroup.dte.obc.model.GetAccountTransactionsRequest;
+import com.rhbgroup.dte.obc.model.GetAccountTransactionsResponse;
+import com.rhbgroup.dte.obc.model.GetAccountTransactionsResponseAllOfData;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.InitTransactionResponse;
 import com.rhbgroup.dte.obc.model.InitTransactionResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
+import com.rhbgroup.dte.obc.model.TransactionHistoryModel;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
 import com.rhbgroup.dte.obc.model.TransactionType;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
@@ -29,9 +34,12 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import org.codehaus.plexus.util.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 public abstract class AbstractTransactionTest {
 
@@ -206,5 +214,44 @@ public abstract class AbstractTransactionTest {
         .status("FAILED")
         .externalSytemRef(null)
         .transferCompletionDate(null);
+  }
+
+  protected GetAccountTransactionsRequest mockAccountTransactionRequest() {
+    return new GetAccountTransactionsRequest().page(1).accNumber(CASA_ACCOUNT_TEST).size(10);
+  }
+
+  protected GetAccountTransactionsResponse mockAccountTransactionResponse() {
+    return new GetAccountTransactionsResponse()
+        .status(ResponseHandler.ok())
+        .data(
+            new GetAccountTransactionsResponseAllOfData()
+                .totalElement(2L)
+                .transactions(
+                    Arrays.asList(
+                        new TransactionHistoryModel()
+                            .transactionId("1")
+                            .sourceAcc(CASA_ACCOUNT_TEST)
+                            .destinationAcc(BAKONG_ACCOUNT_TEST)
+                            .amount(TRX_AMOUNT)
+                            .ccy(CURRENCY_USD),
+                        new TransactionHistoryModel()
+                            .transactionId("2")
+                            .sourceAcc(CASA_ACCOUNT_TEST)
+                            .destinationAcc(BAKONG_ACCOUNT_TEST)
+                            .amount(TRX_AMOUNT)
+                            .ccy(CURRENCY_USD))));
+  }
+
+  protected Page<TransactionHistoryEntity> mockTrxHistoryPage() {
+
+    TransactionHistoryEntity entity1 = new TransactionHistoryEntity();
+    entity1.setTrxId("1");
+    entity1.setTrxStatus(TransactionStatus.FAILED);
+
+    TransactionHistoryEntity entity2 = new TransactionHistoryEntity();
+    entity2.setTrxId("2");
+    entity2.setTrxStatus(TransactionStatus.COMPLETED);
+
+    return new PageImpl<>(Arrays.asList(entity1, entity2));
   }
 }
