@@ -172,6 +172,8 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_KHR))
         .thenReturn(mockTransactionConfig_NonOTP());
+    when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
+    when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     // Mimic a different transfer currency
@@ -196,6 +198,8 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig_NonOTP());
+    when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
+    when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
 
     // Mimic CASA account has run out of balance
     CDRBGetAccountDetailResponse casaAccDetail = mockCdrbAccountResponse();

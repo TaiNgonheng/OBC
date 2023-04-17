@@ -7,6 +7,7 @@ import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CasaAccountStatus;
 import com.rhbgroup.dte.obc.model.CasaKYCStatus;
+import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 
 public class AccountValidator {
@@ -43,10 +44,15 @@ public class AccountValidator {
     }
   }
 
-  public static void validateCurrentBalance(
-      CDRBGetAccountDetailResponse account, Double transferAmt) {
+  public static void validateBalanceAndCurrency(
+      CDRBGetAccountDetailResponse account, InitTransactionRequest request) {
 
-    if (transferAmt > account.getAcct().getCurrentBal()) {
+    if (!request.getCcy().equalsIgnoreCase(account.getAcct().getCurrencyCode())) {
+      throw new BizException(ResponseMessage.MANDATORY_FIELD_MISSING);
+    }
+
+    // Do we need to include fee + transaction amount?
+    if (request.getAmount() > account.getAcct().getCurrentBal()) {
       throw new BizException(ResponseMessage.BALANCE_NOT_ENOUGH);
     }
   }

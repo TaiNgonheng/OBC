@@ -11,7 +11,7 @@ public class TransactionValidator {
 
   private TransactionValidator() {}
 
-  public static void validateInitTransaction(
+  public static void validateTransactionLimit(
       InitTransactionRequest request, ConfigService transactionConfig, AccountModel accountModel) {
 
     Double minAmt =
@@ -25,10 +25,6 @@ public class TransactionValidator {
 
     if (request.getAmount() < minAmt || request.getAmount() > maxAmt) {
       throw new BizException(ResponseMessage.TRANSACTION_EXCEED_AMOUNT_LIMIT);
-    }
-
-    if (!request.getCcy().equalsIgnoreCase(accountModel.getAccountCcy())) {
-      throw new BizException(ResponseMessage.MANDATORY_FIELD_MISSING);
     }
   }
 }
