@@ -35,7 +35,6 @@ public enum ResponseMessage {
   CONSTRAINT_VIOLATION_ERROR(300, "Constraint violation exception."),
   DATA_NOT_FOUND(301, "Data not found."),
   DATA_STRUCTURE_INVALID(302, "Data structure invalid."),
-  OPERATION_NOT_SUPPORTED(303, "Operation is not supported."),
   ;
 
   private final Integer code;
