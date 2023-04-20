@@ -2,10 +2,12 @@
 
 post:
   tags:
-    - UserExchange
+    - System Exchange
   summary: User exchange between CDRB and OBC
   description: User exchange between CDRB and OBC
   operationId: userExchange
+  security:
+    - bearerAuth: [ ]
   requestBody:
     description: User exchange request
     content:

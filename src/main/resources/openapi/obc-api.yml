@@ -8,12 +8,10 @@ info:
 tags:
   - name: Account
     description: Account
-  - name: UserProfile
-    description: User profile
-  - name: UserExchange
-    description: User exchange
+  - name: System Exchange
+    description: User Profile Exchange from GoWave
   - name: Transaction
-    description: Account transaction
+    description: Account Transaction
 
 servers: # context path - /api/v1
   - url: http://localhost:8080
