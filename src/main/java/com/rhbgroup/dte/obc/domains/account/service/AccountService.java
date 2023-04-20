@@ -1,5 +1,7 @@
 package com.rhbgroup.dte.obc.domains.account.service;
 
+import com.rhbgroup.dte.obc.model.AccountFilterCondition;
+import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
@@ -25,6 +27,8 @@ public interface AccountService {
       String authorization, FinishLinkAccountRequest request);
 
   GetAccountDetailResponse getAccountDetail(GetAccountDetailRequest request);
+
+  AccountModel getActiveAccount(AccountFilterCondition condition);
 
   UnlinkAccountResponse unlinkAccount(
       String authorization, UnlinkAccountRequest unlinkAccountRequest);

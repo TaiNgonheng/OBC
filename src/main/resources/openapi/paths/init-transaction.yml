@@ -1,0 +1,43 @@
+#/init-transaction:
+post:
+  tags:
+    - Transaction
+  summary: Initialize Topup transaction
+  description: Link CASA between NBC and GoWave
+  operationId: initTransaction
+  requestBody:
+    description: Init Topup transaction
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/account/InitTransactionRequest.yml'
+    required: true
+  responses:
+    '200':
+      description: Ok
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/account/InitTransactionResponse.yml'
+    '400':
+      description: Bad Request
+    '401':
+      description: Unauthorized
+    '403':
+      description: Forbidden
+    '404':
+      description: Not found
+    '405':
+      description: Method not allow
+    '409':
+      description: Conflict
+    '411':
+      description: Length Required
+    '412':
+      description: Precondition failed
+    '429':
+      description: To many requests
+    '500':
+      description: Internal server error
+    '503':
+      description: Service unavailable

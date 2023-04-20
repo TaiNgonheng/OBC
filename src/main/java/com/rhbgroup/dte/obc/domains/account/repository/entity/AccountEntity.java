@@ -1,6 +1,7 @@
 package com.rhbgroup.dte.obc.domains.account.repository.entity;
 
 import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
+import com.rhbgroup.dte.obc.model.CasaAccountType;
 import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -35,7 +36,8 @@ public class AccountEntity {
   private String accountName;
 
   @Column(name = "account_type")
-  private String accountType;
+  @Enumerated(EnumType.STRING)
+  private CasaAccountType accountType;
 
   @Column(name = "account_ccy")
   private String accountCcy;

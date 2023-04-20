@@ -12,6 +12,8 @@ tags:
     description: User profile
   - name: UserExchange
     description: User exchange
+  - name: Transaction
+    description: Account transaction
 
 servers: # context path - /api/v1
   - url: http://localhost:8080
@@ -30,6 +32,10 @@ paths:
     $ref: './paths/authenticate.yml'
   /account-detail:
     $ref: './paths/account-detail.yml'
+  /init-transaction:
+    $ref: './paths/init-transaction.yml'
+  /finish-transaction:
+    $ref: './paths/finish-transaction.yml'
   /gw/user-exchange:
     $ref: './paths/user-exchange.yml'
   /gw/login:
@@ -57,6 +63,10 @@ components:
       $ref: './schemas/account/UnlinkAccountRequest.yml'
     UnlinkAccountResponse:
       $ref: './schemas/account/UnlinkAccountResponse.yml'
+    FinishTransactionRequest:
+      $ref: './schemas/transaction/FinishTransactionRequest.yml'
+    FinishTransactionResponse:
+      $ref: './schemas/transaction/FinishTransactionResponse.yml'
     AuthenticationRequest:
       $ref: './schemas/account/AuthenticationRequest.yml'
     AuthenticationResponse:
@@ -65,6 +75,10 @@ components:
       $ref: './schemas/account/GetAccountDetailRequest.yml'
     GetAccountDetailResponse:
       $ref: './schemas/account/GetAccountDetailResponse.yml'
+    InitTransactionRequest:
+      $ref: './schemas/account/InitTransactionRequest.yml'
+    InitTransactionResponse:
+      $ref: './schemas/account/InitTransactionResponse.yml'
     ExchangeAccountRequest:
       $ref: './schemas/user/UserExchangeRequest.yml'
     ExchangeAccountResponse:
@@ -75,8 +89,12 @@ components:
       $ref: './schemas/user/GWAuthenticationResponse.yml'
     AccountModel:
       $ref: './schemas/account/AccountModel.yml'
+    AccountFilterCondition:
+      $ref: './schemas/account/AccountFilterCondition.yml'
     UserModel:
       $ref: './schemas/user/UserModel.yml'
+    TransactionModel:
+      $ref: './schemas/transaction/TransactionModel.yml'
     PGAuthRequest:
       $ref: './schemas/pg/PGAuthRequest.yml'
     PGAuthResponse:
@@ -103,6 +121,10 @@ components:
       $ref: './schemas/cdrb/CDRBGetAccountDetailRequest.yml'
     CDRBGetAccountDetailResponse:
       $ref: './schemas/cdrb/CDRBGetAccountDetailResponse.yml'
+    CDRBFeeAndCashbackRequest:
+      $ref: './schemas/cdrb/CDRBFeeAndCashbackRequest.yml'
+    CDRBFeeAndCashbackResponse:
+      $ref: './schemas/cdrb/CDRBFeeAndCashbackResponse.yml'
 
   securitySchemes:
     bearerAuth:

@@ -16,6 +16,7 @@ import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.model.AccountFilterCondition;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
@@ -233,6 +234,15 @@ public class AccountServiceImpl implements AccountService {
             new CDRBGetAccountDetailRequest()
                 .cifNo(userModel.getCifNo())
                 .accountNo(request.getAccNumber()));
+  }
+
+  @Override
+  public AccountModel getActiveAccount(AccountFilterCondition condition) {
+
+    return accountRepository
+        .findByAccountIdAndLinkedStatus(condition.getAccountNo(), LinkedStatusEnum.COMPLETED)
+        .map(accountMapper::entityToModel)
+        .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
   }
 
   @Override

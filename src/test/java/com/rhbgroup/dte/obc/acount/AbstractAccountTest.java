@@ -13,6 +13,9 @@ import com.rhbgroup.dte.obc.model.BakongAccountType;
 import com.rhbgroup.dte.obc.model.BakongKYCStatus;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
+import com.rhbgroup.dte.obc.model.CasaAccountStatus;
+import com.rhbgroup.dte.obc.model.CasaAccountType;
+import com.rhbgroup.dte.obc.model.CasaKYCStatus;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
@@ -177,15 +180,15 @@ public abstract class AbstractAccountTest {
         .acct(
             new CDRBGetAccountDetailResponseAcct()
                 .accountNo(ACC_NUMBER)
-                .accountType(CDRBGetAccountDetailResponseAcct.AccountTypeEnum.D)
-                .accountStatus(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._1)
+                .accountType(CasaAccountType.D)
+                .accountStatus(CasaAccountStatus._1)
                 .accountName("name")
                 .cifNo("123")
                 .currentBal(1.2)
                 .availBal(1.2)
                 .currencyCode("USD")
                 .ctryCitizen("KH")
-                .kycStatus(CDRBGetAccountDetailResponseAcct.KycStatusEnum.F));
+                .kycStatus(CasaKYCStatus.F));
   }
 
   protected CDRBGetAccountDetailResponse mockCdrbAccountResponseNotKYC() {
@@ -193,15 +196,15 @@ public abstract class AbstractAccountTest {
         .acct(
             new CDRBGetAccountDetailResponseAcct()
                 .accountNo(ACC_NUMBER)
-                .accountType(CDRBGetAccountDetailResponseAcct.AccountTypeEnum.S)
-                .accountStatus(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._7)
+                .accountType(CasaAccountType.S)
+                .accountStatus(CasaAccountStatus._7)
                 .accountName("name")
                 .cifNo("123")
                 .currentBal(1.2)
                 .availBal(1.2)
                 .currencyCode("USD")
                 .ctryCitizen("KH")
-                .kycStatus(CDRBGetAccountDetailResponseAcct.KycStatusEnum.X));
+                .kycStatus(CasaKYCStatus.X));
   }
 
   protected AccountEntity mockAccountEntityLinked() {

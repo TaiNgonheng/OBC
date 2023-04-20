@@ -1,0 +1,17 @@
+allOf:
+  - $ref: '../common/ResponseWrapper.yml'
+  - type: object
+    properties:
+      data:
+        type: object
+        description: Finish Transaction Response
+        properties:
+          transactionId:
+            type: string
+            example: 123456789
+          transactionDate:
+            type: integer
+            example: 1624585517749
+          transactionHash:
+            type: string
+            example: xxxxxxxxx

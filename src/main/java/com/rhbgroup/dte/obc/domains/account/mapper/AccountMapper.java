@@ -14,6 +14,8 @@ import com.rhbgroup.dte.obc.model.BakongAccountType;
 import com.rhbgroup.dte.obc.model.BakongKYCStatus;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
+import com.rhbgroup.dte.obc.model.CasaAccountStatus;
+import com.rhbgroup.dte.obc.model.CasaKYCStatus;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
@@ -27,17 +29,18 @@ import com.rhbgroup.dte.obc.model.UserModel;
 import java.time.Instant;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.springframework.stereotype.Component;
 
 @Component
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
 
-  @Mapping(source = "phoneNumber", target = "mobileNo")
   @Mapping(source = "bakongAccId", target = "bakongId")
   @Mapping(source = "login", target = "user.username")
   @Mapping(source = "key", target = "user.password")
   @Mapping(source = "loginType", target = "user.loginType")
+  @Mapping(source = "phoneNumber", target = "user.mobileNo")
   AccountModel toModel(InitAccountRequest request);
 
   default InitAccountResponse toInitAccountResponse(
@@ -74,7 +77,7 @@ public interface AccountMapper {
 
     entity.setAccountId(accountDetail.getAccountNo());
     entity.setAccountName(accountDetail.getAccountName());
-    entity.setAccountType(accountDetail.getAccountType().getValue());
+    entity.setAccountType(accountDetail.getAccountType());
     entity.setAccountStatus(accountDetail.getAccountStatus().getValue());
     entity.setAccountCcy(accountDetail.getCurrencyCode());
     entity.setLinkedStatus(LinkedStatusEnum.COMPLETED);
@@ -102,11 +105,12 @@ public interface AccountMapper {
 
   default GetAccountDetailResponse mappingMobileNoAndAccStatus(
       String mobileNo, Double trxMin, Double trxMax, GetAccountDetailResponse response) {
-    response.getData().setAccPhone(mobileNo);
-    response
-        .getData()
-        .setLimit(
-            new GetAccountDetailResponseAllOfDataLimit().maxTrxAmount(trxMax).minTrxAmount(trxMin));
+
+    GetAccountDetailResponseAllOfData responseData = response.getData();
+
+    responseData.setAccPhone(mobileNo);
+    responseData.setLimit(
+        new GetAccountDetailResponseAllOfDataLimit().maxTrxAmount(trxMax).minTrxAmount(trxMin));
 
     return response;
   }
@@ -119,27 +123,24 @@ public interface AccountMapper {
             .status(ResponseHandler.ok())
             .data(toAccountDetailData(response));
 
-    if (CDRBGetAccountDetailResponseAcct.AccountStatusEnum._1.equals(response.getAccountStatus())
-        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._4.equals(response.getAccountStatus())
-        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._5.equals(
-            response.getAccountStatus())) {
+    if (CasaAccountStatus._1.equals(response.getAccountStatus())
+        || CasaAccountStatus._4.equals(response.getAccountStatus())
+        || CasaAccountStatus._5.equals(response.getAccountStatus())) {
       mappingData.getData().setAccStatus(BakongAccountStatus.ACTIVE);
 
-    } else if (CDRBGetAccountDetailResponseAcct.AccountStatusEnum._7.equals(
-            response.getAccountStatus())
-        || CDRBGetAccountDetailResponseAcct.AccountStatusEnum._9.equals(
-            response.getAccountStatus())) {
+    } else if (CasaAccountStatus._7.equals(response.getAccountStatus())
+        || CasaAccountStatus._9.equals(response.getAccountStatus())) {
       mappingData.getData().setAccStatus(BakongAccountStatus.BLOCKED);
 
     } else {
       mappingData.getData().setAccStatus(BakongAccountStatus.CLOSED);
     }
 
-    if (CDRBGetAccountDetailResponseAcct.KycStatusEnum.F.equals(response.getKycStatus())) {
+    if (CasaKYCStatus.F.equals(response.getKycStatus())) {
       mappingData.getData().setKycStatus(BakongKYCStatus.FULL);
 
-    } else if (CDRBGetAccountDetailResponseAcct.KycStatusEnum.V.equals(response.getKycStatus())
-        || CDRBGetAccountDetailResponseAcct.KycStatusEnum.X.equals(response.getKycStatus())) {
+    } else if (CasaKYCStatus.V.equals(response.getKycStatus())
+        || CasaKYCStatus.X.equals(response.getKycStatus())) {
       mappingData.getData().setKycStatus(BakongKYCStatus.PARTIAL);
 
     } else {
@@ -151,5 +152,14 @@ public interface AccountMapper {
         .setAccType(BakongAccountType.fromValue(response.getAccountType().getValue()));
 
     return mappingData;
+  }
+
+  @Mapping(source = "accountId", target = "accountNo")
+  @Mapping(source = "accountStatus", target = "accountStatus", qualifiedByName = "toAccountStatus")
+  AccountModel entityToModel(AccountEntity entity);
+
+  @Named("toAccountStatus")
+  default CasaAccountStatus toAccountStatus(String status) {
+    return CasaAccountStatus.fromValue(status);
   }
 }

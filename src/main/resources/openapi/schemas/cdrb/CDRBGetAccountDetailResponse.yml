@@ -6,10 +6,7 @@ properties:
       accountNo:
         type: string
       accountType:
-        type: string
-        enum:
-          - D
-          - S
+        $ref: '../common/CasaAccountType.yml'
       cifNo:
         type: string
       currencyCode:
@@ -17,22 +14,9 @@ properties:
       accountName:
         type: string
       accountStatus:
-        type: string
-        description: 1 = Active, 2 = Closed, 4 = New Today, 5 = Do not close on Zero, 7 = Frozen, 9 = Dormant
-        enum:
-          - 1
-          - 2
-          - 4
-          - 5
-          - 7
-          - 9
+        $ref: '../common/CasaAccountStatus.yml'
       kycStatus:
-        type: string
-        description: F = Full KYC, V = Partial KYC with Validation, X = Partial KYC without Validation
-        enum:
-          - F
-          - V
-          - X
+        $ref: '../common/CasaKYCStatus.yml'
       ctryCitizen:
         type: string
       currentBal:
