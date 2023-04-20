@@ -1,0 +1,7 @@
+allOf:
+  - $ref: '../common/ResponseWrapper.yml'
+  - type: object
+    properties:
+      data:
+        type: object
+        description: Unlink Account Response

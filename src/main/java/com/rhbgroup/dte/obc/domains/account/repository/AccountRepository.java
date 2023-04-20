@@ -19,4 +19,8 @@ public interface AccountRepository extends JpaRepository<AccountEntity, Integer>
 
   Optional<AccountEntity> findByAccountIdAndLinkedStatus(
       String accountId, LinkedStatusEnum linkedStatus);
+
+  Long countByAccountIdAndLinkedStatus(String accountId, LinkedStatusEnum linkedStatus);
+
+  Optional<AccountEntity> findByAccountIdAndBakongId(String accountId, String bakongId);
 }

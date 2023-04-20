@@ -4,5 +4,4 @@ required:
 properties:
   accNumber:
     type: string
-    minLength: 1
     maxLength: 50

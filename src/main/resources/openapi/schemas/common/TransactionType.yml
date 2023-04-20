@@ -1,0 +1,4 @@
+type: string
+enum:
+  - CASA_TO_WALLET
+  - CASA_TO_CASA

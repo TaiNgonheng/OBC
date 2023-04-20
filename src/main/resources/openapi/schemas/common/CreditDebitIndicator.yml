@@ -1,0 +1,5 @@
+type: string
+description: C - Credtit, D - Debit
+enum:
+  - C
+  - D

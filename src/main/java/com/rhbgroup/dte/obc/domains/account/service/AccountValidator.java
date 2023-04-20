@@ -5,7 +5,9 @@ import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
+import com.rhbgroup.dte.obc.model.CasaAccountStatus;
+import com.rhbgroup.dte.obc.model.CasaKYCStatus;
+import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 
 public class AccountValidator {
@@ -27,19 +29,31 @@ public class AccountValidator {
   public static void validateCasaAccount(CDRBGetAccountDetailResponse account) {
 
     // Check if CASA account is not Fully KYC
-    CDRBGetAccountDetailResponseAcct.KycStatusEnum kycStatus = account.getAcct().getKycStatus();
-    if (!kycStatus.equals(CDRBGetAccountDetailResponseAcct.KycStatusEnum.F)) {
+    CasaKYCStatus kycStatus = account.getAcct().getKycStatus();
+    if (!kycStatus.equals(CasaKYCStatus.F)) {
       throw new BizException(ResponseMessage.KYC_NOT_VERIFIED);
     }
 
     // 1 = Active, 2 = Closed, 4 = New Today, 5 = Do not close on Zero, 7 = Frozen, 9 = Dormant
-    CDRBGetAccountDetailResponseAcct.AccountStatusEnum accountStatus =
-        account.getAcct().getAccountStatus();
-    if (accountStatus.equals(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._2)
-        || accountStatus.equals(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._7)
-        || accountStatus.equals(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._9)) {
+    CasaAccountStatus accountStatus = account.getAcct().getAccountStatus();
+    if (accountStatus.equals(CasaAccountStatus._2)
+        || accountStatus.equals(CasaAccountStatus._7)
+        || accountStatus.equals(CasaAccountStatus._9)) {
 
       throw new BizException(ResponseMessage.ACCOUNT_DEACTIVATED);
+    }
+  }
+
+  public static void validateBalanceAndCurrency(
+      CDRBGetAccountDetailResponse account, InitTransactionRequest request) {
+
+    if (!request.getCcy().equalsIgnoreCase(account.getAcct().getCurrencyCode())) {
+      throw new BizException(ResponseMessage.MANDATORY_FIELD_MISSING);
+    }
+
+    // Do we need to include fee + transaction amount?
+    if (request.getAmount() > account.getAcct().getCurrentBal()) {
+      throw new BizException(ResponseMessage.BALANCE_NOT_ENOUGH);
     }
   }
 }

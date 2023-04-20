@@ -8,37 +8,36 @@ allOf:
         properties:
           accNumber:
             type: string
-            example: 123456789
+            example: 123xxxxx
           accName:
             type: string
-            example: Jonh Smith
           accPhone:
             type: string
-            example: 012345678
+            example: 855xxxxxxxx
           accType:
-            type: string
-            example: SAVINGS
+            $ref: '../common/BakongAccountType.yml'
           accCcy:
             type: string
             example: USD
           accStatus:
-            type: string
-            example: ACTIVE
+            $ref: '../common/BakongAccountStatus.yml'
           kycStatus:
-            type: string
-            example: FULL
+            $ref: '../common/BakongKYCStatus.yml'
           country:
             type: string
             example: KH
           balance:
-            type: string
-            example: 1000
+            type: number
+            format: double
+            example: 1000.0
           limit:
             type: object
             properties:
               minTrxAmount:
-                type: string
+                type: number
+                format: double
                 example: 1
               maxTrxAmount:
-                type: string
-                example: 100
+                type: number
+                format: double
+                example: 1000.0

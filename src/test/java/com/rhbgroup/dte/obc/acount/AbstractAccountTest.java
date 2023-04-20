@@ -8,11 +8,21 @@ import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
+import com.rhbgroup.dte.obc.model.BakongAccountStatus;
+import com.rhbgroup.dte.obc.model.BakongAccountType;
+import com.rhbgroup.dte.obc.model.BakongKYCStatus;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
+import com.rhbgroup.dte.obc.model.CasaAccountStatus;
+import com.rhbgroup.dte.obc.model.CasaAccountType;
+import com.rhbgroup.dte.obc.model.CasaKYCStatus;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponseAllOfData;
+import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponseAllOfData;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponseAllOfDataLimit;
 import com.rhbgroup.dte.obc.model.InfoBipSendOtpResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
@@ -20,6 +30,8 @@ import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.LoginTypeEnum;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
+import com.rhbgroup.dte.obc.model.UnlinkAccountRequest;
+import com.rhbgroup.dte.obc.model.UnlinkAccountResponse;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
@@ -122,6 +134,14 @@ public abstract class AbstractAccountTest {
         .data(new FinishLinkAccountResponseAllOfData().requireChangePassword(false));
   }
 
+  protected UnlinkAccountRequest mockUnlinkAccountRequest() {
+    return new UnlinkAccountRequest().accNumber("10000xxx");
+  }
+
+  protected UnlinkAccountResponse mockUnlinkAccountResponse() {
+    return new UnlinkAccountResponse().status(ResponseHandler.ok()).data(null);
+  }
+
   protected InfoBipSendOtpResponse mockInfoBipSendOtpResponse() {
     return new InfoBipSendOtpResponse().pinId("pinId");
   }
@@ -159,24 +179,32 @@ public abstract class AbstractAccountTest {
     return new CDRBGetAccountDetailResponse()
         .acct(
             new CDRBGetAccountDetailResponseAcct()
-                .accountNo("123xxx")
-                .accountType(CDRBGetAccountDetailResponseAcct.AccountTypeEnum.D)
-                .accountStatus(CDRBGetAccountDetailResponseAcct.AccountStatusEnum._1)
+                .accountNo(ACC_NUMBER)
+                .accountType(CasaAccountType.D)
+                .accountStatus(CasaAccountStatus._1)
                 .accountName("name")
                 .cifNo("123")
                 .currentBal(1.2)
                 .availBal(1.2)
                 .currencyCode("USD")
                 .ctryCitizen("KH")
-                .kycStatus(CDRBGetAccountDetailResponseAcct.KycStatusEnum.F));
+                .kycStatus(CasaKYCStatus.F));
   }
 
   protected CDRBGetAccountDetailResponse mockCdrbAccountResponseNotKYC() {
     return new CDRBGetAccountDetailResponse()
         .acct(
             new CDRBGetAccountDetailResponseAcct()
-                .accountNo("123xxx")
-                .kycStatus(CDRBGetAccountDetailResponseAcct.KycStatusEnum.V));
+                .accountNo(ACC_NUMBER)
+                .accountType(CasaAccountType.S)
+                .accountStatus(CasaAccountStatus._7)
+                .accountName("name")
+                .cifNo("123")
+                .currentBal(1.2)
+                .availBal(1.2)
+                .currencyCode("USD")
+                .ctryCitizen("KH")
+                .kycStatus(CasaKYCStatus.X));
   }
 
   protected AccountEntity mockAccountEntityLinked() {
@@ -197,5 +225,38 @@ public abstract class AbstractAccountTest {
     accountEntity.setLinkedStatus(LinkedStatusEnum.PENDING);
 
     return accountEntity;
+  }
+
+  protected CustomUserDetails mockCustomUserDetails() {
+    return CustomUserDetails.builder()
+        .userId(1L)
+        .username("name")
+        .bakongId("name@oski")
+        .password("password")
+        .enabled(true)
+        .build();
+  }
+
+  public static final String ACC_NUMBER = "123xxx";
+
+  protected GetAccountDetailRequest mockGetAccountDetailRequest() {
+    return new GetAccountDetailRequest().accNumber(ACC_NUMBER);
+  }
+
+  protected GetAccountDetailResponse mockGetAccountDetailResponse() {
+    return new GetAccountDetailResponse()
+        .status(ResponseHandler.ok())
+        .data(
+            new GetAccountDetailResponseAllOfData()
+                .accCcy("USD")
+                .accNumber(ACC_NUMBER)
+                .accStatus(BakongAccountStatus.ACTIVE)
+                .limit(
+                    new GetAccountDetailResponseAllOfDataLimit()
+                        .maxTrxAmount(100.0)
+                        .minTrxAmount(1.0))
+                .kycStatus(BakongKYCStatus.FULL)
+                .accType(BakongAccountType.D)
+                .accName("ACC1"));
   }
 }

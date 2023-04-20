@@ -1,0 +1,28 @@
+type: object
+required:
+  - type
+  - sourceAcc
+  - destinationAcc
+  - amount
+  - ccy
+properties:
+  type:
+    $ref: '../common/TransactionType.yml'
+  sourceAcc:
+    type: string
+    description: Source account that will be debit from
+    maxLength: 30
+  destinationAcc:
+    type: string
+    description: Destination account that will be credit to
+    maxLength: 30
+  amount:
+    type: number
+    description: Transaction amount
+    format: double
+  ccy:
+    type: string
+    description: Transaction currency
+  desc:
+    type: string
+    description: Description of transaction

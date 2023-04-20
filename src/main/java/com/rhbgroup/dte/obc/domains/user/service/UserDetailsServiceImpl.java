@@ -54,6 +54,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                       .userId(userProfile.getId())
                       .bakongId(bakongId)
                       .username(userProfile.getUsername())
+                      .cif(userProfile.getCifNo())
+                      .phoneNumber(userProfile.getMobileNo())
                       .permissions(userRole.getPermissions())
                       .password(userProfile.getPassword())
                       .authorities(authorities)

@@ -42,4 +42,9 @@ public class AppConstants {
     public static final String OPEN_BANKING_GATEWAY = "NBC_SYSTEM";
     public static final String BAKONG_APP = "BAKONG";
   }
+
+  @UtilityClass
+  public class Transaction {
+    public static final String OBC_TOP_UP = "OBTOPUP";
+  }
 }

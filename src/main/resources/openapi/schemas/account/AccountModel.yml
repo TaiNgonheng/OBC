@@ -7,9 +7,15 @@ properties:
     $ref: '../user/UserModel.yml'
   bakongId:
     type: string
-  accountId:
+  accountNo:
     type: string
-  mobileNo:
+  accountName:
     type: string
-  active:
-    type: boolean
+  accountType:
+    $ref: '../common/CasaAccountType.yml'
+  account_ccy:
+    type: string
+  account_status:
+    $ref: '../common/CasaAccountStatus.yml'
+  linkedStatus:
+    $ref: '../common/LinkedStatusEnum.yml'

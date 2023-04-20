@@ -3,6 +3,7 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
@@ -11,19 +12,24 @@ import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
 import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
+import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.model.AccountFilterCondition;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
+import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
+import com.rhbgroup.dte.obc.model.UnlinkAccountRequest;
+import com.rhbgroup.dte.obc.model.UnlinkAccountResponse;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
@@ -34,6 +40,7 @@ import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Collections;
+import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -46,13 +53,13 @@ import org.springframework.stereotype.Service;
 public class AccountServiceImpl implements AccountService {
 
   private final JwtTokenUtils jwtTokenUtils;
-
   private final UserAuthService userAuthService;
   private final UserProfileService userProfileService;
   private final AccountRepository accountRepository;
   private final PGRestClient pgRestClient;
   private final InfoBipRestClient infoBipRestClient;
   private final CDRBRestClient cdrbRestClient;
+  private final ConfigService configService;
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
   @Value("${obc.infobip.enabled}")
@@ -196,6 +203,68 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public GetAccountDetailResponse getAccountDetail(GetAccountDetailRequest request) {
-    return new GetAccountDetailResponse();
+
+    UserModel userModel =
+        userProfileService.findByUserId(userAuthService.getCurrentUser().getUserId());
+
+    Long accountNumber =
+        accountRepository.countByAccountIdAndLinkedStatus(
+            request.getAccNumber(), LinkedStatusEnum.COMPLETED);
+    if (accountNumber == 0) {
+      throw new BizException(ResponseMessage.NO_ACCOUNT_FOUND);
+    }
+
+    return Functions.of(cdrbRestClient::getAccountDetail)
+        .andThen(CDRBGetAccountDetailResponse::getAcct)
+        .andThen(accountMapper::toAccountDetailResponse)
+        .andThen(
+            casaAccountResponse -> {
+              ConfigService transactionConfig =
+                  this.configService.loadJSONValue(
+                      ConfigConstants.Transaction.mapCurrency(
+                          casaAccountResponse.getData().getAccCcy()));
+
+              return accountMapper.mappingMobileNoAndAccStatus(
+                  userModel.getMobileNo(),
+                  transactionConfig.getValue(ConfigConstants.Transaction.MIN_AMOUNT, Double.class),
+                  transactionConfig.getValue(ConfigConstants.Transaction.MAX_AMOUNT, Double.class),
+                  casaAccountResponse);
+            })
+        .apply(
+            new CDRBGetAccountDetailRequest()
+                .cifNo(userModel.getCifNo())
+                .accountNo(request.getAccNumber()));
+  }
+
+  @Override
+  public AccountModel getActiveAccount(AccountFilterCondition condition) {
+
+    return accountRepository
+        .findByAccountIdAndLinkedStatus(condition.getAccountNo(), LinkedStatusEnum.COMPLETED)
+        .map(accountMapper::entityToModel)
+        .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
+  }
+
+  @Override
+  @Transactional
+  public UnlinkAccountResponse unlinkAccount(
+      String authorization, UnlinkAccountRequest unlinkAccountRequest) {
+    return Functions.of(jwtTokenUtils::getSubject)
+        .andThen(
+            Functions.peek(
+                bakongId -> {
+                  AccountEntity accountEntity =
+                      accountRepository
+                          .findByAccountIdAndLinkedStatus(
+                              unlinkAccountRequest.getAccNumber(), LinkedStatusEnum.COMPLETED)
+                          .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
+
+                  accountEntity.setLinkedStatus(LinkedStatusEnum.UNLINKED);
+                  accountRepository.save(accountEntity);
+                }))
+        .andThen(
+            userProfileEntity ->
+                new UnlinkAccountResponse().status(ResponseHandler.ok()).data(null))
+        .apply(authorization);
   }
 }

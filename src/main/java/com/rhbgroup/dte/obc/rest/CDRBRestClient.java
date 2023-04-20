@@ -8,6 +8,8 @@ import com.rhbgroup.dte.obc.common.util.crypto.AESCryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.CryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.TripleDESCryptoUtil;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
+import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetHsmKeyResponse;
@@ -34,6 +36,8 @@ public class CDRBRestClient {
   private static final String AUTHENTICATION_URL = "/auth/channel/obc/login";
   private static final String GET_ACCOUNT_DETAIL =
       "/corebankingnonfinancialclient/bakong-link-casa/accounts";
+  private static final String GET_FEE_AND_CASHBACK =
+      "/corebankingnonfinancialclient/feeAndCashBack";
 
   private final SpringRestUtil restUtil;
 
@@ -78,6 +82,20 @@ public class CDRBRestClient {
 
     } catch (BizException ex) {
       throw new BizException(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS);
+    }
+  }
+
+  public CDRBFeeAndCashbackResponse getFeeAndCashback(CDRBFeeAndCashbackRequest request) {
+
+    try {
+      return restUtil.sendPost(
+          baseUrl.concat(GET_FEE_AND_CASHBACK),
+          buildHeader(getAccessToken()),
+          request,
+          ParameterizedTypeReference.forType(CDRBFeeAndCashbackResponse.class));
+
+    } catch (BizException ex) {
+      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
   }
 

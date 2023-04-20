@@ -1,0 +1,25 @@
+allOf:
+  - $ref: '../common/ResponseWrapper.yml'
+  - type: object
+    properties:
+      data:
+        type: object
+        description: Init transaction response
+        properties:
+          initRefNumber:
+            type: string
+            description: Initialize reference number that generated randomly for defined transaction. Notice that, the format is alphanumeric with 32 length
+          debitAmount:
+            type: number
+            description: amount that will be debit from source account
+            format: double
+          debitCcy:
+            type: string
+            description: Currency of demit amount
+          fee:
+            type: number
+            description: Transaction fee
+            format: double
+          requireOtp:
+            type: boolean
+            description: If init transaction requires to verified otp
