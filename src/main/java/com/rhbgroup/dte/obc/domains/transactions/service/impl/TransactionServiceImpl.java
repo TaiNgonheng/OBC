@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.util.SFTPUtil;
+import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.transactions.mapper.TransactionMapper;
 import com.rhbgroup.dte.obc.domains.transactions.model.SIBSBatchTransaction;
 import com.rhbgroup.dte.obc.domains.transactions.repository.BatchReportRepository;
@@ -13,6 +14,7 @@ import com.rhbgroup.dte.obc.domains.transactions.repository.entity.BatchReport;
 import com.rhbgroup.dte.obc.domains.transactions.repository.entity.SIBSTransaction;
 import com.rhbgroup.dte.obc.domains.transactions.service.TransactionService;
 import com.rhbgroup.dte.obc.model.BatchReportStatus;
+import com.rhbgroup.dte.obc.model.SIBSSyncDateConfig;
 import com.rhbgroup.dte.obc.model.TransactionBatchFileProcessingRequest;
 import java.io.*;
 import java.time.LocalDate;
@@ -35,12 +37,14 @@ public class TransactionServiceImpl implements TransactionService {
   private final SIBSTransactionRepository sibsTransactionRepository;
   private final BatchReportRepository batchReportRepository;
   private final ApplicationProperties applicationProperties;
+  private final ConfigService configService;
 
   private static final String TRANSACTION_FILE_PREFIX = "OBCDailyTrx_";
   private static final String DATE_FORMAT_DDMMYYYY = "ddMMyyyy";
   private static final String DATE_FORMAT_YYYYMMDD = "yyyyMMdd";
   private static final String TRANSACTION_FILE_EXTENSION = ".csv";
   private static final int MAX_STACK_TRACE_LENGTH = 19999;
+  private static final String SIBS_SYNC_DATE_KEY = "SIBS_DATE_CONFIG";
 
   @Override
   public void processTransactionHistoryBatchFile(TransactionBatchFileProcessingRequest request) {
@@ -78,13 +82,16 @@ public class TransactionServiceImpl implements TransactionService {
   private LocalDate getProcessingDate(TransactionBatchFileProcessingRequest request) {
     LocalDate date = request.getDate();
     if (request.getDate() == null) {
-      date = LocalDate.now().minusDays(1);
-      if (Boolean.TRUE.equals(applicationProperties.getUseSIBSSyncDate())) {
+      SIBSSyncDateConfig sibsSyncDateConfig =
+          configService.getByConfigKey(SIBS_SYNC_DATE_KEY, SIBSSyncDateConfig.class);
+      if (Boolean.TRUE.equals(sibsSyncDateConfig.getUseSIBSSyncDate())) {
         date =
             LocalDate.parse(
-                    applicationProperties.getSibsSyncDate(),
+                    sibsSyncDateConfig.getSibsSyncDate(),
                     DateTimeFormatter.ofPattern(DATE_FORMAT_YYYYMMDD))
                 .minusDays(1);
+      } else {
+        date = LocalDate.now().minusDays(1);
       }
     }
     return date;

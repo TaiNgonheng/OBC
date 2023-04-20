@@ -22,10 +22,4 @@ public class ApplicationProperties {
 
   @Value("${obc.sftp.path}")
   private String sftpPath;
-
-  @Value("${obc.sibsSyncDate.useSIBSSyncDate}")
-  private Boolean useSIBSSyncDate;
-
-  @Value("${obc.sibsSyncDate.sibsSyncDate}")
-  private String sibsSyncDate;
 }

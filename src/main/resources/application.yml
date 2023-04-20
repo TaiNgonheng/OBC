@@ -68,6 +68,3 @@ obc:
     host: ${SFTP_HOST:127.0.0.1}
     port: ${SFTP_PORT:2022}
     path: ${SFTP_PATH:data}
-  sibsSyncDate:
-    useSIBSSyncDate: ${USE_SIBS_SYNC_DATE:true}
-    sibsSyncDate: ${SIBS_SYNC_DATE:20230320}

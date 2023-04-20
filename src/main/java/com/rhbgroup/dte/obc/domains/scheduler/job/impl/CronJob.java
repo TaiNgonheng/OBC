@@ -4,8 +4,6 @@ import com.rhbgroup.dte.obc.domains.scheduler.job.JobFactory;
 import com.rhbgroup.dte.obc.domains.scheduler.repository.JobItemRepository;
 import com.rhbgroup.dte.obc.domains.scheduler.repository.entity.JobItem;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
@@ -13,17 +11,14 @@ import org.quartz.JobExecutionException;
 import org.quartz.JobKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 @DisallowConcurrentExecution
 public class CronJob extends QuartzJobBean {
 
-  @Autowired
-  private JobFactoryImpl jobFactory;
+  @Autowired private JobFactoryImpl jobFactory;
 
-  @Autowired
-  private JobItemRepository jobItemRepository;
+  @Autowired private JobItemRepository jobItemRepository;
 
   @Override
   protected void executeInternal(JobExecutionContext context) throws JobExecutionException {

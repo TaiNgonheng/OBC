@@ -46,9 +46,8 @@ public class SFTPUtil {
             null);
     log.debug("Downloading file with name '{}' from sftp url '{}'", filename, maskedUri);
 
-    FileObject remote = manager.resolveFile(sftpUri);
-    byte[] fileBytes = remote.getContent().getByteArray();
-    remote.close();
-    return fileBytes;
+    try (FileObject remote = manager.resolveFile(sftpUri)) {
+      return remote.getContent().getByteArray();
+    }
   }
 }
