@@ -5,6 +5,8 @@ post:
   summary: Verify user entered OTP via InfoBip
   description: Verify user entered OTP via InfoBip
   operationId: verifyOtp
+  security:
+    - bearerAuth: [ ]
   parameters:
     - in: header
       name: Authorization

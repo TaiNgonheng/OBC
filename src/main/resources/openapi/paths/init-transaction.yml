@@ -5,6 +5,8 @@ post:
   summary: Initialize Topup transaction
   description: Link CASA between NBC and GoWave
   operationId: initTransaction
+  security:
+    - bearerAuth: [ ]
   requestBody:
     description: Init Topup transaction
     content:
