@@ -1,7 +1,7 @@
 package com.rhbgroup.dte.obc.domains.scheduler.job.impl;
 
 import com.rhbgroup.dte.obc.domains.scheduler.job.JobFactory;
-import com.rhbgroup.dte.obc.domains.transactions.service.TransactionService;
+import com.rhbgroup.dte.obc.domains.transaction.service.TransactionService;
 import com.rhbgroup.dte.obc.model.TransactionBatchFileProcessingRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

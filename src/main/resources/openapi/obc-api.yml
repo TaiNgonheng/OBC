@@ -139,6 +139,8 @@ components:
       $ref: './schemas/transaction/TransactionBatchFileProcessingRequest.yml'
     BatchReportStatus:
       $ref: './schemas/transaction/BatchReportStatus.yml'
+    JobNameEnum:
+      $ref: './schemas/scheduler/JobNameEnum.yml'
 
   securitySchemes:
     bearerAuth:

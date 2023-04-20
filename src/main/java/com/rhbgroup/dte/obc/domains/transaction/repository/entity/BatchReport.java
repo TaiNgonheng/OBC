@@ -1,4 +1,4 @@
-package com.rhbgroup.dte.obc.domains.transactions.repository.entity;
+package com.rhbgroup.dte.obc.domains.transaction.repository.entity;
 
 import com.rhbgroup.dte.obc.model.BatchReportStatus;
 import java.time.LocalDate;

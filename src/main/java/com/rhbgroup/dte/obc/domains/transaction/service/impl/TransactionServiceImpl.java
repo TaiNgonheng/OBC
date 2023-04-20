@@ -1,47 +1,50 @@
 package com.rhbgroup.dte.obc.domains.transaction.service.impl;
 
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.common.util.RandomGenerator;
+import com.rhbgroup.dte.obc.common.util.SFTPUtil;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.transaction.mapper.TransactionMapper;
 import com.rhbgroup.dte.obc.domains.transaction.mapper.TransactionMapperImpl;
+import com.rhbgroup.dte.obc.domains.transaction.model.SIBSBatchTransaction;
+import com.rhbgroup.dte.obc.domains.transaction.repository.BatchReportRepository;
+import com.rhbgroup.dte.obc.domains.transaction.repository.SIBSTransactionRepository;
 import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionRepository;
+import com.rhbgroup.dte.obc.domains.transaction.repository.entity.BatchReport;
+import com.rhbgroup.dte.obc.domains.transaction.repository.entity.SIBSTransaction;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionService;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
-import com.rhbgroup.dte.obc.model.AccountFilterCondition;
-import com.rhbgroup.dte.obc.model.AccountModel;
-import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
-import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
-import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
-import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
-import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
-import com.rhbgroup.dte.obc.model.InitTransactionRequest;
-import com.rhbgroup.dte.obc.model.InitTransactionResponse;
-import com.rhbgroup.dte.obc.model.InitTransactionResponseAllOfData;
-import com.rhbgroup.dte.obc.model.PGProfileResponse;
-import com.rhbgroup.dte.obc.model.TransactionModel;
-import com.rhbgroup.dte.obc.model.TransactionStatus;
-import com.rhbgroup.dte.obc.model.TransactionType;
+import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.List;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -52,14 +55,21 @@ public class TransactionServiceImpl implements TransactionService {
   private final UserAuthService userAuthService;
   private final ConfigService configService;
   private final AccountService accountService;
-
   private final TransactionRepository transactionRepository;
-
   private final PGRestClient pgRestClient;
   private final CDRBRestClient cdrbRestClient;
   private final InfoBipRestClient infoBipRestClient;
-
   private final TransactionMapper transactionMapper = new TransactionMapperImpl();
+  private final SFTPUtil sftpUtil;
+  private final SIBSTransactionRepository sibsTransactionRepository;
+  private final BatchReportRepository batchReportRepository;
+
+  private static final String TRANSACTION_FILE_PREFIX = "OBCDailyTrx_";
+  private static final String DATE_FORMAT_DDMMYYYY = "ddMMyyyy";
+  private static final String DATE_FORMAT_YYYYMMDD = "yyyyMMdd";
+  private static final String TRANSACTION_FILE_EXTENSION = ".csv";
+  private static final int MAX_STACK_TRACE_LENGTH = 19999;
+  private static final String SIBS_SYNC_DATE_KEY = "SIBS_DATE_CONFIG";
 
   @Override
   public void save(TransactionModel transactionModel) {
@@ -158,5 +168,80 @@ public class TransactionServiceImpl implements TransactionService {
   public FinishTransactionResponse finishTransaction(
       String authorization, FinishTransactionRequest finishTransactionRequest) {
     return null;
+  }
+
+  @Override
+  public void processTransactionHistoryBatchFile(TransactionBatchFileProcessingRequest request) {
+    LocalDate date = getProcessingDate(request);
+    BatchReport report = batchReportRepository.findByDate(date);
+    if (ObjectUtils.isNotEmpty(report) && !report.getStatus().equals(BatchReportStatus.FAILED)) {
+      throw new BizException(ResponseMessage.FILE_PROCESSED);
+    }
+    if (ObjectUtils.isEmpty(report)) {
+      report = new BatchReport();
+      report.setDate(date);
+    }
+    report.setStatus(BatchReportStatus.PENDING);
+    batchReportRepository.saveAndFlush(report);
+    String filename = generateTransactionHistoryFilename(date);
+    try (InputStream batchFile =
+        new ByteArrayInputStream(sftpUtil.downloadFileFromSFTP(filename))) {
+      parseFileAndStoreRecordToDB(batchFile);
+      report.setErrorMessage(null);
+      report.setStatus(BatchReportStatus.COMPLETED);
+      batchReportRepository.saveAndFlush(report);
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getStackTrace(e);
+      if (StringUtils.isNotBlank(stackTrace) && stackTrace.length() > MAX_STACK_TRACE_LENGTH) {
+        stackTrace = stackTrace.substring(0, MAX_STACK_TRACE_LENGTH);
+      }
+      report.setStatus(BatchReportStatus.FAILED);
+      report.setErrorMessage(stackTrace);
+      batchReportRepository.saveAndFlush(report);
+      log.error("Error happen when processing the batch file", e);
+    }
+  }
+
+  private LocalDate getProcessingDate(TransactionBatchFileProcessingRequest request) {
+    LocalDate date = request.getDate();
+    if (request.getDate() == null) {
+      SIBSSyncDateConfig sibsSyncDateConfig =
+          configService.getByConfigKey(SIBS_SYNC_DATE_KEY, SIBSSyncDateConfig.class);
+      if (Boolean.TRUE.equals(sibsSyncDateConfig.getUseSIBSSyncDate())) {
+        date =
+            LocalDate.parse(
+                    sibsSyncDateConfig.getSibsSyncDate(),
+                    DateTimeFormatter.ofPattern(DATE_FORMAT_YYYYMMDD))
+                .minusDays(1);
+      } else {
+        date = LocalDate.now().minusDays(1);
+      }
+    }
+    return date;
+  }
+
+  private String generateTransactionHistoryFilename(LocalDate date) {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT_DDMMYYYY);
+    return TRANSACTION_FILE_PREFIX + formatter.format(date) + TRANSACTION_FILE_EXTENSION;
+  }
+
+  private void parseFileAndStoreRecordToDB(InputStream is) {
+    CsvMapper csvMapper = new CsvMapper();
+    CsvSchema csvSchema = csvMapper.typedSchemaFor(SIBSBatchTransaction.class).withHeader();
+    try {
+      MappingIterator<SIBSBatchTransaction> transactionIterator =
+          new CsvMapper()
+              .readerFor(SIBSBatchTransaction.class)
+              .with(csvSchema.withColumnSeparator(','))
+              .readValues(is);
+      List<SIBSBatchTransaction> batchTransactions = transactionIterator.readAll();
+      List<SIBSTransaction> transactions = transactionMapper.toSIBSTransactions(batchTransactions);
+      sibsTransactionRepository.saveAll(transactions);
+    } catch (IOException e) {
+      log.error("Cannot mapped csv file");
+      e.printStackTrace();
+    } catch (Exception e) {
+      log.error("Something went wrong while processing the dormant file", e);
+    }
   }
 }

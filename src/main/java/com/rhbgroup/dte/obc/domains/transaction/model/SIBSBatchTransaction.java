@@ -1,4 +1,4 @@
-package com.rhbgroup.dte.obc.domains.transactions.model;
+package com.rhbgroup.dte.obc.domains.transaction.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

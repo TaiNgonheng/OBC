@@ -1,9 +1,7 @@
 type: object
 properties:
   jobName:
-    type: string
-    enum:
-      - TRXN_BATCH_PROCESSING
+    $ref: './JobNameEnum.yml'
   jobGroup:
     type: string
   cronExpression:

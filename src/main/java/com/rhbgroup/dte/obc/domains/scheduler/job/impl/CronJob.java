@@ -3,6 +3,7 @@ package com.rhbgroup.dte.obc.domains.scheduler.job.impl;
 import com.rhbgroup.dte.obc.domains.scheduler.job.JobFactory;
 import com.rhbgroup.dte.obc.domains.scheduler.repository.JobItemRepository;
 import com.rhbgroup.dte.obc.domains.scheduler.repository.entity.JobItem;
+import com.rhbgroup.dte.obc.model.JobNameEnum;
 import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
@@ -24,7 +25,7 @@ public class CronJob extends QuartzJobBean {
   protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
     log.info("Context - {}", context);
     JobKey jobKey = context.getJobDetail().getKey();
-    JobFactory job = jobFactory.getItemFactory(jobKey.getName());
+    JobFactory job = jobFactory.getItemFactory(JobNameEnum.fromValue(jobKey.getName()));
     JobItem jobItem =
         JobItem.builder()
             .jobName(jobKey.getName())
