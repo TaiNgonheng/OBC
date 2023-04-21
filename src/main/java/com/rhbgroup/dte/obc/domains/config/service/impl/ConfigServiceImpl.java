@@ -1,5 +1,10 @@
 package com.rhbgroup.dte.obc.domains.config.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.domains.config.repository.ConfigRepository;
 import com.rhbgroup.dte.obc.domains.config.repository.entity.ConfigEntity;
@@ -18,6 +23,13 @@ public class ConfigServiceImpl implements ConfigService {
   private final ConfigRepository configRepository;
 
   private JSONObject jsonValue;
+
+  private static ObjectMapper objectMapper =
+      new ObjectMapper()
+          .registerModule(new JavaTimeModule())
+          .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+          .enable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT);
 
   @Override
   public <T> T getByConfigKey(String configKey, String valueKey, Class<T> clazz) {
@@ -63,6 +75,27 @@ public class ConfigServiceImpl implements ConfigService {
       return clazz.cast(jsonValue.get(valueKey));
 
     } catch (JSONException e) {
+      throw new BizException(ResponseMessage.DATA_STRUCTURE_INVALID);
+    }
+  }
+
+  /**
+   * This method get the config key of the tbl_obc_config to query the json value and return the
+   * object of that json
+   *
+   * @param configKey
+   * @param clazz <T>
+   * @return generic object <T>
+   */
+  @Override
+  public <T> T getByConfigKey(String configKey, Class<T> clazz) {
+    ConfigEntity config =
+        configRepository
+            .getByConfigKey(configKey)
+            .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND));
+    try {
+      return objectMapper.readValue(config.getConfigValue(), clazz);
+    } catch (JsonProcessingException e) {
       throw new BizException(ResponseMessage.DATA_STRUCTURE_INVALID);
     }
   }

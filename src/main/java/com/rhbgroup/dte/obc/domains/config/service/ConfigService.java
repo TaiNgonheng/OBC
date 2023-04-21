@@ -18,4 +18,6 @@ public interface ConfigService {
   List<ConfigEntity> findByServicePrefix(String servicePrefix);
 
   ConfigEntity filterByServiceKey(List<ConfigEntity> configEntities, String key);
+
+  <T> T getByConfigKey(String configKey, Class<T> clazz);
 }

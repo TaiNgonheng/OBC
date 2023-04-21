@@ -2,6 +2,7 @@ package com.rhbgroup.dte.obc.domains.transaction.mapper;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.util.RandomGenerator;
+import com.rhbgroup.dte.obc.domains.transaction.model.SIBSBatchTransaction;
 import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionEntity;
 import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionHistoryEntity;
 import com.rhbgroup.dte.obc.model.BakongTransactionStatus;
@@ -21,9 +22,10 @@ import com.rhbgroup.dte.obc.model.TransactionStatus;
 import com.rhbgroup.dte.obc.model.TransactionType;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -184,5 +186,52 @@ public interface TransactionMapper {
     newEntity.setNewToday(1);
 
     return newEntity;
+  }
+
+  @Mapping(source = "transactionCode", target = "transferType", qualifiedByName = "GetTransferType")
+  @Mapping(source = "remark", target = "transferMessage")
+  @Mapping(source = "paymentReferenceNumber", target = "trxId")
+  @Mapping(source = "amount", target = "trxAmount")
+  @Mapping(source = "transactionDate", target = "trxDate", qualifiedByName = "InstantFromDDMMYYYY")
+  @Mapping(
+      source = "transactionDate",
+      target = "trxCompletionDate",
+      qualifiedByName = "InstantFromDDMMYYYY")
+  @Mapping(source = "transactionHash", target = "trxHash")
+  @Mapping(source = "bakongStatus", target = "trxStatus")
+  @Mapping(source = "transactionCurrency", target = "trxCcy")
+  @Mapping(source = "senderAccount", target = "fromAccount")
+  @Mapping(source = "receiverAccount", target = "toAccount")
+  TransactionHistoryEntity toTransactionHistory(SIBSBatchTransaction transaction);
+
+  List<TransactionHistoryEntity> toTransactionHistories(List<SIBSBatchTransaction> transactions);
+
+  @Named("DateFromDDMMYYYY")
+  default LocalDate getDateFromDDMMYYYY(String date) {
+    if (date.length() == 7) date = "0" + date;
+    return LocalDate.parse(date, DateTimeFormatter.ofPattern("ddMMyyyy"));
+  }
+
+  @Named("InstantFromDDMMYYYY")
+  default Instant getInstantFromDDMMYYY(String date) {
+    return getDateFromDDMMYYYY(date).atStartOfDay(ZoneId.systemDefault()).toInstant();
+  }
+
+  @Named("InstantFromLocalDate")
+  default Instant getInstantFromLocalDate(LocalDate date) {
+    return date.atStartOfDay(ZoneId.systemDefault()).toInstant();
+  }
+
+  @Named("GetTransferType")
+  default TransactionType getTransactionType(String transactionCode) {
+    if (StringUtils.isNotBlank(transactionCode)) {
+      switch (transactionCode) {
+        case "REAC2303":
+          return TransactionType.WALLET;
+        default:
+          return null;
+      }
+    }
+    return null;
   }
 }

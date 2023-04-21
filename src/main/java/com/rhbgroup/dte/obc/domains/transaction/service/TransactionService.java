@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.domains.transaction.service;
 
+import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
 import com.rhbgroup.dte.obc.model.GetAccountTransactionsRequest;
@@ -17,4 +18,6 @@ public interface TransactionService {
   FinishTransactionResponse finishTransaction(FinishTransactionRequest request);
 
   GetAccountTransactionsResponse queryTransactionHistory(GetAccountTransactionsRequest request);
+
+  void processTransactionHistoryBatchFile(TransactionBatchFileProcessingRequest request);
 }
