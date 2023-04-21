@@ -79,6 +79,14 @@ public class ConfigServiceImpl implements ConfigService {
     }
   }
 
+  /**
+   * This method get the config key of the tbl_obc_config to query the json value and return the
+   * object of that json
+   *
+   * @param configKey
+   * @param clazz <T>
+   * @return generic object <T>
+   */
   @Override
   public <T> T getByConfigKey(String configKey, Class<T> clazz) {
     ConfigEntity config =
