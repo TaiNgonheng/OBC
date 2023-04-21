@@ -120,9 +120,9 @@ class TransactionServiceTest extends AbstractTransactionTest {
       transactionService.initTransaction(initTransactionRequest);
     } catch (BizException ex) {
       assertEquals(
-          ResponseMessage.OPERATION_NOT_SUPPORTED.getCode(), ex.getResponseMessage().getCode());
+          ResponseMessage.MANDATORY_FIELD_MISSING.getCode(), ex.getResponseMessage().getCode());
       assertEquals(
-          ResponseMessage.OPERATION_NOT_SUPPORTED.getMsg(), ex.getResponseMessage().getMsg());
+          ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 

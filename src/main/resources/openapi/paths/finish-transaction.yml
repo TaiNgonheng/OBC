@@ -5,6 +5,8 @@ post:
   summary: Finish transaction between NBC and GoWave
   description: Finish transaction between NBC and GoWave
   operationId: finishTransaction
+  security:
+    - bearerAuth: [ ]
   requestBody:
     description: Finish transaction
     content:

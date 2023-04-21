@@ -5,6 +5,8 @@ post:
   summary: Finish link account CASA between NBC and GoWave
   description: Finish link CASA between NBC and GoWave
   operationId: finishLinkAccount
+  security:
+    - bearerAuth: [ ]
   parameters:
     - in: header
       name: Authorization

@@ -19,7 +19,7 @@ public class TransactionValidator {
 
     // Only support CASA_TO_WALLET for now
     if (TransactionType.CASA.equals(request.getType())) {
-      throw new BizException(ResponseMessage.OPERATION_NOT_SUPPORTED);
+      throw new BizException(ResponseMessage.MANDATORY_FIELD_MISSING);
     }
 
     Double minAmt =
