@@ -1,6 +1,6 @@
 package com.rhbgroup.dte.obc.domains.user.controller;
 
-import com.rhbgroup.dte.obc.api.UserExchangeApiDelegate;
+import com.rhbgroup.dte.obc.api.SystemExchangeApi;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.user.mapper.UserExchangeMapper;
 import com.rhbgroup.dte.obc.domains.user.service.UserExchangeService;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class UserExchangeController implements UserExchangeApiDelegate {
+public class UserExchangeController implements SystemExchangeApi {
 
   private final UserExchangeMapper userExchangeMapper;
 
