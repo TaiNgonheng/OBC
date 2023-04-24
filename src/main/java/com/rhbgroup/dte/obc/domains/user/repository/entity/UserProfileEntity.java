@@ -48,7 +48,7 @@ public class UserProfileEntity {
   @Column(name = "deleted")
   private boolean deleted;
 
-  @Column(name = "created_date", insertable = false)
+  @Column(name = "created_date", insertable = false, updatable = false)
   private Instant createdDate;
 
   @Column(name = "updated_date")

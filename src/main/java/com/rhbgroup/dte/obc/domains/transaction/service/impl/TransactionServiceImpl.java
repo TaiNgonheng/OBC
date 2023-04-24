@@ -28,9 +28,9 @@ import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.InternalException;
-import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.model.AccountFilterCondition;
 import com.rhbgroup.dte.obc.model.AccountModel;
+import com.rhbgroup.dte.obc.model.BatchReportStatus;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
@@ -49,6 +49,8 @@ import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.InitTransactionResponse;
 import com.rhbgroup.dte.obc.model.InitTransactionResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
+import com.rhbgroup.dte.obc.model.SIBSSyncDateConfig;
+import com.rhbgroup.dte.obc.model.TransactionBatchFileProcessingRequest;
 import com.rhbgroup.dte.obc.model.TransactionHistoryModel;
 import com.rhbgroup.dte.obc.model.TransactionModel;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
@@ -279,7 +281,7 @@ public class TransactionServiceImpl implements TransactionService {
                     PageRequest.of(
                         request.getPage() - 1,
                         request.getSize(),
-                        Sort.by(Sort.Order.desc("trxDate")))))
+                        Sort.by(Sort.Order.desc("trx_date")))))
         .andThen(
             resultPage -> {
               List<TransactionHistoryModel> items =
@@ -304,8 +306,8 @@ public class TransactionServiceImpl implements TransactionService {
       return;
     }
 
-    Long refreshedRecords =
-        transactionHistoryRepository.deleteByFromAccountAndNewToday(accountNum, 1);
+    Integer refreshedRecords =
+        transactionHistoryRepository.deleteTodayTransactionByAccountNumber(accountNum);
     log.info("Cleaning all the newly added by today record {}", refreshedRecords);
 
     of(cdrbRestClient::fetchTodayTransactionHistory)

@@ -168,7 +168,7 @@ public interface TransactionMapper {
   }
 
   default TransactionHistoryEntity toTransactionHistoryEntity(Object model) {
-    // Mimic CDRB result
+    // TODO Mimic CDRB result, remove when EAI is ready
     TransactionHistoryEntity newEntity = new TransactionHistoryEntity();
     newEntity.setFromAccount("123xxx");
     newEntity.setUserId(5L);
@@ -183,7 +183,6 @@ public interface TransactionMapper {
     newEntity.setTrxDate(Instant.now());
     newEntity.setTrxCompletionDate(Instant.now());
     newEntity.setTrxStatus(TransactionStatus.FAILED);
-    newEntity.setNewToday(1);
 
     return newEntity;
   }

@@ -15,13 +15,15 @@ public interface TransactionHistoryRepository
     extends PagingAndSortingRepository<TransactionHistoryEntity, Long> {
 
   @Query(
-      name = TransactionHistoryQueries.QUERY_TRANSACTION_HISTORY_BY_ACCOUNT_NUMBER,
+      value = TransactionHistoryQueries.QUERY_TRANSACTION_HISTORY_BY_ACCOUNT_NUMBER,
       countQuery = TransactionHistoryQueries.COUNT_TRANSACTION_HISTORY_BY_ACCOUNT_NUMBER,
       nativeQuery = true)
   Page<TransactionHistoryEntity> queryByFromAccount(
       @Param("accNumber") String fromAccount, Pageable pageable);
 
-  Long deleteByFromAccountAndNewToday(String fromAccount, Integer isNewToday);
+  @Modifying
+  @Query(value = TransactionHistoryQueries.DELETE_TODAY_RECORD, nativeQuery = true)
+  Integer deleteTodayTransactionByAccountNumber(@Param("fromAccount") String fromAccount);
 
   @Transactional
   @Modifying

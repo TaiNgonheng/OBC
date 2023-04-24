@@ -64,7 +64,4 @@ public class TransactionHistoryEntity {
   @Column(name = "credit_debit_indicator", updatable = false, nullable = false)
   @Enumerated(EnumType.STRING)
   private CreditDebitIndicator creditDebitIndicator;
-
-  @Column(name = "new_today")
-  private Integer newToday;
 }
