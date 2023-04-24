@@ -7,13 +7,6 @@ post:
   operationId: finishLinkAccount
   security:
     - bearerAuth: [ ]
-  parameters:
-    - in: header
-      name: Authorization
-      schema:
-        type: string
-        format: String
-      required: true
   requestBody:
     description: Finish link account
     content:

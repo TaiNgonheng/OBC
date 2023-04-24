@@ -1,7 +1,6 @@
 package com.rhbgroup.dte.obc.acount.controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
@@ -125,7 +124,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOtp_Success2xx() throws Exception {
-    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any(), Mockito.any()))
+    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any()))
         .thenReturn(ResponseEntity.ok(mockVerifyOtpResponse()));
     mockMvc
         .perform(
@@ -141,7 +140,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOtp_Failed_DataNotFound_400() throws Exception {
-    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any(), Mockito.any()))
+    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any()))
         .thenThrow(new BizException(ResponseMessage.DATA_NOT_FOUND));
 
     mockMvc
@@ -157,7 +156,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOtp_Failed_Unauthorized_401() throws Exception {
-    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any(), Mockito.any()))
+    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any()))
         .thenThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
 
     mockMvc
@@ -173,8 +172,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOtp_Failed_500() throws Exception {
-    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any(), Mockito.any()))
-        .thenThrow(new RuntimeException());
+    Mockito.when(accountApiDelegate.verifyOtp(Mockito.any())).thenThrow(new RuntimeException());
 
     mockMvc
         .perform(
@@ -189,7 +187,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOtp_Failed_TokenExpired_401() throws Exception {
-    Mockito.when(accountApiDelegate.verifyOtp(anyString(), any()))
+    Mockito.when(accountApiDelegate.verifyOtp(any()))
         .thenThrow(new UserAuthenticationException(ResponseMessage.SESSION_EXPIRED));
 
     MockHttpServletResponse response =
@@ -222,7 +220,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOtp_Failed_InvalidToken_403() throws Exception {
-    Mockito.when(accountApiDelegate.verifyOtp(anyString(), any()))
+    Mockito.when(accountApiDelegate.verifyOtp(any()))
         .thenThrow(new UserAuthenticationException(ResponseMessage.INVALID_TOKEN));
 
     MockHttpServletResponse response =
@@ -414,7 +412,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testFinishLinkAccount_Success_200() throws Exception {
-    when(accountApiDelegate.finishLinkAccount(anyString(), any()))
+    when(accountApiDelegate.finishLinkAccount(any()))
         .thenReturn(ResponseEntity.ok(mockFinishLinkAccountResponse()));
 
     MockHttpServletResponse response =
@@ -445,7 +443,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testFinishLinkAccount_Failed_KycNotVerified_400() throws Exception {
-    when(accountApiDelegate.finishLinkAccount(anyString(), any()))
+    when(accountApiDelegate.finishLinkAccount(any()))
         .thenThrow(new BizException(ResponseMessage.KYC_NOT_VERIFIED));
 
     MockHttpServletResponse response =
@@ -516,7 +514,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testUnlinkAccount_Success_200() throws Exception {
-    when(accountApiDelegate.unlinkAccount(anyString(), any()))
+    when(accountApiDelegate.unlinkAccount(any()))
         .thenReturn(ResponseEntity.ok(mockUnlinkAccountResponse()));
     MockHttpServletResponse response =
         mockMvc
@@ -544,7 +542,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testUnlinkAccount_Failed_MissingMandatoryFields_400() throws Exception {
-    when(accountApiDelegate.unlinkAccount(anyString(), any()))
+    when(accountApiDelegate.unlinkAccount(any()))
         .thenThrow(new BizException(ResponseMessage.MANDATORY_FIELD_MISSING));
 
     MockHttpServletResponse response =
@@ -578,7 +576,7 @@ class AccountControllerTest extends AbstractAccountTest {
 
   @Test
   void testUnlinkAccount_Failed_Unauthorized_401() throws Exception {
-    when(accountApiDelegate.unlinkAccount(anyString(), any()))
+    when(accountApiDelegate.unlinkAccount(any()))
         .thenThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
 
     mockMvc
