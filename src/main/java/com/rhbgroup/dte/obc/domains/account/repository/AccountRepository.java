@@ -9,7 +9,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AccountRepository extends JpaRepository<AccountEntity, Integer> {
 
-  Optional<AccountEntity> findFirstByUserId(Long userId);
+  Optional<AccountEntity> findByUserIdAndLinkedStatus(
+      Long userId, LinkedStatusEnum linkedStatusEnum);
 
   Optional<AccountEntity> findByUserIdAndBakongIdAndLinkedStatus(
       Long userId, String bakongId, LinkedStatusEnum linkedStatus);

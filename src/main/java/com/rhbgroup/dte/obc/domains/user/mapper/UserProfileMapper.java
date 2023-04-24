@@ -23,9 +23,16 @@ public interface UserProfileMapper {
       qualifiedByName = "toOffsetDateTime")
   UserModel toModel(UserProfileEntity entity);
 
+  @Mapping(source = "otpVerifiedDate", target = "otpVerifiedDate", qualifiedByName = "toInstant")
+  UserProfileEntity toEntity(UserModel model);
+
   @Named("toOffsetDateTime")
   default OffsetDateTime toOffsetDateTime(Instant instant) {
-
     return null == instant ? null : OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
+  }
+
+  @Named("toInstant")
+  default Instant toInstant(OffsetDateTime offsetDateTime) {
+    return null == offsetDateTime ? null : offsetDateTime.toInstant();
   }
 }

@@ -153,6 +153,7 @@ public abstract class AbstractAccountTest {
             .username("test")
             .password("test")
             .bakongId("bakongId@oski")
+            .otpVerified(true)
             .userId(1L)
             .build();
     return new UsernamePasswordAuthenticationToken(
@@ -172,7 +173,11 @@ public abstract class AbstractAccountTest {
   }
 
   protected UserModel mockUserModel() {
-    return new UserModel().cifNo("123xxx").id(BigDecimal.ONE).mobileNo(MOBILE_NUMBER);
+    return new UserModel()
+        .cifNo("123xxx")
+        .otpVerifiedStatus(true)
+        .id(BigDecimal.ONE)
+        .mobileNo(MOBILE_NUMBER);
   }
 
   protected CDRBGetAccountDetailResponse mockCdrbAccountResponse() {

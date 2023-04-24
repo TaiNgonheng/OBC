@@ -21,15 +21,13 @@ public interface AccountService {
 
   InitAccountResponse initLinkAccount(InitAccountRequest request);
 
-  VerifyOtpResponse verifyOtp(String authorization, VerifyOtpRequest request);
+  VerifyOtpResponse verifyOtp(VerifyOtpRequest request);
 
-  FinishLinkAccountResponse finishLinkAccount(
-      String authorization, FinishLinkAccountRequest request);
+  FinishLinkAccountResponse finishLinkAccount(FinishLinkAccountRequest request);
 
   GetAccountDetailResponse getAccountDetail(GetAccountDetailRequest request);
 
   AccountModel getActiveAccount(AccountFilterCondition condition);
 
-  UnlinkAccountResponse unlinkAccount(
-      String authorization, UnlinkAccountRequest unlinkAccountRequest);
+  UnlinkAccountResponse unlinkAccount(UnlinkAccountRequest unlinkAccountRequest);
 }

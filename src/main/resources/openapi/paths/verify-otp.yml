@@ -7,13 +7,6 @@ post:
   operationId: verifyOtp
   security:
     - bearerAuth: [ ]
-  parameters:
-    - in: header
-      name: Authorization
-      schema:
-        type: string
-        format: String
-      required: true
   requestBody:
     description: OTP verify request
     content:

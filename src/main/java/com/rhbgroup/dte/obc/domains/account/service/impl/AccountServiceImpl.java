@@ -1,11 +1,13 @@
 package com.rhbgroup.dte.obc.domains.account.service.impl;
 
+import static com.rhbgroup.dte.obc.common.func.Functions.of;
+import static com.rhbgroup.dte.obc.common.func.Functions.peek;
+
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
-import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapperImpl;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
@@ -39,7 +41,9 @@ import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
+import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.Optional;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,13 +57,17 @@ import org.springframework.stereotype.Service;
 public class AccountServiceImpl implements AccountService {
 
   private final JwtTokenUtils jwtTokenUtils;
+
   private final UserAuthService userAuthService;
   private final UserProfileService userProfileService;
+  private final ConfigService configService;
+
   private final AccountRepository accountRepository;
+
   private final PGRestClient pgRestClient;
   private final InfoBipRestClient infoBipRestClient;
   private final CDRBRestClient cdrbRestClient;
-  private final ConfigService configService;
+
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
   @Value("${obc.infobip.enabled}")
@@ -67,25 +75,32 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
-    return Functions.of(accountMapper::toUserModel)
+    return of(accountMapper::toUserModel)
         .andThen(userAuthService::authenticate)
         .andThen(
-            Functions.peek(
+            peek(
                 authContext -> {
                   // Checking account status
                   CustomUserDetails principal = (CustomUserDetails) authContext.getPrincipal();
-                  AccountEntity accountEntity =
-                      accountRepository
-                          .findFirstByUserIdAndBakongIdAndLinkedStatus(
-                              principal.getUserId(),
-                              principal.getBakongId(),
-                              LinkedStatusEnum.COMPLETED)
-                          .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
-
-                  log.info("Found account entity >> {}", accountEntity);
+                  if (!principal.isOtpVerified()) {
+                    log.error("User {} is not fully KYC", principal.getUserId());
+                    throw new BizException(ResponseMessage.AUTHENTICATION_FAILED);
+                  }
+                  Optional<AccountEntity> activeAccount =
+                      accountRepository.findFirstByUserIdAndBakongIdAndLinkedStatus(
+                          principal.getUserId(),
+                          principal.getBakongId(),
+                          LinkedStatusEnum.COMPLETED);
+                  if (activeAccount.isEmpty()) {
+                    log.error(
+                        "No active account found for user {} with bakong id {}",
+                        principal.getUserId(),
+                        principal.getBakongId());
+                    throw new BizException(ResponseMessage.NO_ACCOUNT_FOUND);
+                  }
                 }))
         .andThen(
-            Functions.peek(
+            peek(
                 authContext ->
                     userAuthService.checkUserRole(
                         authContext, Collections.singletonList(AppConstants.Role.APP_USER))))
@@ -99,7 +114,7 @@ public class AccountServiceImpl implements AccountService {
 
     // Generate OBC token
     String token =
-        Functions.of(accountMapper::toModel)
+        of(accountMapper::toModel)
             .andThen(AccountModel::getUser)
             .andThen(userAuthService::authenticate)
             .andThen(
@@ -108,19 +123,16 @@ public class AccountServiceImpl implements AccountService {
             .apply(request);
 
     // Get PG user profile, trigger OTP and build response
-    return Functions.of(pgRestClient::getUserProfile)
-        .andThen(Functions.peek(AccountValidator::validateAccount))
+    return of(pgRestClient::getUserProfile)
+        .andThen(peek(AccountValidator::validateAccount))
         .andThen(
-            Functions.peek(
+            peek(
                 userProfile ->
                     infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin())))
-        .andThen(
-            Functions.peek(
-                response -> insertBakongId(request.getLogin(), request.getBakongAccId())))
+        .andThen(peek(response -> insertBakongId(request.getLogin(), request.getBakongAccId())))
         .andThen(
             profileResponse -> {
               UserModel gowaveUser = userProfileService.findByUsername(request.getLogin());
-
               return accountMapper.toInitAccountResponse(
                   gowaveUser, profileResponse, token, otpEnabled);
             })
@@ -129,7 +141,7 @@ public class AccountServiceImpl implements AccountService {
 
   private void insertBakongId(String username, String bakongId) {
 
-    Functions.of(userProfileService::findByUsername)
+    of(userProfileService::findByUsername)
         .andThen(
             userModel ->
                 accountRepository
@@ -149,40 +161,49 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
-  public VerifyOtpResponse verifyOtp(String authorization, VerifyOtpRequest request) {
+  public VerifyOtpResponse verifyOtp(VerifyOtpRequest request) {
 
-    return Functions.of(jwtTokenUtils::getSubject)
-        .andThen(
-            loginKey ->
-                new VerifyOtpResponse()
-                    .status(ResponseHandler.ok())
-                    .data(
-                        new VerifyOtpResponseAllOfData()
-                            .isValid(infoBipRestClient.verifyOtp(request.getOtpCode(), loginKey))))
-        .apply(authorization);
+    CustomUserDetails currentUser = userAuthService.getCurrentUser();
+    boolean otpVerified =
+        infoBipRestClient.verifyOtp(request.getOtpCode(), currentUser.getBakongId());
+
+    if (otpVerified) {
+      // Update otp verify status
+      of(userProfileService::findByUserId)
+          .andThen(
+              peek(
+                  userProfile -> {
+                    userProfile.setOtpVerifiedStatus(true);
+                    userProfile.setOtpVerifiedDate(OffsetDateTime.now());
+                    userProfileService.updateUserProfile(userProfile);
+                  }))
+          .apply(currentUser.getUserId());
+    }
+
+    return new VerifyOtpResponse()
+        .status(ResponseHandler.ok())
+        .data(new VerifyOtpResponseAllOfData().isValid(otpVerified));
   }
 
   @Override
-  public FinishLinkAccountResponse finishLinkAccount(
-      String authorization, FinishLinkAccountRequest request) {
+  public FinishLinkAccountResponse finishLinkAccount(FinishLinkAccountRequest request) {
 
-    String bakongId = jwtTokenUtils.getSubject(authorization);
-    Long userId = Long.parseLong(jwtTokenUtils.getUserId(authorization));
-
-    if (StringUtils.isBlank(bakongId)) {
+    CustomUserDetails currentUser = userAuthService.getCurrentUser();
+    if (StringUtils.isBlank(currentUser.getBakongId())) {
       throw new BizException(ResponseMessage.NO_ACCOUNT_FOUND);
     }
 
     // One pending at a time
     AccountEntity pendingAccount =
         accountRepository
-            .findByUserIdAndBakongIdAndLinkedStatus(userId, bakongId, LinkedStatusEnum.PENDING)
+            .findByUserIdAndBakongIdAndLinkedStatus(
+                currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.PENDING)
             .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
 
     CDRBGetAccountDetailRequest accountDetailRequest =
         new CDRBGetAccountDetailRequest()
             .accountNo(request.getAccNumber())
-            .cifNo(userProfileService.findByUserId(userId).getCifNo());
+            .cifNo(userProfileService.findByUserId(currentUser.getUserId()).getCifNo());
 
     // Validate if acct has been linked already
     accountRepository
@@ -193,10 +214,10 @@ public class AccountServiceImpl implements AccountService {
             });
 
     // Get CDRB account detail & update account table
-    return Functions.of(cdrbRestClient::getAccountDetail)
-        .andThen(Functions.peek(AccountValidator::validateCasaAccount))
+    return of(cdrbRestClient::getAccountDetail)
+        .andThen(peek(AccountValidator::validateCasaAccount))
         .andThen(cdrbAccount -> accountMapper.toAccountEntity(pendingAccount, cdrbAccount))
-        .andThen(Functions.peek(accountRepository::save))
+        .andThen(peek(accountRepository::save))
         .andThen(account -> accountMapper.toFinishLinkAccountResponse())
         .apply(accountDetailRequest);
   }
@@ -214,7 +235,7 @@ public class AccountServiceImpl implements AccountService {
       throw new BizException(ResponseMessage.NO_ACCOUNT_FOUND);
     }
 
-    return Functions.of(cdrbRestClient::getAccountDetail)
+    return of(cdrbRestClient::getAccountDetail)
         .andThen(CDRBGetAccountDetailResponse::getAcct)
         .andThen(accountMapper::toAccountDetailResponse)
         .andThen(
@@ -247,24 +268,17 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   @Transactional
-  public UnlinkAccountResponse unlinkAccount(
-      String authorization, UnlinkAccountRequest unlinkAccountRequest) {
-    return Functions.of(jwtTokenUtils::getSubject)
-        .andThen(
-            Functions.peek(
-                bakongId -> {
-                  AccountEntity accountEntity =
-                      accountRepository
-                          .findByAccountIdAndLinkedStatus(
-                              unlinkAccountRequest.getAccNumber(), LinkedStatusEnum.COMPLETED)
-                          .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
+  public UnlinkAccountResponse unlinkAccount(UnlinkAccountRequest unlinkAccountRequest) {
 
-                  accountEntity.setLinkedStatus(LinkedStatusEnum.UNLINKED);
-                  accountRepository.save(accountEntity);
-                }))
-        .andThen(
-            userProfileEntity ->
-                new UnlinkAccountResponse().status(ResponseHandler.ok()).data(null))
-        .apply(authorization);
+    AccountEntity accountEntity =
+        accountRepository
+            .findByAccountIdAndLinkedStatus(
+                unlinkAccountRequest.getAccNumber(), LinkedStatusEnum.COMPLETED)
+            .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
+
+    accountEntity.setLinkedStatus(LinkedStatusEnum.UNLINKED);
+    accountRepository.save(accountEntity);
+
+    return new UnlinkAccountResponse().status(ResponseHandler.ok()).data(null);
   }
 }

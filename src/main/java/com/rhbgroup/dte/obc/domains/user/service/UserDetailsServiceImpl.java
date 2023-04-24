@@ -1,6 +1,7 @@
 package com.rhbgroup.dte.obc.domains.user.service;
 
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.UserRoleRepository;
@@ -58,6 +59,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                       .phoneNumber(userProfile.getMobileNo())
                       .permissions(userRole.getPermissions())
                       .password(userProfile.getPassword())
+                      .otpVerified(userProfile.getOtpVerifiedStatus())
                       .authorities(authorities)
                       .accountNonLocked(userProfile.getLockTime() == null)
                       .accountNonExpired(true)
@@ -72,7 +74,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
               try {
                 CustomUserDetails customUserDetails =
                     accountRepository
-                        .findFirstByUserId(userProfile.getId())
+                        .findByUserIdAndLinkedStatus(
+                            userProfile.getId(), LinkedStatusEnum.COMPLETED)
                         .flatMap(
                             account ->
                                 Optional.of(

@@ -1,6 +1,7 @@
 package com.rhbgroup.dte.obc.domains.user.service.impl;
 
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.user.mapper.UserProfileMapper;
 import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
@@ -31,5 +32,10 @@ public class UserProfileServiceImpl implements UserProfileService {
         .findById(userId)
         .flatMap(userProfileMapper::toModelOptional)
         .orElseThrow(() -> new BizException(ResponseMessage.DATA_NOT_FOUND));
+  }
+
+  @Override
+  public void updateUserProfile(UserModel userModel) {
+    Functions.of(userProfileMapper::toEntity).andThen(userProfileRepository::save).apply(userModel);
   }
 }

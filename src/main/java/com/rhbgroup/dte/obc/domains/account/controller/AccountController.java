@@ -31,27 +31,26 @@ public class AccountController implements AccountApiDelegate {
   }
 
   @Override
-  public ResponseEntity<VerifyOtpResponse> verifyOtp(
-      String authorization, VerifyOtpRequest verifyOtpRequest) {
+  public ResponseEntity<VerifyOtpResponse> verifyOtp(VerifyOtpRequest verifyOtpRequest) {
     return Functions.of(accountService::verifyOtp)
         .andThen(ResponseEntity::ok)
-        .apply(authorization, verifyOtpRequest);
+        .apply(verifyOtpRequest);
   }
 
   @Override
   public ResponseEntity<FinishLinkAccountResponse> finishLinkAccount(
-      String authorization, FinishLinkAccountRequest request) {
+      FinishLinkAccountRequest request) {
     return Functions.of(accountService::finishLinkAccount)
         .andThen(ResponseEntity::ok)
-        .apply(authorization, request);
+        .apply(request);
   }
 
   @Override
   public ResponseEntity<UnlinkAccountResponse> unlinkAccount(
-      String authorization, UnlinkAccountRequest unlinkAccountRequest) {
+      UnlinkAccountRequest unlinkAccountRequest) {
     return Functions.of(accountService::unlinkAccount)
         .andThen(ResponseEntity::ok)
-        .apply(authorization, unlinkAccountRequest);
+        .apply(unlinkAccountRequest);
   }
 
   @Override
