@@ -7,4 +7,6 @@ public interface UserProfileService {
   UserModel findByUsername(String username);
 
   UserModel findByUserId(Long userId);
+
+  void updateUserProfile(UserModel userModel);
 }

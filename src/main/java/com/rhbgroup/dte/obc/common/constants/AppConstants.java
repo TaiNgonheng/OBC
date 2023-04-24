@@ -22,6 +22,10 @@ public class AppConstants {
   public class Permission {
     public static final String CAN_TOP_UP = "can_top_up";
     public static final String CAN_GET_BALANCE = "can_get_balance";
+    public static final String CAN_GET_TRANSACTION = "can_get_transaction";
+    public static final String CAN_LINK_ACCOUNT = "can_link_account";
+    public static final String CAN_UNLINK_ACCOUNT = "can_unlink_account";
+    public static final String CAN_AUTH = "can_auth";
     public static final String CAN_EXCHANGE_USER = "can_exchange_user";
 
     public static String concat(String... permissions) {

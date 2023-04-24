@@ -5,13 +5,8 @@ post:
   summary: Verify user entered OTP via InfoBip
   description: Verify user entered OTP via InfoBip
   operationId: verifyOtp
-  parameters:
-    - in: header
-      name: Authorization
-      schema:
-        type: string
-        format: String
-      required: true
+  security:
+    - bearerAuth: [ ]
   requestBody:
     description: OTP verify request
     content:

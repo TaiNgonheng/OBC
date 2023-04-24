@@ -12,6 +12,5 @@ public interface TransactionService {
 
   InitTransactionResponse initTransaction(InitTransactionRequest request);
 
-  FinishTransactionResponse finishTransaction(
-      String authorization, FinishTransactionRequest finishTransactionRequest);
+  FinishTransactionResponse finishTransaction(FinishTransactionRequest finishTransactionRequest);
 }

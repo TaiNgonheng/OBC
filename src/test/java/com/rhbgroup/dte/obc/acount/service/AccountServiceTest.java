@@ -213,32 +213,33 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOTP_Success_IsValid_True() {
-    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(true);
+    when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
 
-    VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
+    VerifyOtpResponse response = accountService.verifyOtp(mockVerifyOtpRequest());
     Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
     Assertions.assertTrue(response.getData().getIsValid());
   }
 
   @Test
   void testVerifyOTP_Success_IsValid_False() {
-    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(false);
 
-    VerifyOtpResponse response = accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
+    VerifyOtpResponse response = accountService.verifyOtp(mockVerifyOtpRequest());
     Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
     Assertions.assertFalse(response.getData().getIsValid());
   }
 
   @Test
   void testVerifyOTP_Failed_InfoBipServiceUnavailable() {
-    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(infoBipRestClient.verifyOtp(anyString(), anyString()))
         .thenThrow(new BizException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {
-      accountService.verifyOtp(anyString(), mockVerifyOtpRequest());
+      accountService.verifyOtp(mockVerifyOtpRequest());
     } catch (BizException ex) {
       Assertions.assertEquals(
           ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
@@ -315,8 +316,7 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testFinishLinkAccount_Success_WithBrandNewAccount() {
 
-    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
-    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
     when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
@@ -324,8 +324,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(accountRepository.save(any(AccountEntity.class))).thenReturn(mockAccountEntityLinked());
 
     FinishLinkAccountResponse response =
-        accountService.finishLinkAccount(
-            "authorization", new FinishLinkAccountRequest().accNumber("12345"));
+        accountService.finishLinkAccount(new FinishLinkAccountRequest().accNumber("12345"));
 
     Assertions.assertNotNull(response);
     Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
@@ -335,16 +334,14 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testFinishLinkAccount_Success_AccountAlreadyLinked() {
 
-    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
-    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
     when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
         .thenReturn(Optional.ofNullable(mockAccountEntityLinked()));
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
 
     try {
-      accountService.finishLinkAccount(
-          "authorization", new FinishLinkAccountRequest().accNumber("12345"));
+      accountService.finishLinkAccount(new FinishLinkAccountRequest().accNumber("12345"));
     } catch (BizException ex) {
       Assertions.assertEquals(
           ResponseMessage.ACCOUNT_ALREADY_LINKED.getCode(), ex.getResponseMessage().getCode());
@@ -356,8 +353,7 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testFinishLinkAccount_Failed_FetchAccountError() {
 
-    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
-    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
     when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
         .thenReturn(Optional.ofNullable(mockAccountEntityAccountPending()));
@@ -365,7 +361,7 @@ class AccountServiceTest extends AbstractAccountTest {
         .thenThrow(new BizException(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS));
 
     try {
-      accountService.finishLinkAccount("authentication", mockFinishLinkAccountRequest());
+      accountService.finishLinkAccount(mockFinishLinkAccountRequest());
 
     } catch (BizException ex) {
 
@@ -380,15 +376,14 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testFinishLinkAccount_Failed_AccountNotFullyKyc() {
 
-    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
-    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
     when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
         .thenReturn(Optional.ofNullable(mockAccountEntityAccountPending()));
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponseNotKYC());
 
     try {
-      accountService.finishLinkAccount("authentication", mockFinishLinkAccountRequest());
+      accountService.finishLinkAccount(mockFinishLinkAccountRequest());
 
     } catch (BizException ex) {
 
@@ -402,14 +397,12 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testFinishLinkAccount_Failed_AccountNotFoundInOBC() {
 
-    when(jwtTokenUtils.getSubject(anyString())).thenReturn("username");
-    when(jwtTokenUtils.getUserId(anyString())).thenReturn("1");
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
         .thenReturn(Optional.empty());
 
     try {
-      accountService.finishLinkAccount("authentication", mockFinishLinkAccountRequest());
-
+      accountService.finishLinkAccount(mockFinishLinkAccountRequest());
     } catch (BizException ex) {
 
       Assertions.assertEquals(
@@ -421,25 +414,21 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testUnlinkAccount_Success() {
-    when(jwtTokenUtils.getSubject(anyString())).thenReturn("bakongId@oski");
     when(accountRepository.findByAccountIdAndLinkedStatus(anyString(), any()))
         .thenReturn(Optional.of(mockAccountEntityLinked()));
 
-    UnlinkAccountResponse response =
-        accountService.unlinkAccount("authorization", mockUnlinkAccountRequest());
+    UnlinkAccountResponse response = accountService.unlinkAccount(mockUnlinkAccountRequest());
 
     Assertions.assertEquals(0, response.getStatus().getCode());
   }
 
   @Test
   void testUnlinkAccount_Failed_AccountNotFound() {
-
-    when(jwtTokenUtils.getSubject(anyString())).thenReturn("bakongId@oski");
     when(accountRepository.findByAccountIdAndLinkedStatus(anyString(), any()))
         .thenReturn(Optional.empty());
 
     try {
-      accountService.unlinkAccount("authorization", mockUnlinkAccountRequest());
+      accountService.unlinkAccount(mockUnlinkAccountRequest());
     } catch (BizException ex) {
       Assertions.assertEquals(
           ResponseMessage.NO_ACCOUNT_FOUND.getCode(), ex.getResponseMessage().getCode());

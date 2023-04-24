@@ -156,7 +156,7 @@ public class TransactionServiceImpl implements TransactionService {
 
   @Override
   public FinishTransactionResponse finishTransaction(
-      String authorization, FinishTransactionRequest finishTransactionRequest) {
+      FinishTransactionRequest finishTransactionRequest) {
     return null;
   }
 }

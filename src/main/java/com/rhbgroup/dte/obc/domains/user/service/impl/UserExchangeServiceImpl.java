@@ -60,7 +60,11 @@ public class UserExchangeServiceImpl implements UserExchangeService {
                     AppConstants.Role.APP_USER,
                     AppConstants.Permission.concat(
                         AppConstants.Permission.CAN_GET_BALANCE,
-                        AppConstants.Permission.CAN_TOP_UP)))
+                        AppConstants.Permission.CAN_TOP_UP,
+                        AppConstants.Permission.CAN_AUTH,
+                        AppConstants.Permission.CAN_GET_TRANSACTION,
+                        AppConstants.Permission.CAN_LINK_ACCOUNT,
+                        AppConstants.Permission.CAN_UNLINK_ACCOUNT)))
         .andThen(performUserRoleIfNeeded)
         .andThen(userExchangeMapper::toGwExchangeUserResponse)
         .apply(userModel);

@@ -5,13 +5,8 @@ post:
   summary: Finish transaction between NBC and GoWave
   description: Finish transaction between NBC and GoWave
   operationId: finishTransaction
-  parameters:
-    - in: header
-      name: Authorization
-      schema:
-        type: string
-        format: String
-      required: true
+  security:
+    - bearerAuth: [ ]
   requestBody:
     description: Finish transaction
     content:

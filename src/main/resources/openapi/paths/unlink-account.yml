@@ -5,13 +5,8 @@ post:
   summary: Unlink account between PG1 and CDRB
   description: Unlink account between PG1 and CDRB
   operationId: unlinkAccount
-  parameters:
-    - in: header
-      name: Authorization
-      schema:
-        type: string
-        format: String
-      required: true
+  security:
+    - bearerAuth: [ ]
   requestBody:
     description: Unlink account request
     content:

@@ -27,9 +27,9 @@ public class TransactionController implements TransactionApiDelegate {
 
   @Override
   public ResponseEntity<FinishTransactionResponse> finishTransaction(
-      String authorization, FinishTransactionRequest finishTransactionRequest) {
+      FinishTransactionRequest finishTransactionRequest) {
     return Functions.of(transactionService::finishTransaction)
         .andThen(ResponseEntity::ok)
-        .apply(authorization, finishTransactionRequest);
+        .apply(finishTransactionRequest);
   }
 }
