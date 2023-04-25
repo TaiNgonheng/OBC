@@ -9,4 +9,6 @@ public interface CacheUtil {
   void addKey(String cacheName, String key, String value);
 
   String getValueFromKey(String cacheName, String key);
+
+  void removeKey(String cacheName, String key);
 }

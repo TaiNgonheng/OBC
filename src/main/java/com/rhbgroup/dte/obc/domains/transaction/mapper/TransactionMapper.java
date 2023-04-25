@@ -22,7 +22,11 @@ import com.rhbgroup.dte.obc.model.TransactionStatus;
 import com.rhbgroup.dte.obc.model.TransactionType;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import java.math.BigDecimal;
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -118,7 +122,7 @@ public interface TransactionMapper {
       CDRBTransferInquiryResponse inquiryResponse) {
 
     OffsetDateTime completionDate = inquiryResponse.getTransferCompletionDate();
-    String extRef = inquiryResponse.getExternalSytemRef();
+    String extRef = inquiryResponse.getExternalSystemRef();
 
     return new FinishTransactionResponse()
         .status(ResponseHandler.ok())
@@ -129,7 +133,7 @@ public interface TransactionMapper {
                         ? null
                         : BigDecimal.valueOf(completionDate.toInstant().toEpochMilli()))
                 .transactionId(inquiryResponse.getCorrelationId())
-                .transactionHash(null == extRef ? null : inquiryResponse.getExternalSytemRef()));
+                .transactionHash(null == extRef ? null : inquiryResponse.getExternalSystemRef()));
   }
 
   @Mapping(source = "fromAccount", target = "sourceAcc")

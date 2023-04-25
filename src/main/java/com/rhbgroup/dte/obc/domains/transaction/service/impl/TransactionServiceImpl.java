@@ -240,11 +240,10 @@ public class TransactionServiceImpl implements TransactionService {
       CDRBTransferInquiryRequest request, String initRef) {
 
     CDRBTransferInquiryResponse response = cdrbRestClient.getTransferDetail(request);
-
     if (TransactionStatus.PENDING.getValue().equals(response.getStatus())) {
-      // Wait 0.5s before continuously recursive this function
+      // Retry interval is 1s
       try {
-        Thread.sleep(500L);
+        Thread.sleep(1000L);
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
       }

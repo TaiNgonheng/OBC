@@ -316,7 +316,8 @@ class TransactionServiceTest extends AbstractTransactionTest {
     assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
 
     assertNotNull(response.getData());
-    assertEquals(transactionDetails.getExternalSytemRef(), response.getData().getTransactionHash());
+    assertEquals(
+        transactionDetails.getExternalSystemRef(), response.getData().getTransactionHash());
     assertEquals(transactionDetails.getCorrelationId(), response.getData().getTransactionId());
     assertEquals(
         BigDecimal.valueOf(
@@ -356,7 +357,8 @@ class TransactionServiceTest extends AbstractTransactionTest {
     assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
 
     assertNotNull(response.getData());
-    assertEquals(transactionDetails.getExternalSytemRef(), response.getData().getTransactionHash());
+    assertEquals(
+        transactionDetails.getExternalSystemRef(), response.getData().getTransactionHash());
     assertEquals(transactionDetails.getCorrelationId(), response.getData().getTransactionId());
     assertEquals(
         BigDecimal.valueOf(

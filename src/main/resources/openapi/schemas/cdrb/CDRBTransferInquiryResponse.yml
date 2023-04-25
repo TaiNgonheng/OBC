@@ -56,5 +56,5 @@ properties:
     format: double
   qrCode:
     type: string
-  externalSytemRef:
+  externalSystemRef:
     type: string

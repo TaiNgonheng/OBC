@@ -37,4 +37,9 @@ public class JCacheUtil implements CacheUtil {
   public String getValueFromKey(String cacheName, String key) {
     return (String) cacheManager.getCache(cacheName).get(key);
   }
+
+  @Override
+  public void removeKey(String cacheName, String key) {
+    cacheManager.getCache(cacheName).remove(key);
+  }
 }

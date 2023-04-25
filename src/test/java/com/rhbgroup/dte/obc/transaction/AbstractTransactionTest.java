@@ -204,7 +204,7 @@ public abstract class AbstractTransactionTest {
     return new CDRBTransferInquiryResponse()
         .correlationId(CORRELATION_ID)
         .status("COMPLETED")
-        .externalSytemRef("transaction-hash")
+        .externalSystemRef("transaction-hash")
         .transferCompletionDate(OffsetDateTime.now());
   }
 
@@ -212,7 +212,7 @@ public abstract class AbstractTransactionTest {
     return new CDRBTransferInquiryResponse()
         .correlationId(CORRELATION_ID)
         .status("FAILED")
-        .externalSytemRef(null)
+        .externalSystemRef(null)
         .transferCompletionDate(null);
   }
 
