@@ -8,6 +8,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.util.SFTPUtil;
@@ -93,12 +94,12 @@ public class TransactionServiceImpl implements TransactionService {
   private final TransactionMapper transactionMapper = new TransactionMapperImpl();
   private final SFTPUtil sftpUtil;
   private final BatchReportRepository batchReportRepository;
+  private final ApplicationProperties applicationProperties;
 
   private static final String TRANSACTION_FILE_PREFIX = "OBCDailyTrx_";
   private static final String DATE_FORMAT_DDMMYYYY = "ddMMyyyy";
   private static final String DATE_FORMAT_YYYYMMDD = "yyyyMMdd";
   private static final String TRANSACTION_FILE_EXTENSION = ".csv";
-  private static final int MAX_STACK_TRACE_LENGTH = 19999;
   private static final String SIBS_SYNC_DATE_KEY = "SIBS_DATE_CONFIG";
 
   @Override
@@ -342,8 +343,9 @@ public class TransactionServiceImpl implements TransactionService {
       batchReportRepository.saveAndFlush(report);
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getStackTrace(e);
-      if (StringUtils.isNotBlank(stackTrace) && stackTrace.length() > MAX_STACK_TRACE_LENGTH) {
-        stackTrace = stackTrace.substring(0, MAX_STACK_TRACE_LENGTH);
+      if (StringUtils.isNotBlank(stackTrace)
+          && stackTrace.length() > applicationProperties.getMaxStackTraceLength()) {
+        stackTrace = stackTrace.substring(0, applicationProperties.getMaxStackTraceLength());
       }
       report.setStatus(BatchReportStatus.FAILED);
       report.setErrorMessage(stackTrace);

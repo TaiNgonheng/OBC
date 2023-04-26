@@ -68,3 +68,6 @@ obc:
     host: ${SFTP_HOST:127.0.0.1}
     port: ${SFTP_PORT:2022}
     path: ${SFTP_PATH:data}
+
+config:
+  maxStackTraceLength: ${MAX_STACK_TRACE_LENGTH:19999}

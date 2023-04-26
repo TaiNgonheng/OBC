@@ -22,4 +22,7 @@ public class ApplicationProperties {
 
   @Value("${obc.sftp.path}")
   private String sftpPath;
+
+  @Value("${config.maxStackTraceLength}")
+  private Integer maxStackTraceLength;
 }

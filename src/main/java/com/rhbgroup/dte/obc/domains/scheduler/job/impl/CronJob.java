@@ -23,7 +23,7 @@ public class CronJob extends QuartzJobBean {
 
   @Override
   protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-    log.info("Context - {}", context);
+    log.debug("Context - {}", context);
     JobKey jobKey = context.getJobDetail().getKey();
     JobFactory job = jobFactory.getItemFactory(JobNameEnum.fromValue(jobKey.getName()));
     JobItem jobItem =
