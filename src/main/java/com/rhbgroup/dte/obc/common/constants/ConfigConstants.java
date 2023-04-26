@@ -18,6 +18,7 @@ public class ConfigConstants {
 
     public static final String CONFIG_KEY_USD = "TRANSACTION_CONFIG_USD";
     public static final String CONFIG_KEY_KHR = "TRANSACTION_CONFIG_KHR";
+    public static final String TRX_QUERY_MAX_DURATION = "TRX_QUERY_MAX_DURATION";
 
     public static final String MIN_AMOUNT = "txMinAmt";
     public static final String MAX_AMOUNT = "txMaxAmt";
