@@ -11,4 +11,6 @@ public interface CacheUtil {
   String getValueFromKey(String cacheName, String key);
 
   void removeKey(String cacheName, String key);
+
+  boolean isEmptyCache(String cacheName);
 }

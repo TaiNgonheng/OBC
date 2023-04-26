@@ -42,4 +42,8 @@ public class JCacheUtil implements CacheUtil {
   public void removeKey(String cacheName, String key) {
     cacheManager.getCache(cacheName).remove(key);
   }
+
+  public boolean isEmptyCache(String cacheName) {
+    return cacheManager.getCache(cacheName) == null;
+  }
 }
