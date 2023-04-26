@@ -209,24 +209,30 @@ public class TransactionServiceImpl implements TransactionService {
             transferResponse ->
                 new CDRBTransferInquiryRequest().correlationId(transferResponse.getCorrelationId()))
         .andThen(
-            getTrxRequest -> transactionInquiryRecursive(getTrxRequest, request.getInitRefNumber()))
+            getTrxRequest -> {
+              String maxDurationInSec =
+                  configService.getByConfigKey(
+                      ConfigConstants.Transaction.TRX_QUERY_MAX_DURATION, "value");
+              return transactionInquiryRecursive(
+                  getTrxRequest, request.getInitRefNumber(), Integer.parseInt(maxDurationInSec));
+            })
         .andThen(transactionMapper::toFinishTransactionResponse)
         .apply(transaction);
   }
 
   private CDRBTransferInquiryResponse transactionInquiryRecursive(
-      CDRBTransferInquiryRequest request, String initRef) {
+      CDRBTransferInquiryRequest request, String initRef, Integer maxDurationInSec) {
 
     CDRBTransferInquiryResponse response = cdrbRestClient.getTransferDetail(request);
     if (TransactionStatus.PENDING.getValue().equals(response.getStatus())) {
       try {
-        long interval = calculateInterval(initRef);
+        long interval = calculateInterval(initRef, maxDurationInSec);
         log.info("Interval = {}", interval);
         Thread.sleep(interval);
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
       }
-      return transactionInquiryRecursive(request, initRef);
+      return transactionInquiryRecursive(request, initRef, maxDurationInSec);
     }
     resetRetryCount(initRef);
     transactionRepository
@@ -234,13 +240,14 @@ public class TransactionServiceImpl implements TransactionService {
         .ifPresent(
             trx -> {
               trx.setTrxStatus(TransactionStatus.fromValue(response.getStatus()));
+              trx.setTrxCompletionDate(Instant.now());
               transactionRepository.save(trx);
             });
 
     return response;
   }
 
-  private long calculateInterval(String initRefNo) {
+  private long calculateInterval(String initRefNo, Integer maxDurationInSec) {
     String initTrxTimeKey = CacheConstants.CDRBCache.TRX_INIT_TIME.concat(initRefNo);
     String initTrxTime =
         cacheUtil.getValueFromKey(CacheConstants.CDRBCache.CACHE_NAME, initTrxTimeKey);
@@ -253,16 +260,13 @@ public class TransactionServiceImpl implements TransactionService {
       return 1000L;
     }
 
-    String maxDurationInSec =
-        configService.getByConfigKey(ConfigConstants.Transaction.TRX_QUERY_MAX_DURATION, "value");
-
     long timeRange = Instant.now().toEpochMilli() - Long.parseLong(initTrxTime);
     if (timeRange <= 30 * 1000) {
       log.info("Time range is less than 30s");
       return 1000L;
-    } else if (timeRange <= Integer.parseInt(maxDurationInSec) * 1000L) {
+    } else if (timeRange <= maxDurationInSec * 1000L) {
       log.info("Time range is less than 40s");
-      return 2000L;
+      return 5000L;
     } else {
       log.info("Maximum time range has been exceeded");
       resetRetryCount(initRefNo);

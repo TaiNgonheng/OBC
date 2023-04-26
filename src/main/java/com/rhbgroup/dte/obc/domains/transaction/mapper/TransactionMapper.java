@@ -112,7 +112,7 @@ public interface TransactionMapper {
       CDRBTransferInquiryResponse inquiryResponse) {
 
     OffsetDateTime completionDate = inquiryResponse.getTransferCompletionDate();
-    String extRef = inquiryResponse.getExternalSytemRef();
+    String extRef = inquiryResponse.getExternalSystemRef();
 
     return new FinishTransactionResponse()
         .status(ResponseHandler.ok())
@@ -123,6 +123,6 @@ public interface TransactionMapper {
                         ? null
                         : BigDecimal.valueOf(completionDate.toInstant().toEpochMilli()))
                 .transactionId(inquiryResponse.getCorrelationId())
-                .transactionHash(null == extRef ? null : inquiryResponse.getExternalSytemRef()));
+                .transactionHash(null == extRef ? null : inquiryResponse.getExternalSystemRef()));
   }
 }

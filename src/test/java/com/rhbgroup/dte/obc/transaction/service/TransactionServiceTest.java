@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,6 +16,7 @@ import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
+import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionEntity;
@@ -65,6 +67,8 @@ class TransactionServiceTest extends AbstractTransactionTest {
   @Mock AccountService accountService;
 
   @Mock InfoBipRestClient infoBipRestClient;
+
+  @Mock CacheUtil cacheUtil;
 
   @Test
   void testInitTransaction_Success_CASA_TO_WALLET() {
@@ -277,6 +281,8 @@ class TransactionServiceTest extends AbstractTransactionTest {
     CDRBTransferInquiryResponse transactionDetails = mockCDRBTransferDetail();
     when(cdrbRestClient.getTransferDetail(any())).thenReturn(transactionDetails);
     when(transactionRepository.save(any())).thenReturn(new TransactionEntity());
+    when(configService.getByConfigKey(ConfigConstants.Transaction.TRX_QUERY_MAX_DURATION, "value"))
+        .thenReturn("40");
 
     FinishTransactionResponse response =
         transactionService.finishTransaction(mockFinishTransactionRequest());
@@ -285,7 +291,8 @@ class TransactionServiceTest extends AbstractTransactionTest {
     assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
 
     assertNotNull(response.getData());
-    assertEquals(transactionDetails.getExternalSytemRef(), response.getData().getTransactionHash());
+    assertEquals(
+        transactionDetails.getExternalSystemRef(), response.getData().getTransactionHash());
     assertEquals(transactionDetails.getCorrelationId(), response.getData().getTransactionId());
     assertEquals(
         BigDecimal.valueOf(
@@ -316,6 +323,8 @@ class TransactionServiceTest extends AbstractTransactionTest {
     CDRBTransferInquiryResponse transactionDetails = mockCDRBTransferDetail();
     when(cdrbRestClient.getTransferDetail(any())).thenReturn(transactionDetails);
     when(transactionRepository.save(any())).thenReturn(new TransactionEntity());
+    when(configService.getByConfigKey(ConfigConstants.Transaction.TRX_QUERY_MAX_DURATION, "value"))
+        .thenReturn("40");
 
     FinishTransactionRequest requestWithOTP = mockFinishTransactionRequest();
     requestWithOTP.setOtpCode("123456");
@@ -325,7 +334,8 @@ class TransactionServiceTest extends AbstractTransactionTest {
     assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
 
     assertNotNull(response.getData());
-    assertEquals(transactionDetails.getExternalSytemRef(), response.getData().getTransactionHash());
+    assertEquals(
+        transactionDetails.getExternalSystemRef(), response.getData().getTransactionHash());
     assertEquals(transactionDetails.getCorrelationId(), response.getData().getTransactionId());
     assertEquals(
         BigDecimal.valueOf(
@@ -420,14 +430,17 @@ class TransactionServiceTest extends AbstractTransactionTest {
                 .data(new GetAccountDetailResponseAllOfData().accCcy("USD")));
 
     when(cdrbRestClient.transfer(any())).thenReturn(mockCDRBTransferResponse());
-
+    when(configService.getByConfigKey(ConfigConstants.Transaction.TRX_QUERY_MAX_DURATION, "value"))
+        .thenReturn("40");
     CDRBTransferInquiryResponse transactionDetails = mockCDRBTransferDetailError();
     when(cdrbRestClient.getTransferDetail(any())).thenReturn(transactionDetails);
     when(transactionRepository.save(any())).thenReturn(new TransactionEntity());
+    doNothing().when(cacheUtil).removeKey(anyString(), anyString());
 
     FinishTransactionResponse response =
         transactionService.finishTransaction(mockFinishTransactionRequest());
 
+    verify(cacheUtil, times(1)).removeKey(anyString(), anyString());
     assertNotNull(response.getData());
     assertNull(response.getData().getTransactionDate());
     assertNull(response.getData().getTransactionHash());
