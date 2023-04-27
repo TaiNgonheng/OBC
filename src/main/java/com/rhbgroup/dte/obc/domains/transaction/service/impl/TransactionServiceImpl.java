@@ -10,7 +10,6 @@ import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
-import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.common.util.SFTPUtil;
@@ -88,8 +87,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class TransactionServiceImpl implements TransactionService {
 
-  private final CacheUtil cacheUtil;
-
   private final UserAuthService userAuthService;
   private final ConfigService configService;
   private final AccountService accountService;
@@ -108,13 +105,6 @@ public class TransactionServiceImpl implements TransactionService {
   private static final String DATE_FORMAT_YYYYMMDD = "yyyyMMdd";
   private static final String TRANSACTION_FILE_EXTENSION = ".csv";
   private static final String SIBS_SYNC_DATE_KEY = "SIBS_DATE_CONFIG";
-
-  @PostConstruct
-  public void intiCache() {
-    if (cacheUtil.isEmptyCache(CacheConstants.CDRBCache.CACHE_NAME)) {
-      cacheUtil.createCache(CacheConstants.CDRBCache.CACHE_NAME, Duration.ONE_MINUTE);
-    }
-  }
 
   @Override
   public void save(TransactionModel transactionModel) {
@@ -251,27 +241,32 @@ public class TransactionServiceImpl implements TransactionService {
                   configService.getByConfigKey(
                       ConfigConstants.Transaction.TRX_QUERY_MAX_DURATION, "value");
               return transactionInquiryRecursive(
-                  getTrxRequest, request.getInitRefNumber(), Integer.parseInt(maxDurationInSec));
+                  getTrxRequest,
+                  request.getInitRefNumber(),
+                  Integer.parseInt(maxDurationInSec),
+                  Instant.now().toEpochMilli());
             })
         .andThen(transactionMapper::toFinishTransactionResponse)
         .apply(transaction);
   }
 
   private CDRBTransferInquiryResponse transactionInquiryRecursive(
-      CDRBTransferInquiryRequest request, String initRef, Integer maxDurationInSec) {
+      CDRBTransferInquiryRequest request,
+      String initRef,
+      Integer maxDurationInSec,
+      Long intTrxTime) {
 
     CDRBTransferInquiryResponse response = cdrbRestClient.getTransferDetail(request);
     if (TransactionStatus.PENDING.getValue().equals(response.getStatus())) {
       try {
-        long interval = calculateInterval(initRef, maxDurationInSec);
+        long interval = calculateInterval(maxDurationInSec, intTrxTime);
         log.info("Interval = {}", interval);
         Thread.sleep(interval);
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
       }
-      return transactionInquiryRecursive(request, initRef, maxDurationInSec);
+      return transactionInquiryRecursive(request, initRef, maxDurationInSec, intTrxTime);
     }
-    resetRetryCount(initRef);
     transactionRepository
         .findByInitRefNumber(initRef)
         .ifPresent(
@@ -284,37 +279,21 @@ public class TransactionServiceImpl implements TransactionService {
     return response;
   }
 
-  private long calculateInterval(String initRefNo, Integer maxDurationInSec) {
-    String initTrxTimeKey = CacheConstants.CDRBCache.TRX_INIT_TIME.concat(initRefNo);
-    String initTrxTime =
-        cacheUtil.getValueFromKey(CacheConstants.CDRBCache.CACHE_NAME, initTrxTimeKey);
+  private long calculateInterval(Integer maxDurationInSec, Long initTrxTime) {
 
-    if (StringUtils.isBlank(initTrxTime)) {
-      cacheUtil.addKey(
-          CacheConstants.CDRBCache.CACHE_NAME,
-          initTrxTimeKey,
-          String.valueOf(Instant.now().toEpochMilli()));
-      return 1000L;
-    }
-
-    long timeRange = Instant.now().toEpochMilli() - Long.parseLong(initTrxTime);
+    long timeRange = Instant.now().toEpochMilli() - initTrxTime;
     if (timeRange <= 30 * 1000) {
       log.info("Time range is less than 30s");
       return 1000L;
+
     } else if (timeRange <= maxDurationInSec * 1000L) {
       log.info("Time range is less than 40s");
       return 5000L;
+
     } else {
       log.info("Maximum time range has been exceeded");
-      resetRetryCount(initRefNo);
       throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
-  }
-
-  private void resetRetryCount(String initRefNo) {
-    cacheUtil.removeKey(
-        CacheConstants.CDRBCache.CACHE_NAME,
-        CacheConstants.CDRBCache.TRX_INIT_TIME.concat(initRefNo));
   }
 
   @Override
