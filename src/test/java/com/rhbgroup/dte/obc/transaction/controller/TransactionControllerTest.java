@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.transaction.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
@@ -8,8 +9,12 @@ import com.rhbgroup.dte.obc.api.TransactionApiController;
 import com.rhbgroup.dte.obc.api.TransactionApiDelegate;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.GlobalExceptionHandler;
+import com.rhbgroup.dte.obc.exceptions.InternalException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
+import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
+import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.InitTransactionResponse;
 import com.rhbgroup.dte.obc.transaction.AbstractTransactionTest;
@@ -87,7 +92,7 @@ class TransactionControllerTest extends AbstractTransactionTest {
   }
 
   @Test
-  void testInitTransaction_Success_401_Unauthorized() throws Exception {
+  void testInitTransaction_Failed_401_Unauthorized() throws Exception {
 
     InitTransactionRequest mockRequest = mockInitTransactionRequest();
     when(transactionApiDelegate.initTransaction(mockRequest))
@@ -125,7 +130,7 @@ class TransactionControllerTest extends AbstractTransactionTest {
   }
 
   @Test
-  void testInitTransaction_Success_400_MissingMandatoryFields() throws Exception {
+  void testInitTransaction_Failed_400_MissingMandatoryFields() throws Exception {
 
     InitTransactionRequest invalidRequest = new InitTransactionRequest();
 
@@ -157,6 +162,199 @@ class TransactionControllerTest extends AbstractTransactionTest {
         initTransactionResponse.getStatus().getErrorCode());
     Assertions.assertEquals(
         ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(),
+        initTransactionResponse.getStatus().getErrorMessage());
+  }
+
+  @Test
+  void testFinishTransaction_Success_200() throws Exception {
+
+    FinishTransactionRequest mockRequest = mockFinishTransactionRequest();
+    when(transactionApiDelegate.finishTransaction(mockRequest))
+        .thenReturn(ResponseEntity.ok(mockFinishTransactionResponse()));
+
+    MockHttpServletResponse response =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/finish-transaction")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding(StandardCharsets.UTF_8)
+                    .content(objectMapper.writeValueAsBytes(mockRequest)))
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data").exists())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+            .andReturn()
+            .getResponse();
+
+    String contentAsString = response.getContentAsString();
+    FinishTransactionResponse initTransactionResponse =
+        objectMapper.readValue(contentAsString, FinishTransactionResponse.class);
+
+    Assertions.assertNotNull(initTransactionResponse.getStatus());
+    Assertions.assertNotNull(initTransactionResponse.getData());
+
+    Assertions.assertEquals(
+        AppConstants.Status.SUCCESS, initTransactionResponse.getStatus().getCode());
+
+    Assertions.assertNotNull(initTransactionResponse.getData().getTransactionHash());
+  }
+
+  @Test
+  void testFinishTransaction_Success_200_ButCoreTransactionFailed() throws Exception {
+
+    FinishTransactionRequest mockRequest = mockFinishTransactionRequest();
+
+    // Mock core failed result
+    FinishTransactionResponse mockResponse = mockFinishTransactionResponse();
+    mockResponse.getData().setTransactionDate(null);
+    mockResponse.getData().setTransactionHash(null);
+
+    when(transactionApiDelegate.finishTransaction(mockRequest))
+        .thenReturn(ResponseEntity.ok(mockResponse));
+
+    MockHttpServletResponse response =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/finish-transaction")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding(StandardCharsets.UTF_8)
+                    .content(objectMapper.writeValueAsBytes(mockRequest)))
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data").exists())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+            .andReturn()
+            .getResponse();
+
+    String contentAsString = response.getContentAsString();
+    FinishTransactionResponse initTransactionResponse =
+        objectMapper.readValue(contentAsString, FinishTransactionResponse.class);
+
+    Assertions.assertNotNull(initTransactionResponse.getStatus());
+    Assertions.assertNotNull(initTransactionResponse.getData());
+
+    Assertions.assertEquals(
+        AppConstants.Status.SUCCESS, initTransactionResponse.getStatus().getCode());
+
+    Assertions.assertNotNull(initTransactionResponse.getData().getTransactionId());
+    Assertions.assertNull(initTransactionResponse.getData().getTransactionHash());
+    Assertions.assertNull(initTransactionResponse.getData().getTransactionDate());
+  }
+
+  @Test
+  void testFinishTransaction_Failed_401_Unauthorized() throws Exception {
+
+    when(transactionApiDelegate.finishTransaction(any()))
+        .thenThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
+
+    MockHttpServletResponse response =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/finish-transaction")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding(StandardCharsets.UTF_8)
+                    .content(objectMapper.writeValueAsBytes(mockFinishTransactionRequest())))
+            .andExpect(MockMvcResultMatchers.status().isUnauthorized())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data").doesNotExist())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+            .andReturn()
+            .getResponse();
+
+    String contentAsString = response.getContentAsString();
+    FinishTransactionResponse initTransactionResponse =
+        objectMapper.readValue(contentAsString, FinishTransactionResponse.class);
+
+    Assertions.assertNotNull(initTransactionResponse.getStatus());
+    Assertions.assertNull(initTransactionResponse.getData());
+
+    Assertions.assertEquals(
+        AppConstants.Status.ERROR, initTransactionResponse.getStatus().getCode());
+
+    Assertions.assertEquals(
+        ResponseMessage.AUTHENTICATION_FAILED.getCode().toString(),
+        initTransactionResponse.getStatus().getErrorCode());
+
+    Assertions.assertEquals(
+        ResponseMessage.AUTHENTICATION_FAILED.getMsg(),
+        initTransactionResponse.getStatus().getErrorMessage());
+  }
+
+  @Test
+  void testFinishTransaction_Failed_500_InternalServerError() throws Exception {
+
+    when(transactionApiDelegate.finishTransaction(any()))
+        .thenThrow(new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR));
+
+    MockHttpServletResponse response =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/finish-transaction")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding(StandardCharsets.UTF_8)
+                    .content(objectMapper.writeValueAsBytes(mockFinishTransactionRequest())))
+            .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data").doesNotExist())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+            .andReturn()
+            .getResponse();
+
+    String contentAsString = response.getContentAsString();
+    FinishTransactionResponse initTransactionResponse =
+        objectMapper.readValue(contentAsString, FinishTransactionResponse.class);
+
+    Assertions.assertNotNull(initTransactionResponse.getStatus());
+    Assertions.assertNull(initTransactionResponse.getData());
+
+    Assertions.assertEquals(
+        AppConstants.Status.ERROR, initTransactionResponse.getStatus().getCode());
+
+    Assertions.assertEquals(
+        ResponseMessage.INTERNAL_SERVER_ERROR.getCode().toString(),
+        initTransactionResponse.getStatus().getErrorCode());
+
+    Assertions.assertEquals(
+        ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(),
+        initTransactionResponse.getStatus().getErrorMessage());
+  }
+
+  @Test
+  void testFinishTransaction_Failed_400_OtpInvalid() throws Exception {
+
+    when(transactionApiDelegate.finishTransaction(any()))
+        .thenThrow(new BizException(ResponseMessage.INVALID_TOKEN));
+
+    MockHttpServletResponse response =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/finish-transaction")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding(StandardCharsets.UTF_8)
+                    .content(objectMapper.writeValueAsBytes(mockFinishTransactionRequest())))
+            .andExpect(MockMvcResultMatchers.status().isBadRequest())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data").doesNotExist())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+            .andReturn()
+            .getResponse();
+
+    String contentAsString = response.getContentAsString();
+    FinishTransactionResponse initTransactionResponse =
+        objectMapper.readValue(contentAsString, FinishTransactionResponse.class);
+
+    Assertions.assertNotNull(initTransactionResponse.getStatus());
+    Assertions.assertNull(initTransactionResponse.getData());
+
+    Assertions.assertEquals(
+        AppConstants.Status.ERROR, initTransactionResponse.getStatus().getCode());
+
+    Assertions.assertEquals(
+        ResponseMessage.INVALID_TOKEN.getCode().toString(),
+        initTransactionResponse.getStatus().getErrorCode());
+
+    Assertions.assertEquals(
+        ResponseMessage.INVALID_TOKEN.getMsg(),
         initTransactionResponse.getStatus().getErrorMessage());
   }
 }

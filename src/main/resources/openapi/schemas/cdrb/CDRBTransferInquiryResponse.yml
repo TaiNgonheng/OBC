@@ -1,0 +1,60 @@
+type: object
+properties:
+  correlationId:
+    type: string
+  status:
+    type: string
+  fromAccountNumber:
+    type: string
+  toAccountNumber:
+    type: string
+  transferDate:
+    type: string
+    format: date-time
+  transferCompletionDate:
+    type: string
+    format: date-time
+  transferType:
+    type: string
+  toAccountCurrency:
+    type: string
+  currencyCode:
+    type: string
+  acctCurrencyCode:
+    type: string
+  transferMessage:
+    type: string
+  recipientBIC:
+    type: string
+  recipientName:
+    type: string
+  refNo:
+    type: string
+  fees:
+    type: number
+    format: double
+  feeTransactionCurrencyAmount:
+    type: number
+    format: double
+  transferAmount:
+    type: number
+    format: double
+  cashBack:
+    type: number
+    format: double
+  cashBackTransactionCurrencyAmount:
+    type: number
+    format: double
+  amount:
+    type: number
+    format: double
+  buyRate:
+    type: number
+    format: double
+  sellRate:
+    type: number
+    format: double
+  qrCode:
+    type: string
+  externalSystemRef:
+    type: string

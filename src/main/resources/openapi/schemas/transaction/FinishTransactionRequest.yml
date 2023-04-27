@@ -1,7 +1,6 @@
 type: object
 required:
   - initRefNumber
-  - otpCode
   - key
 properties:
   initRefNumber:
@@ -17,7 +16,6 @@ properties:
     example: 123456
   key:
     type: string
-    minLength: 1
     maxLength: 64
     message: string must be atleast 1 digit and max of 64 digits
     example: password

@@ -8,12 +8,10 @@ info:
 tags:
   - name: Account
     description: Account
-  - name: UserProfile
-    description: User profile
-  - name: UserExchange
-    description: User exchange
+  - name: System Exchange
+    description: User Profile Exchange from GoWave
   - name: Transaction
-    description: Account transaction
+    description: Account Transaction
 
 servers: # context path - /api/v1
   - url: http://localhost:8080
@@ -125,6 +123,14 @@ components:
       $ref: './schemas/cdrb/CDRBFeeAndCashbackRequest.yml'
     CDRBFeeAndCashbackResponse:
       $ref: './schemas/cdrb/CDRBFeeAndCashbackResponse.yml'
+    CDRBTransferRequest:
+      $ref: './schemas/cdrb/CDRBTransferRequest.yml'
+    CDRBTransferResponse:
+      $ref: './schemas/cdrb/CDRBTransferResponse.yml'
+    CDRBTransferInquiryRequest:
+      $ref: './schemas/cdrb/CDRBTransferInquiryRequest.yml'
+    CDRBTransferInquiryResponse:
+      $ref: './schemas/cdrb/CDRBTransferInquiryResponse.yml'
 
   securitySchemes:
     bearerAuth:

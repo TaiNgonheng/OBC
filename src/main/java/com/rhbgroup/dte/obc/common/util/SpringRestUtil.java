@@ -2,7 +2,7 @@ package com.rhbgroup.dte.obc.common.util;
 
 import com.hazelcast.internal.util.MapUtil;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
-import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.exceptions.InternalException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -75,7 +75,7 @@ public class SpringRestUtil {
 
       return uriBuilder.build().toString();
     } catch (URISyntaxException ex) {
-      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+      throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -92,7 +92,7 @@ public class SpringRestUtil {
       }
       return uriBuilder.build().toString();
     } catch (URISyntaxException ex) {
-      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+      throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -143,10 +143,12 @@ public class SpringRestUtil {
       ResponseEntity<T> response =
           restTemplate.exchange(url, method, httpEntity, parameterizedTypeReference);
 
+      log.info("System response >> {}", response.getBody());
       return response.getBody();
+
     } catch (RestClientException ex) {
       log.error("Internal API response with error >> {}", ex.getMessage());
-      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+      throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
   }
 

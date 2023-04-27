@@ -1,7 +1,22 @@
 package com.rhbgroup.dte.obc.domains.transaction.mapper;
 
+import com.rhbgroup.dte.obc.common.ResponseHandler;
+import com.rhbgroup.dte.obc.common.util.RandomGenerator;
 import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionEntity;
+import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransferRequest;
+import com.rhbgroup.dte.obc.model.CDRBTransferType;
+import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
+import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
+import com.rhbgroup.dte.obc.model.FinishTransactionResponseAllOfData;
+import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
+import com.rhbgroup.dte.obc.model.InitTransactionRequest;
+import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.TransactionModel;
+import com.rhbgroup.dte.obc.model.TransactionStatus;
+import com.rhbgroup.dte.obc.security.CustomUserDetails;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -36,5 +51,78 @@ public interface TransactionMapper {
   @Named("toInstant")
   default Instant toInstant(OffsetDateTime offsetDateTime) {
     return null == offsetDateTime ? null : offsetDateTime.toInstant();
+  }
+
+  default TransactionModel toPendingTransactionModel(
+      Long userId,
+      InitTransactionRequest request,
+      PGProfileResponse userProfile,
+      String accountName,
+      CDRBFeeAndCashbackResponse feeAndCashback) {
+
+    return new TransactionModel()
+        .initRefNumber(RandomGenerator.getDefaultRandom().nextString())
+        .userId(BigDecimal.valueOf(userId))
+        .fromAccount(request.getSourceAcc())
+        .toAccount(request.getDestinationAcc())
+        .toAccountCurrency(request.getCcy())
+        .recipientName(userProfile.getAccountName())
+        .creditDebitIndicator(CreditDebitIndicator.D)
+        .trxCcy(request.getCcy())
+        .payerName(accountName)
+        .transferMessage(request.getDesc())
+        .transferType(request.getType())
+        .trxAmount(request.getAmount())
+        .trxFee(feeAndCashback.getFee())
+        .trxCashback(feeAndCashback.getCashBack())
+        .trxDate(OffsetDateTime.now())
+        .trxStatus(TransactionStatus.PENDING);
+  }
+
+  @Mapping(source = "trxAmount", target = "amount")
+  @Mapping(source = "trxFee", target = "fees")
+  @Mapping(source = "trxCashback", target = "cashBack")
+  @Mapping(source = "trxCcy", target = "currencyCode")
+  @Mapping(source = "fromAccount", target = "fromAccountNo")
+  @Mapping(source = "toAccount", target = "toAccountNo")
+  @Mapping(source = "toAccountCurrency", target = "toAccuntCurrency")
+  @Mapping(target = "transferType", ignore = true)
+  CDRBTransferRequest toCDRBTransferRequestBaseMapping(TransactionEntity entity);
+
+  default CDRBTransferRequest toCDRBTransferRequestAdditionalMapping(
+      CDRBTransferRequest originalRequest,
+      CustomUserDetails userDetails,
+      GetAccountDetailResponse accountDetailResponse) {
+
+    // Mandatory additional fields
+    originalRequest.setTransferType(CDRBTransferType.BAKONG_LINK_CASA_EWALLET);
+    originalRequest.setCifNumber(userDetails.getCif());
+    originalRequest.setObcUserId(BigDecimal.valueOf(userDetails.getUserId()));
+    originalRequest.setAccountCurrencyCode(accountDetailResponse.getData().getAccCcy());
+
+    // Optional
+    originalRequest.setTransactionCurrencyAmount(originalRequest.getAmount());
+    originalRequest.setFeeTransactionCurrencyAmount(originalRequest.getFees());
+    originalRequest.setCashBackTransactionCurrencyAmount(originalRequest.getCashBack());
+
+    return originalRequest;
+  }
+
+  default FinishTransactionResponse toFinishTransactionResponse(
+      CDRBTransferInquiryResponse inquiryResponse) {
+
+    OffsetDateTime completionDate = inquiryResponse.getTransferCompletionDate();
+    String extRef = inquiryResponse.getExternalSystemRef();
+
+    return new FinishTransactionResponse()
+        .status(ResponseHandler.ok())
+        .data(
+            new FinishTransactionResponseAllOfData()
+                .transactionDate(
+                    null == completionDate
+                        ? null
+                        : BigDecimal.valueOf(completionDate.toInstant().toEpochMilli()))
+                .transactionId(inquiryResponse.getCorrelationId())
+                .transactionHash(null == extRef ? null : inquiryResponse.getExternalSystemRef()));
   }
 }

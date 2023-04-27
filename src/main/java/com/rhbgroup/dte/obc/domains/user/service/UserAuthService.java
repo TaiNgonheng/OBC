@@ -28,6 +28,7 @@ public class UserAuthService {
   private final UserProfileRepository userProfileRepository;
 
   public Authentication authenticate(UserModel userModel) {
+
     UserProfileEntity profile =
         userProfileRepository
             .getByUsername(userModel.getUsername())

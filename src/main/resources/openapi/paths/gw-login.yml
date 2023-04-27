@@ -2,7 +2,7 @@
 
 post:
   tags:
-    - UserExchange
+    - System Exchange
   summary: In order getting resource from OBC, GoWave need to get AUTH token
   description: In order getting resource from OBC, GoWave need to get AUTH token
   operationId: revokeToken

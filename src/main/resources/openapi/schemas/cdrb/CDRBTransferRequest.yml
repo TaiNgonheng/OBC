@@ -1,0 +1,44 @@
+type: object
+properties:
+  obcUserId:
+    type: number
+  cifNumber:
+    type: string
+  amount:
+    type: number
+    format: double
+  currencyCode:
+    type: string
+  fees:
+    type: number
+    format: double
+  feeTransactionCurrencyAmount:
+    type: number
+    format: double
+  cashBack:
+    type: number
+    format: double
+  cashBackTransactionCurrencyAmount:
+    type: number
+    format: double
+  fromAccountNo:
+    type: string
+  fromAccountType:
+    $ref: '../common/CasaAccountType.yml'
+  recipientBIC:
+    type: string
+  recipientName:
+    type: string
+  toAccountNo:
+    type: string
+  toAccuntCurrency:
+    type: string
+  transactionCurrencyAmount:
+    type: number
+    format: double
+  transferMessage:
+    type: string
+  transferType:
+    $ref: '../common/CDRBTransferType.yml'
+  accountCurrencyCode:
+    type: string

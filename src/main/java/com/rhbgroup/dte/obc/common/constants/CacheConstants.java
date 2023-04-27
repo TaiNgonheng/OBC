@@ -22,5 +22,6 @@ public class CacheConstants {
   public class CDRBCache {
     public static final String CACHE_NAME = "CDRB_CACHE";
     public static final String CDRB_LOGIN_KEY = "CDRB_LOGIN";
+    public static final String TRX_INIT_TIME = "TRX_INIT_TIME_";
   }
 }

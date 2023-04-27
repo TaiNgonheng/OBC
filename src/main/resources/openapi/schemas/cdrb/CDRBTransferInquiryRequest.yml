@@ -1,0 +1,5 @@
+type: object
+description: CDRB transfer inquiry request
+properties:
+  correlationId:
+    type: string

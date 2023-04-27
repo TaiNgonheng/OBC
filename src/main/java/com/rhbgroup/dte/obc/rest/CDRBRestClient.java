@@ -8,6 +8,7 @@ import com.rhbgroup.dte.obc.common.util.crypto.AESCryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.CryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.TripleDESCryptoUtil;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.exceptions.InternalException;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
@@ -15,6 +16,10 @@ import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetHsmKeyResponse;
 import com.rhbgroup.dte.obc.model.CDRBLoginRequest;
 import com.rhbgroup.dte.obc.model.CDRBLoginResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransferInquiryRequest;
+import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransferRequest;
+import com.rhbgroup.dte.obc.model.CDRBTransferResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
@@ -33,11 +38,18 @@ import org.springframework.stereotype.Component;
 public class CDRBRestClient {
 
   private static final String GET_HSM_KEY_URL = "/auth/hsm-key";
+
   private static final String AUTHENTICATION_URL = "/auth/channel/obc/login";
+
   private static final String GET_ACCOUNT_DETAIL =
       "/corebankingnonfinancialclient/bakong-link-casa/accounts";
+
   private static final String GET_FEE_AND_CASHBACK =
       "/corebankingnonfinancialclient/feeAndCashBack";
+
+  private static final String TRANSFER = "/corebankingfinancialclient/transfer";
+
+  private static final String TRANSFER_INQUIRE = "/corebankingfinancialclient/transfer/inquire";
 
   private final SpringRestUtil restUtil;
 
@@ -95,7 +107,32 @@ public class CDRBRestClient {
           ParameterizedTypeReference.forType(CDRBFeeAndCashbackResponse.class));
 
     } catch (BizException ex) {
-      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+      throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  public CDRBTransferResponse transfer(CDRBTransferRequest request) {
+    try {
+      return restUtil.sendPost(
+          baseUrl.concat(TRANSFER),
+          buildHeader(getAccessToken()),
+          request,
+          ParameterizedTypeReference.forType(CDRBTransferResponse.class));
+    } catch (BizException ex) {
+      throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  public CDRBTransferInquiryResponse getTransferDetail(CDRBTransferInquiryRequest request) {
+
+    try {
+      return restUtil.sendPost(
+          baseUrl.concat(TRANSFER_INQUIRE),
+          buildHeader(getAccessToken()),
+          request,
+          ParameterizedTypeReference.forType(CDRBTransferInquiryResponse.class));
+    } catch (BizException ex) {
+      throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -109,6 +146,8 @@ public class CDRBRestClient {
             Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)));
 
     String passwordStr = new String(passwordDecrypted, StandardCharsets.UTF_8);
+
+    // Construct password and split password into 2 parts as per condition
     String[] passwords = constructPasswords(passwordStr);
     CDRBLoginRequest loginRequest =
         new CDRBLoginRequest().username(username).encPwd1(passwords[0]).encPwd2(passwords[1]);

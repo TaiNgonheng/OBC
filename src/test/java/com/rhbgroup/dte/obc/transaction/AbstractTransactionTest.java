@@ -5,20 +5,30 @@ import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.common.util.RandomGenerator;
 import com.rhbgroup.dte.obc.domains.config.service.impl.ConfigServiceImpl;
+import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionEntity;
 import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
+import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransferResponse;
 import com.rhbgroup.dte.obc.model.CasaAccountStatus;
 import com.rhbgroup.dte.obc.model.CasaAccountType;
 import com.rhbgroup.dte.obc.model.CasaKYCStatus;
+import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
+import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
+import com.rhbgroup.dte.obc.model.FinishTransactionResponseAllOfData;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.InitTransactionResponse;
 import com.rhbgroup.dte.obc.model.InitTransactionResponseAllOfData;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
+import com.rhbgroup.dte.obc.model.TransactionStatus;
 import com.rhbgroup.dte.obc.model.TransactionType;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import org.codehaus.plexus.util.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,6 +40,8 @@ public abstract class AbstractTransactionTest {
   private static final String CURRENCY_USD = "USD";
   private static final String PHONE_NUMBER = "85500000000";
   private static final Double TRX_AMOUNT = 1.0;
+  private static final String TRX_REF = "Hj8ecgOtDHpZhqx20NbmPtrpaXRkS35f";
+  private static final String CORRELATION_ID = "414d5120444b484344524230322020205f9f4d610e766827";
 
   protected InitTransactionRequest mockInitTransactionRequest() {
     return new InitTransactionRequest()
@@ -144,5 +156,55 @@ public abstract class AbstractTransactionTest {
 
   protected CDRBFeeAndCashbackResponse mockCDRBFeeAndCashback() {
     return new CDRBFeeAndCashbackResponse().fee(0.2).amount(10.0).currencyCode("USD").cashBack(0.0);
+  }
+
+  protected FinishTransactionRequest mockFinishTransactionRequest() {
+    return new FinishTransactionRequest()
+        .initRefNumber(TRX_REF)
+        .key("54b688a517f7654563a6c64d945a3670880a4c602ec67a065bbebbcd2b22edd5");
+  }
+
+  protected FinishTransactionResponse mockFinishTransactionResponse() {
+    return new FinishTransactionResponse()
+        .status(ResponseHandler.ok())
+        .data(
+            new FinishTransactionResponseAllOfData()
+                .transactionHash("123456")
+                .transactionId("123")
+                .transactionDate(BigDecimal.valueOf(Instant.now().toEpochMilli())));
+  }
+
+  protected TransactionEntity mockTransactionEntity(TransactionStatus status) {
+    TransactionEntity entity = new TransactionEntity();
+    entity.setTrxStatus(status);
+    entity.setFromAccount(CASA_ACCOUNT_TEST);
+    entity.setToAccount(BAKONG_ACCOUNT_TEST);
+    entity.setTrxAmount(TRX_AMOUNT);
+    entity.setInitRefNumber(TRX_REF);
+    entity.setTrxCcy(CURRENCY_USD);
+    entity.setTrxFee(1.0);
+    entity.setTrxCashback(0.0);
+
+    return entity;
+  }
+
+  protected CDRBTransferResponse mockCDRBTransferResponse() {
+    return new CDRBTransferResponse().correlationId(CORRELATION_ID);
+  }
+
+  protected CDRBTransferInquiryResponse mockCDRBTransferDetail() {
+    return new CDRBTransferInquiryResponse()
+        .correlationId(CORRELATION_ID)
+        .status("COMPLETED")
+        .externalSystemRef("transaction-hash")
+        .transferCompletionDate(OffsetDateTime.now());
+  }
+
+  protected CDRBTransferInquiryResponse mockCDRBTransferDetailError() {
+    return new CDRBTransferInquiryResponse()
+        .correlationId(CORRELATION_ID)
+        .status("FAILED")
+        .externalSystemRef(null)
+        .transferCompletionDate(null);
   }
 }

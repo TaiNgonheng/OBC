@@ -6,6 +6,7 @@ import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.common.util.SpringRestUtil;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.exceptions.InternalException;
 import com.rhbgroup.dte.obc.model.PGAuthRequest;
 import com.rhbgroup.dte.obc.model.PGAuthResponse;
 import com.rhbgroup.dte.obc.model.PGAuthResponseAllOfData;
@@ -91,7 +92,7 @@ public class PGRestClient {
 
     if (null != pgAuthResponse.getStatus()
         && AppConstants.Status.SUCCESS != pgAuthResponse.getStatus().getCode()) {
-      throw new BizException(ResponseMessage.INTERNAL_SERVER_ERROR);
+      throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
 
     return pgAuthResponse.getData();
