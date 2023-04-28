@@ -42,9 +42,6 @@ public class TransactionHistoryEntity {
   @Column(name = "trx_date", updatable = false, nullable = false)
   private Instant trxDate;
 
-  @Column(name = "trx_completion_date", updatable = false)
-  private Instant trxCompletionDate;
-
   @Column(name = "trx_hash", updatable = false, nullable = false, unique = true)
   private String trxHash;
 

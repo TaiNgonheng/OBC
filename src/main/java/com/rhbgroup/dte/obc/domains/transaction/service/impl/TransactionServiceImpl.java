@@ -347,7 +347,11 @@ public class TransactionServiceImpl implements TransactionService {
                     .map(
                         trxHistory -> {
                           trxHistory.setObcUserId(currentUser.getUserId());
-                          return transactionMapper.toTransactionHistoryEntity(trxHistory);
+                          TransactionHistoryEntity entity =
+                              transactionMapper.toTransactionHistoryEntity(trxHistory);
+                          // Status is always success for this scenario
+                          entity.setTrxStatus(TransactionStatus.COMPLETED);
+                          return entity;
                         })
                     .collect(Collectors.toList()))
         .andThen(peek(transactionHistoryRepository::saveAll))

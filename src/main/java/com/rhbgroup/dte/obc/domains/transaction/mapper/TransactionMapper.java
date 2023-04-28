@@ -28,7 +28,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -41,24 +40,12 @@ import org.springframework.stereotype.Component;
 @Mapper(componentModel = "spring")
 public interface TransactionMapper {
 
-  @Mapping(source = "trxDate", target = "trxDate", qualifiedByName = "toOffsetDateTime")
-  @Mapping(
-      source = "trxCompletionDate",
-      target = "trxCompletionDate",
-      qualifiedByName = "toOffsetDateTime")
-  TransactionModel toModel(TransactionEntity entity);
-
   @Mapping(source = "trxDate", target = "trxDate", qualifiedByName = "toInstant")
   @Mapping(
       source = "trxCompletionDate",
       target = "trxCompletionDate",
       qualifiedByName = "toInstant")
   TransactionEntity toEntity(TransactionModel model);
-
-  @Named("toOffsetDateTime")
-  default OffsetDateTime toOffsetDateTime(Instant instant) {
-    return null == instant ? null : OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
-  }
 
   @Named("toInstant")
   default Instant toInstant(OffsetDateTime offsetDateTime) {
@@ -147,10 +134,7 @@ public interface TransactionMapper {
   @Mapping(source = "trxStatus", target = "status", qualifiedByName = "toBakongStatusEnum")
   @Mapping(source = "creditDebitIndicator", target = "cdtDbtInd")
   @Mapping(source = "trxId", target = "transactionId")
-  @Mapping(
-      source = "trxCompletionDate",
-      target = "transactionDate",
-      qualifiedByName = "getDateInMillis")
+  @Mapping(source = "trxDate", target = "transactionDate", qualifiedByName = "getDateInMillis")
   @Mapping(source = "trxHash", target = "transactionHash")
   TransactionHistoryModel toTransactionHistoryModel(TransactionHistoryEntity entity);
 
@@ -173,32 +157,8 @@ public interface TransactionMapper {
     return null;
   }
 
-  default TransactionHistoryEntity toTransactionHistoryEntity(
-      CDRBTransactionHistoryResponseTransactions transactionHistory) {
-
-    TransactionHistoryEntity newEntity = new TransactionHistoryEntity();
-    newEntity.setFromAccount(transactionHistory.getSenderAccountNumber());
-    newEntity.setUserId(transactionHistory.getObcUserId());
-    newEntity.setTransferType(transactionHistory.getTransferType());
-    newEntity.setCreditDebitIndicator(transactionHistory.getDebitCreditCode());
-    newEntity.setTransferMessage(transactionHistory.getRemark());
-    newEntity.setToAccount(transactionHistory.getReceiverAccountNumber());
-    newEntity.setTrxHash(transactionHistory.getBakongHash());
-    newEntity.setTrxId(transactionHistory.getTransferId());
-    newEntity.setTrxAmount(transactionHistory.getAmount());
-    newEntity.setTrxCcy(transactionHistory.getCurrency());
-    newEntity.setTrxDate(
-        ObcDateUtils.toInstant(transactionHistory.getFromDate(), ObcDateUtils.YYYY_MM_DD));
-    newEntity.setTrxCompletionDate(
-        ObcDateUtils.toInstant(transactionHistory.getTransactionDate(), ObcDateUtils.YYYY_MM_DD));
-    newEntity.setTrxStatus(TransactionStatus.COMPLETED);
-
-    return newEntity;
-  }
-
   @Mapping(source = "bakongHash", target = "trxHash")
   @Mapping(source = "remark", target = "transferMessage")
-  @Mapping(source = "bakongStatus", target = "trxStatus")
   @Mapping(source = "senderAccountNumber", target = "fromAccount")
   @Mapping(source = "receiverAccountNumber", target = "toAccount")
   @Mapping(source = "amount", target = "trxAmount")
@@ -206,12 +166,11 @@ public interface TransactionMapper {
   @Mapping(source = "debitCreditCode", target = "creditDebitIndicator")
   @Mapping(source = "transferId", target = "trxId")
   @Mapping(source = "currency", target = "trxCcy")
-  @Mapping(source = "fromDate", target = "trxDate", qualifiedByName = "InstantFromStringYYYYMMDD")
   @Mapping(
       source = "transactionDate",
-      target = "trxCompletionDate",
+      target = "trxDate",
       qualifiedByName = "InstantFromStringYYYYMMDD")
-  TransactionHistoryEntity toTransactionHistoryEntity2(
+  TransactionHistoryEntity toTransactionHistoryEntity(
       CDRBTransactionHistoryResponseTransactions transactionHistory);
 
   @Mapping(source = "transactionCode", target = "transferType", qualifiedByName = "GetTransferType")
@@ -219,10 +178,6 @@ public interface TransactionMapper {
   @Mapping(source = "paymentReferenceNumber", target = "trxId")
   @Mapping(source = "amount", target = "trxAmount")
   @Mapping(source = "transactionDate", target = "trxDate", qualifiedByName = "InstantFromDDMMYYYY")
-  @Mapping(
-      source = "transactionDate",
-      target = "trxCompletionDate",
-      qualifiedByName = "InstantFromDDMMYYYY")
   @Mapping(source = "transactionHash", target = "trxHash")
   @Mapping(source = "bakongStatus", target = "trxStatus")
   @Mapping(source = "transactionCurrency", target = "trxCcy")
