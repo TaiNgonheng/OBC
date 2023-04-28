@@ -40,6 +40,8 @@ server:
     context-path: ${SERVER_CONTEXT_PATH:/api/v1}
 
 obc:
+  gowave-user: ${OBC_GOWAVE_USER:gowave_user}
+  gowave-password: ${OBC_GOWAVE_USER:gowave_password}
   security:
     jwt-secret: ${JWT_SECRET:my-secret}
     jwt-ttl: ${JWT_TTL:300}

@@ -1,4 +1,0 @@
-INSERT INTO obc.tbl_obc_profile
-VALUES
-(1, 'admin', '$2a$10$EKCP51nvNWW/x3NUre9rZOk7SB7sWW/zLX5W/XTwfpu0c5RhbNnR.', 0, NULL, '855987654321', 'admin@gmail.com', '', 0, NULL, 0, CURRENT_TIMESTAMP, NULL, ''),
-(2, 'gowave_user', '$2a$10$kmk7gTewIcKdsdAmhRm4NO4U7uvqJVUJU6lWsAYLgufW7i6HrEDce', 0, NULL, '855123456789', 'gowave+user@gmail.com', '', 0, NULL, 0, CURRENT_TIMESTAMP, NULL, '');
