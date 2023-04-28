@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS `tbl_obc_sibs_transaction_history` (
   `user_id` bigint NOT NULL,
   `transfer_type` varchar(20),
   `transfer_message` varchar(250) DEFAULT NULL,
-  `trx_id` varchar(20) NOT NULL,
+  `trx_id` varchar(50) NOT NULL,
   `trx_amount` decimal NOT NULL,
   `trx_date` timestamp DEFAULT CURRENT_TIMESTAMP,
   `trx_completion_date` timestamp DEFAULT NULL,
