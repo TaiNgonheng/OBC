@@ -11,7 +11,6 @@ import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
-import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.common.util.SFTPUtil;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
@@ -70,8 +69,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.cache.expiry.Duration;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -90,21 +87,19 @@ public class TransactionServiceImpl implements TransactionService {
   private final UserAuthService userAuthService;
   private final ConfigService configService;
   private final AccountService accountService;
-  private final TransactionRepository transactionRepository;
-  private final TransactionHistoryRepository transactionHistoryRepository;
+
   private final PGRestClient pgRestClient;
   private final CDRBRestClient cdrbRestClient;
   private final InfoBipRestClient infoBipRestClient;
-  private final TransactionMapper transactionMapper = new TransactionMapperImpl();
-  private final SFTPUtil sftpUtil;
+
+  private final TransactionRepository transactionRepository;
   private final BatchReportRepository batchReportRepository;
+  private final TransactionHistoryRepository transactionHistoryRepository;
+
+  private final SFTPUtil sftpUtil;
   private final ApplicationProperties applicationProperties;
 
-  private static final String TRANSACTION_FILE_PREFIX = "OBCDailyTrx_";
-  private static final String DATE_FORMAT_DDMMYYYY = "ddMMyyyy";
-  private static final String DATE_FORMAT_YYYYMMDD = "yyyyMMdd";
-  private static final String TRANSACTION_FILE_EXTENSION = ".csv";
-  private static final String SIBS_SYNC_DATE_KEY = "SIBS_DATE_CONFIG";
+  private final TransactionMapper transactionMapper = new TransactionMapperImpl();
 
   @Override
   public void save(TransactionModel transactionModel) {
@@ -306,8 +301,7 @@ public class TransactionServiceImpl implements TransactionService {
         .andThen(
             peek(
                 model ->
-                    updateTodayTransaction(
-                        request.getPage(), model.getAccountNo(), currentUser.getCif())))
+                    updateTodayTransaction(request.getPage(), model.getAccountNo(), currentUser)))
         .andThen(
             accountModel ->
                 transactionHistoryRepository.queryByFromAccount(
@@ -334,7 +328,8 @@ public class TransactionServiceImpl implements TransactionService {
         .apply(new AccountFilterCondition().accountNo(request.getAccNumber()));
   }
 
-  private void updateTodayTransaction(Integer currentPage, String accountNum, String cif) {
+  private void updateTodayTransaction(
+      Integer currentPage, String accountNum, CustomUserDetails currentUser) {
     if (currentPage > 1) {
       log.info("Page = {}, skip fetching newly record.", currentPage);
       return;
@@ -349,10 +344,17 @@ public class TransactionServiceImpl implements TransactionService {
         .andThen(
             transactions ->
                 transactions.stream()
-                    .map(transactionMapper::toTransactionHistoryEntity)
+                    .map(
+                        trxHistory -> {
+                          trxHistory.setObcUserId(currentUser.getUserId());
+                          return transactionMapper.toTransactionHistoryEntity(trxHistory);
+                        })
                     .collect(Collectors.toList()))
         .andThen(peek(transactionHistoryRepository::saveAll))
-        .apply(new CDRBTransactionHistoryRequest().accountNumber(accountNum).cifNumber(cif));
+        .apply(
+            new CDRBTransactionHistoryRequest()
+                .accountNumber(accountNum)
+                .cifNumber(currentUser.getCif()));
   }
 
   @Override
@@ -392,12 +394,13 @@ public class TransactionServiceImpl implements TransactionService {
     LocalDate date = request.getDate();
     if (request.getDate() == null) {
       SIBSSyncDateConfig sibsSyncDateConfig =
-          configService.getByConfigKey(SIBS_SYNC_DATE_KEY, SIBSSyncDateConfig.class);
+          configService.getByConfigKey(
+              AppConstants.Transaction.SIBS_SYNC_DATE_KEY, SIBSSyncDateConfig.class);
       if (Boolean.TRUE.equals(sibsSyncDateConfig.getUseSIBSSyncDate())) {
         date =
             LocalDate.parse(
                     sibsSyncDateConfig.getSibsSyncDate(),
-                    DateTimeFormatter.ofPattern(DATE_FORMAT_YYYYMMDD))
+                    DateTimeFormatter.ofPattern(AppConstants.Transaction.DATE_FORMAT_YYYYMMDD))
                 .minusDays(1);
       } else {
         date = LocalDate.now().minusDays(1);
@@ -407,8 +410,11 @@ public class TransactionServiceImpl implements TransactionService {
   }
 
   private String generateTransactionHistoryFilename(LocalDate date) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT_DDMMYYYY);
-    return TRANSACTION_FILE_PREFIX + formatter.format(date) + TRANSACTION_FILE_EXTENSION;
+    DateTimeFormatter formatter =
+        DateTimeFormatter.ofPattern(AppConstants.Transaction.DATE_FORMAT_DDMMYYYY);
+    return AppConstants.Transaction.TRANSACTION_FILE_PREFIX
+        + formatter.format(date)
+        + AppConstants.Transaction.TRANSACTION_FILE_EXTENSION;
   }
 
   private void parseFileAndStoreRecordToDB(InputStream is, LocalDate date) throws IOException {

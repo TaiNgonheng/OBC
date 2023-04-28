@@ -1,12 +1,14 @@
 package com.rhbgroup.dte.obc.domains.transaction.mapper;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
+import com.rhbgroup.dte.obc.common.util.ObcDateUtils;
 import com.rhbgroup.dte.obc.common.util.RandomGenerator;
 import com.rhbgroup.dte.obc.domains.transaction.model.SIBSBatchTransaction;
 import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionEntity;
 import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionHistoryEntity;
 import com.rhbgroup.dte.obc.model.BakongTransactionStatus;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryResponseTransactions;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferRequest;
 import com.rhbgroup.dte.obc.model.CDRBTransferType;
@@ -171,25 +173,46 @@ public interface TransactionMapper {
     return null;
   }
 
-  default TransactionHistoryEntity toTransactionHistoryEntity(Object model) {
-    // TODO Mimic CDRB result, remove when EAI is ready
+  default TransactionHistoryEntity toTransactionHistoryEntity(
+      CDRBTransactionHistoryResponseTransactions transactionHistory) {
+
     TransactionHistoryEntity newEntity = new TransactionHistoryEntity();
-    newEntity.setFromAccount("123xxx");
-    newEntity.setUserId(5L);
-    newEntity.setTransferType(TransactionType.WALLET);
-    newEntity.setCreditDebitIndicator(CreditDebitIndicator.D);
-    newEntity.setTransferMessage("desc");
-    newEntity.setToAccount("samrith@oski");
-    newEntity.setTrxHash("123456");
-    newEntity.setTrxId("123469");
-    newEntity.setTrxAmount(1.0);
-    newEntity.setTrxCcy("USD");
-    newEntity.setTrxDate(Instant.now());
-    newEntity.setTrxCompletionDate(Instant.now());
-    newEntity.setTrxStatus(TransactionStatus.FAILED);
+    newEntity.setFromAccount(transactionHistory.getSenderAccountNumber());
+    newEntity.setUserId(transactionHistory.getObcUserId());
+    newEntity.setTransferType(transactionHistory.getTransferType());
+    newEntity.setCreditDebitIndicator(transactionHistory.getDebitCreditCode());
+    newEntity.setTransferMessage(transactionHistory.getRemark());
+    newEntity.setToAccount(transactionHistory.getReceiverAccountNumber());
+    newEntity.setTrxHash(transactionHistory.getBakongHash());
+    newEntity.setTrxId(transactionHistory.getTransferId());
+    newEntity.setTrxAmount(transactionHistory.getAmount());
+    newEntity.setTrxCcy(transactionHistory.getCurrency());
+    newEntity.setTrxDate(
+        ObcDateUtils.toInstant(transactionHistory.getFromDate(), ObcDateUtils.YYYY_MM_DD));
+    newEntity.setTrxCompletionDate(
+        ObcDateUtils.toInstant(transactionHistory.getTransactionDate(), ObcDateUtils.YYYY_MM_DD));
+    newEntity.setTrxStatus(TransactionStatus.COMPLETED);
 
     return newEntity;
   }
+
+  @Mapping(source = "bakongHash", target = "trxHash")
+  @Mapping(source = "remark", target = "transferMessage")
+  @Mapping(source = "bakongStatus", target = "trxStatus")
+  @Mapping(source = "senderAccountNumber", target = "fromAccount")
+  @Mapping(source = "receiverAccountNumber", target = "toAccount")
+  @Mapping(source = "amount", target = "trxAmount")
+  @Mapping(source = "obcUserId", target = "userId")
+  @Mapping(source = "debitCreditCode", target = "creditDebitIndicator")
+  @Mapping(source = "transferId", target = "trxId")
+  @Mapping(source = "currency", target = "trxCcy")
+  @Mapping(source = "fromDate", target = "trxDate", qualifiedByName = "InstantFromStringYYYYMMDD")
+  @Mapping(
+      source = "transactionDate",
+      target = "trxCompletionDate",
+      qualifiedByName = "InstantFromStringYYYYMMDD")
+  TransactionHistoryEntity toTransactionHistoryEntity2(
+      CDRBTransactionHistoryResponseTransactions transactionHistory);
 
   @Mapping(source = "transactionCode", target = "transferType", qualifiedByName = "GetTransferType")
   @Mapping(source = "remark", target = "transferMessage")
@@ -225,15 +248,15 @@ public interface TransactionMapper {
     return date.atStartOfDay(ZoneId.systemDefault()).toInstant();
   }
 
+  @Named("InstantFromStringYYYYMMDD")
+  default Instant getInstantFromLocalDate(String dateStr) {
+    return ObcDateUtils.toInstant(dateStr, ObcDateUtils.YYYY_MM_DD);
+  }
+
   @Named("GetTransferType")
   default TransactionType getTransactionType(String transactionCode) {
-    if (StringUtils.isNotBlank(transactionCode)) {
-      switch (transactionCode) {
-        case "REAC2303":
-          return TransactionType.WALLET;
-        default:
-          return null;
-      }
+    if (StringUtils.isNotBlank(transactionCode) && "REAC2303".equals(transactionCode)) {
+      return TransactionType.WALLET;
     }
     return null;
   }

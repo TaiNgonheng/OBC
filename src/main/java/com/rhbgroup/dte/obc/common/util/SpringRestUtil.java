@@ -1,5 +1,7 @@
 package com.rhbgroup.dte.obc.common.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.internal.util.MapUtil;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.exceptions.InternalException;
@@ -29,6 +31,7 @@ import org.springframework.web.util.UriTemplate;
 public class SpringRestUtil {
 
   private final RestTemplate restTemplate;
+  private final ObjectMapper objectMapper;
 
   public <T> T sendGet(
       @NotBlank String url,
@@ -143,10 +146,10 @@ public class SpringRestUtil {
       ResponseEntity<T> response =
           restTemplate.exchange(url, method, httpEntity, parameterizedTypeReference);
 
-      log.info("System response >> {}", response.getBody());
+      log.info("System response >> {}", objectMapper.writeValueAsString(response.getBody()));
       return response.getBody();
 
-    } catch (RestClientException ex) {
+    } catch (RestClientException | JsonProcessingException ex) {
       log.error("Internal API response with error >> {}", ex.getMessage());
       throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
