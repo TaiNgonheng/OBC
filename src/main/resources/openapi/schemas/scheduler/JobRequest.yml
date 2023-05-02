@@ -1,0 +1,10 @@
+type: object
+properties:
+  jobName:
+    $ref: './JobNameEnum.yml'
+  jobGroup:
+    type: string
+  cronExpression:
+    type: string
+  description:
+    type: string

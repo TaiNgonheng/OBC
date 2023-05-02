@@ -17,8 +17,9 @@ import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
-import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionEntity;
+import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionHistoryRepository;
 import com.rhbgroup.dte.obc.domains.transaction.repository.TransactionRepository;
+import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionEntity;
 import com.rhbgroup.dte.obc.domains.transaction.service.impl.TransactionServiceImpl;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
@@ -26,11 +27,14 @@ import com.rhbgroup.dte.obc.exceptions.InternalException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponseAllOfData;
+import com.rhbgroup.dte.obc.model.GetAccountTransactionsRequest;
+import com.rhbgroup.dte.obc.model.GetAccountTransactionsResponse;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.InitTransactionResponse;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
@@ -40,6 +44,7 @@ import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.transaction.AbstractTransactionTest;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,6 +58,8 @@ class TransactionServiceTest extends AbstractTransactionTest {
   @InjectMocks TransactionServiceImpl transactionService;
 
   @Mock TransactionRepository transactionRepository;
+
+  @Mock TransactionHistoryRepository historyRepository;
 
   @Mock UserAuthService userAuthService;
 
@@ -198,7 +205,6 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
-    when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig_NonOTP());
     when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
@@ -220,6 +226,31 @@ class TransactionServiceTest extends AbstractTransactionTest {
     } catch (BizException ex) {
       assertEquals(ResponseMessage.BALANCE_NOT_ENOUGH.getCode(), ex.getResponseMessage().getCode());
       assertEquals(ResponseMessage.BALANCE_NOT_ENOUGH.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testInitTransaction_Failed_TransferToUnavailableSource() {
+
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
+        .thenReturn(mockTransactionConfig_NonOTP());
+    when(pgRestClient.getUserProfile(any()))
+        .thenThrow(new BizException(ResponseMessage.TRANSACTION_TO_UNAVAILABLE_ACCOUNT));
+
+    try {
+      InitTransactionResponse initTransactionResponse =
+          transactionService.initTransaction(mockInitTransactionRequest());
+      assertNotNull(initTransactionResponse);
+
+    } catch (BizException ex) {
+      assertEquals(
+          ResponseMessage.TRANSACTION_TO_UNAVAILABLE_ACCOUNT.getCode(),
+          ex.getResponseMessage().getCode());
+      assertEquals(
+          ResponseMessage.TRANSACTION_TO_UNAVAILABLE_ACCOUNT.getMsg(),
+          ex.getResponseMessage().getMsg());
     }
   }
 
@@ -438,5 +469,69 @@ class TransactionServiceTest extends AbstractTransactionTest {
     assertNotNull(response.getData());
     assertNull(response.getData().getTransactionDate());
     assertNull(response.getData().getTransactionHash());
+  }
+
+  @Test
+  void testQueryAccountTransaction_Success_NoNewRecordToday() {
+
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
+    when(cdrbRestClient.fetchTodayTransactionHistory(any()))
+        .thenReturn(new CDRBTransactionHistoryResponse().transactions(Collections.emptyList()));
+    when(historyRepository.queryByFromAccount(anyString(), any())).thenReturn(mockTrxHistoryPage());
+
+    GetAccountTransactionsRequest mockRequest = mockAccountTransactionRequest();
+    GetAccountTransactionsResponse response =
+        transactionService.queryTransactionHistory(mockRequest);
+
+    assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
+    assertNotNull(response.getData());
+    assertEquals(
+        response.getData().getTransactions().size(),
+        response.getData().getTotalElement().intValue());
+  }
+
+  @Test
+  void testQueryAccountTransaction_Success_Have2NewRecordToday() {
+
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
+
+    // Update this one to return 2 more results
+    when(cdrbRestClient.fetchTodayTransactionHistory(any()))
+        .thenReturn(new CDRBTransactionHistoryResponse().transactions(Collections.emptyList()));
+    when(historyRepository.queryByFromAccount(anyString(), any())).thenReturn(mockTrxHistoryPage());
+
+    GetAccountTransactionsRequest mockRequest = mockAccountTransactionRequest();
+    GetAccountTransactionsResponse response =
+        transactionService.queryTransactionHistory(mockRequest);
+
+    assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
+    assertNotNull(response.getData());
+    assertEquals(
+        response.getData().getTransactions().size(),
+        response.getData().getTotalElement().intValue());
+  }
+
+  @Test
+  void testQueryAccountTransaction_Success_PageRequestLargerThanOne() {
+
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
+
+    when(historyRepository.queryByFromAccount(anyString(), any())).thenReturn(mockTrxHistoryPage());
+
+    GetAccountTransactionsRequest mockRequest = mockAccountTransactionRequest();
+    mockRequest.setPage(2);
+    GetAccountTransactionsResponse response =
+        transactionService.queryTransactionHistory(mockRequest);
+
+    verify(cdrbRestClient, times(0)).fetchTodayTransactionHistory(any());
+
+    assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
+    assertNotNull(response.getData());
+    assertEquals(
+        response.getData().getTransactions().size(),
+        response.getData().getTotalElement().intValue());
   }
 }

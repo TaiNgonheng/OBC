@@ -53,6 +53,7 @@ public class UserAuthService {
       return authentication;
 
     } catch (AuthenticationException ex) {
+      ex.printStackTrace();
       recordFailAttempt(profile, loginAttempts + 1);
       throw new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED);
     }

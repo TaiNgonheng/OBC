@@ -82,8 +82,9 @@ public class AccountServiceImpl implements AccountService {
                 authContext -> {
                   // Checking account status
                   CustomUserDetails principal = (CustomUserDetails) authContext.getPrincipal();
-                  if (!principal.isOtpVerified()) {
-                    log.error("User {} is not fully KYC", principal.getUserId());
+                  if (null == principal.getOtpVerified()
+                      || Boolean.FALSE.equals(principal.getOtpVerified())) {
+                    log.error("User {} is not fully KYC", principal.getUsername());
                     throw new BizException(ResponseMessage.AUTHENTICATION_FAILED);
                   }
                   Optional<AccountEntity> activeAccount =

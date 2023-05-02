@@ -1,4 +1,4 @@
-package com.rhbgroup.dte.obc.domains.transaction.repository;
+package com.rhbgroup.dte.obc.domains.transaction.repository.entity;
 
 import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
 import com.rhbgroup.dte.obc.model.TransactionStatus;

@@ -99,6 +99,19 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(new ResponseWrapper().status(status), HttpStatus.BAD_REQUEST);
   }
 
+  @ExceptionHandler(GatewayTimeoutException.class)
+  public ResponseEntity<ResponseWrapper> gatewayTimeoutException(GatewayTimeoutException ex) {
+
+    // TODO update response detail later
+    ResponseStatus status =
+        new ResponseStatus()
+            .code(AppConstants.Status.ERROR)
+            .errorCode(ResponseMessage.INTERNAL_SERVER_ERROR.getCode().toString())
+            .errorMessage(ResponseMessage.INTERNAL_SERVER_ERROR.getMsg());
+
+    return new ResponseEntity<>(new ResponseWrapper().status(status), HttpStatus.GATEWAY_TIMEOUT);
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ResponseWrapper> genericException(Exception ex) {
 

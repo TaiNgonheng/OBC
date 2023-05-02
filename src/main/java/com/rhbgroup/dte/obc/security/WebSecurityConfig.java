@@ -81,6 +81,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .authorizeHttpRequests()
         .antMatchers(HttpMethod.POST, WhitelistUrlManager.getWhitelistUrls())
         .permitAll()
+        .antMatchers(HttpMethod.PUT, WhitelistUrlManager.getWhitelistUrls())
+        .permitAll()
         .antMatchers(HttpMethod.GET, WhitelistUrlManager.getWhitelistUrls())
         .permitAll()
         .antMatchers(WhitelistUrlManager.getUrls(AppConstants.System.GOWAVE))

@@ -12,7 +12,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '../schemas/account/InitTransactionRequest.yml'
+          $ref: '../schemas/transaction/InitTransactionRequest.yml'
     required: true
   responses:
     '200':
@@ -20,7 +20,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../schemas/account/InitTransactionResponse.yml'
+            $ref: '../schemas/transaction/InitTransactionResponse.yml'
     '400':
       description: Bad Request
     '401':

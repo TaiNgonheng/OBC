@@ -1,0 +1,59 @@
+type: object
+properties:
+  account:
+    type: object
+    properties:
+      accountNumber:
+        type: string
+      accountType:
+        ref: '../common/CasaAccountType.yml'
+  transactions:
+    type: array
+    items:
+      type: object
+      properties:
+        obcUserId:
+          type: integer
+          format: int64
+        runningSequenceNumber:
+          type: string
+        fileIndicator:
+          type: string
+        find:
+          type: string
+        fromDate:
+          type: string
+        toDate:
+          type: string
+        transactionDate:
+          type: string
+        transactionTime:
+          type: integer
+          format: int64
+        transactionCode:
+          type: string
+        senderAccountNumber:
+          type: string
+        receiverAccountNumber:
+          type: string
+        amount:
+          type: number
+          format: double
+        currency:
+          type: string
+        remark:
+          type: string
+        debitCreditCode:
+          $ref: '../common/CreditDebitIndicator.yml'
+        bakongHash:
+          type: string
+        bakongPaymentInfoId:
+          type: string
+        bakongStatus:
+          type: string
+        userId:
+          type: string
+        transferType:
+          $ref: '../common/TransactionType.yml'
+        transferId:
+          type: string

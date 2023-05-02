@@ -1,0 +1,3 @@
+type: string
+enum:
+  - TRXN_BATCH_PROCESSING

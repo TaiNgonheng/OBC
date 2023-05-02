@@ -50,5 +50,10 @@ public class AppConstants {
   @UtilityClass
   public class Transaction {
     public static final String OBC_TOP_UP = "OBTOPUP";
+    public static final String TRANSACTION_FILE_PREFIX = "OBCDailyTrx_";
+    public static final String DATE_FORMAT_DDMMYYYY = "ddMMyyyy";
+    public static final String DATE_FORMAT_YYYYMMDD = "yyyyMMdd";
+    public static final String TRANSACTION_FILE_EXTENSION = ".csv";
+    public static final String SIBS_SYNC_DATE_KEY = "SIBS_DATE_CONFIG";
   }
 }

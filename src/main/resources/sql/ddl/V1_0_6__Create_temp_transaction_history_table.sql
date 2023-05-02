@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS `tbl_obc_temp_transaction_history` (
   `trx_id` varchar(20) NOT NULL,
   `trx_amount` decimal NOT NULL,
   `trx_date` timestamp DEFAULT CURRENT_TIMESTAMP,
-  `trx_completion_date` timestamp DEFAULT NULL,
   `trx_hash` timestamp NOT NULL,
   `trx_status` varchar(20) DEFAULT NULL,
   `trx_ccy` varchar(10) DEFAULT NULL,

@@ -15,7 +15,9 @@ public class WhitelistUrlManager {
   private WhitelistUrlManager() {}
 
   private static final String[] WHITELIST_URLS =
-      new String[] {"/init-link-account", "/authenticate", "/gw/login"};
+      new String[] {
+        "/init-link-account", "/authenticate", "/gw/login", "/transaction-processing", "/scheduler"
+      };
 
   private static final Map<String, AntMatchers> requestMatchers = new HashMap<>();
 

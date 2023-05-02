@@ -24,6 +24,9 @@ spring:
   jackson:
     default-property-inclusion: ALWAYS
 
+  quartz:
+    job-store-type: jdbc
+
   application:
     name: ${APP_NAME:obc-sit}
 
@@ -37,6 +40,8 @@ server:
     context-path: ${SERVER_CONTEXT_PATH:/api/v1}
 
 obc:
+  gowave-user: ${OBC_GOWAVE_USER:gowave_user}
+  gowave-password: ${OBC_GOWAVE_USER:gowave_password}
   security:
     jwt-secret: ${JWT_SECRET:my-secret}
     jwt-ttl: ${JWT_TTL:300}
@@ -59,3 +64,12 @@ obc:
     username: ${INFOBIP_USERNAME:tmnhat.cmcglobal}
     password: ${INFOBIP_PASSWORD:Sunn@123}
     enabled: ${INFOBIP_ENABLED:false}
+  sftp:
+    username: ${SFTP_USERNAME:testuser}
+    password: ${SFTP_PASSWORD:testpassword}
+    host: ${SFTP_HOST:127.0.0.1}
+    port: ${SFTP_PORT:2022}
+    path: ${SFTP_PATH:data}
+
+config:
+  maxStackTraceLength: ${MAX_STACK_TRACE_LENGTH:19999}

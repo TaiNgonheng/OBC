@@ -7,6 +7,7 @@ import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.UserModel;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,14 @@ public class UserProfileServiceImpl implements UserProfileService {
 
   @Override
   public void updateUserProfile(UserModel userModel) {
-    Functions.of(userProfileMapper::toEntity).andThen(userProfileRepository::save).apply(userModel);
+    Functions.of(userProfileMapper::toEntity)
+        .andThen(
+            entity -> {
+              entity.setUpdatedBy(userModel.getUsername());
+              entity.setUpdatedDate(Instant.now());
+              return entity;
+            })
+        .andThen(userProfileRepository::save)
+        .apply(userModel);
   }
 }

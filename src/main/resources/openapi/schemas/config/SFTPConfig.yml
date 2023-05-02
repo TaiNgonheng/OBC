@@ -1,0 +1,13 @@
+type: object
+properties:
+  username:
+    type: string
+  password:
+    type: string
+  remoteHost:
+    type: string
+  remotePort:
+    type: integer
+    format: int32
+  remotePath:
+    type: string

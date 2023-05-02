@@ -34,10 +34,16 @@ paths:
     $ref: './paths/init-transaction.yml'
   /finish-transaction:
     $ref: './paths/finish-transaction.yml'
+  /account-transactions:
+    $ref: './paths/account-transactions.yml'
   /gw/user-exchange:
     $ref: './paths/user-exchange.yml'
   /gw/login:
     $ref: './paths/gw-login.yml'
+  /transaction-processing:
+    $ref: './paths/transaction-processing.yml'
+  /scheduler:
+    $ref: './paths/scheduler-job.yml'
 
 components:
   schemas:
@@ -74,9 +80,13 @@ components:
     GetAccountDetailResponse:
       $ref: './schemas/account/GetAccountDetailResponse.yml'
     InitTransactionRequest:
-      $ref: './schemas/account/InitTransactionRequest.yml'
+      $ref: './schemas/transaction/InitTransactionRequest.yml'
     InitTransactionResponse:
-      $ref: './schemas/account/InitTransactionResponse.yml'
+      $ref: './schemas/transaction/InitTransactionResponse.yml'
+    GetAccountTransactionsRequest:
+      $ref: './schemas/transaction/GetAccountTransactionsRequest.yml'
+    GetAccountTransactionsResponse:
+      $ref: './schemas/transaction/GetAccountTransactionsResponse.yml'
     ExchangeAccountRequest:
       $ref: './schemas/user/UserExchangeRequest.yml'
     ExchangeAccountResponse:
@@ -93,6 +103,8 @@ components:
       $ref: './schemas/user/UserModel.yml'
     TransactionModel:
       $ref: './schemas/transaction/TransactionModel.yml'
+    TransactionHistoryModel:
+      $ref: './schemas/transaction/TransactionHistoryModel.yml'
     PGAuthRequest:
       $ref: './schemas/pg/PGAuthRequest.yml'
     PGAuthResponse:
@@ -131,6 +143,22 @@ components:
       $ref: './schemas/cdrb/CDRBTransferInquiryRequest.yml'
     CDRBTransferInquiryResponse:
       $ref: './schemas/cdrb/CDRBTransferInquiryResponse.yml'
+    CDRBTransactionHistoryRequest:
+      $ref: './schemas/cdrb/CDRBTransactionHistoryRequest.yml'
+    CDRBTransactionHistoryResponse:
+      $ref: './schemas/cdrb/CDRBTransactionHistoryResponse.yml'
+    SchedulerJobRequest:
+      $ref: './schemas/scheduler/JobRequest.yml'
+    SFTPConfig:
+      $ref: './schemas/config/SFTPConfig.yml'
+    SIBSSyncDateConfig:
+      $ref: './schemas/config/SIBSSyncDateConfig.yml'
+    TransactionBatchFileProcessingRequest:
+      $ref: './schemas/transaction/TransactionBatchFileProcessingRequest.yml'
+    BatchReportStatus:
+      $ref: './schemas/transaction/BatchReportStatus.yml'
+    JobNameEnum:
+      $ref: './schemas/scheduler/JobNameEnum.yml'
 
   securitySchemes:
     bearerAuth:

@@ -16,6 +16,8 @@ import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetHsmKeyResponse;
 import com.rhbgroup.dte.obc.model.CDRBLoginRequest;
 import com.rhbgroup.dte.obc.model.CDRBLoginResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryRequest;
+import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryRequest;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferRequest;
@@ -50,6 +52,9 @@ public class CDRBRestClient {
   private static final String TRANSFER = "/corebankingfinancialclient/transfer";
 
   private static final String TRANSFER_INQUIRE = "/corebankingfinancialclient/transfer/inquire";
+
+  private static final String ACCOUNT_TRANSACTIONS =
+      "/corebankingnonfinancialclient/bakong-link-casa/transactions";
 
   private final SpringRestUtil restUtil;
 
@@ -134,6 +139,16 @@ public class CDRBRestClient {
     } catch (BizException ex) {
       throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  public CDRBTransactionHistoryResponse fetchTodayTransactionHistory(
+      CDRBTransactionHistoryRequest request) {
+
+    return restUtil.sendPost(
+        baseUrl.concat(ACCOUNT_TRANSACTIONS),
+        buildHeader(getAccessToken()),
+        request,
+        ParameterizedTypeReference.forType(CDRBTransactionHistoryResponse.class));
   }
 
   private String login() {

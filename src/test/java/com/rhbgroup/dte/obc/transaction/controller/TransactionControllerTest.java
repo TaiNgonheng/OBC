@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rhbgroup.dte.obc.api.TransactionApiController;
 import com.rhbgroup.dte.obc.api.TransactionApiDelegate;
+import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.exceptions.BizException;
@@ -15,10 +16,14 @@ import com.rhbgroup.dte.obc.exceptions.InternalException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
+import com.rhbgroup.dte.obc.model.GetAccountTransactionsRequest;
+import com.rhbgroup.dte.obc.model.GetAccountTransactionsResponse;
+import com.rhbgroup.dte.obc.model.GetAccountTransactionsResponseAllOfData;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.InitTransactionResponse;
 import com.rhbgroup.dte.obc.transaction.AbstractTransactionTest;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -356,5 +361,131 @@ class TransactionControllerTest extends AbstractTransactionTest {
     Assertions.assertEquals(
         ResponseMessage.INVALID_TOKEN.getMsg(),
         initTransactionResponse.getStatus().getErrorMessage());
+  }
+
+  @Test
+  void testQueryTransactionHistory_Success_200() throws Exception {
+
+    GetAccountTransactionsRequest mockRequest = mockAccountTransactionRequest();
+
+    when(transactionApiDelegate.queryTransactionHistory(mockRequest))
+        .thenReturn(ResponseEntity.ok(mockAccountTransactionResponse()));
+
+    MockHttpServletResponse response =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/account-transactions")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding(StandardCharsets.UTF_8)
+                    .content(objectMapper.writeValueAsBytes(mockRequest)))
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data").exists())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+            .andReturn()
+            .getResponse();
+
+    String contentAsString = response.getContentAsString();
+    GetAccountTransactionsResponse accountTransactionsResponse =
+        objectMapper.readValue(contentAsString, GetAccountTransactionsResponse.class);
+
+    Assertions.assertNotNull(accountTransactionsResponse.getStatus());
+    Assertions.assertNotNull(accountTransactionsResponse.getData());
+
+    Assertions.assertEquals(
+        AppConstants.Status.SUCCESS, accountTransactionsResponse.getStatus().getCode());
+
+    Assertions.assertTrue(
+        accountTransactionsResponse.getData().getTotalElement().intValue()
+            <= mockRequest.getSize());
+
+    Assertions.assertEquals(
+        accountTransactionsResponse.getData().getTotalElement().intValue(),
+        accountTransactionsResponse.getData().getTransactions().size());
+  }
+
+  @Test
+  void testQueryTransactionHistory_Success_200_NoTransactionFound() throws Exception {
+
+    GetAccountTransactionsRequest mockRequest = mockAccountTransactionRequest();
+
+    when(transactionApiDelegate.queryTransactionHistory(mockRequest))
+        .thenReturn(
+            ResponseEntity.ok(
+                new GetAccountTransactionsResponse()
+                    .status(ResponseHandler.ok())
+                    .data(
+                        new GetAccountTransactionsResponseAllOfData()
+                            .totalElement(0L)
+                            .transactions(Collections.emptyList()))));
+
+    MockHttpServletResponse response =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/account-transactions")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding(StandardCharsets.UTF_8)
+                    .content(objectMapper.writeValueAsBytes(mockRequest)))
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data").exists())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+            .andReturn()
+            .getResponse();
+
+    String contentAsString = response.getContentAsString();
+    GetAccountTransactionsResponse accountTransactionsResponse =
+        objectMapper.readValue(contentAsString, GetAccountTransactionsResponse.class);
+
+    Assertions.assertNotNull(accountTransactionsResponse.getStatus());
+    Assertions.assertNotNull(accountTransactionsResponse.getData());
+
+    Assertions.assertEquals(
+        AppConstants.Status.SUCCESS, accountTransactionsResponse.getStatus().getCode());
+
+    Assertions.assertEquals(0, accountTransactionsResponse.getData().getTotalElement().intValue());
+
+    Assertions.assertEquals(
+        accountTransactionsResponse.getData().getTotalElement().intValue(),
+        accountTransactionsResponse.getData().getTransactions().size());
+  }
+
+  @Test
+  void testQueryTransactionHistory_Failed_500_InternalServerError() throws Exception {
+
+    when(transactionApiDelegate.queryTransactionHistory(any()))
+        .thenThrow(new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR));
+
+    MockHttpServletResponse response =
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.post("/account-transactions")
+                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding(StandardCharsets.UTF_8)
+                    .content(objectMapper.writeValueAsBytes(mockAccountTransactionRequest())))
+            .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data").doesNotExist())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
+            .andReturn()
+            .getResponse();
+
+    String contentAsString = response.getContentAsString();
+    GetAccountTransactionsResponse accountTransactionsResponse =
+        objectMapper.readValue(contentAsString, GetAccountTransactionsResponse.class);
+
+    Assertions.assertNotNull(accountTransactionsResponse.getStatus());
+    Assertions.assertNull(accountTransactionsResponse.getData());
+
+    Assertions.assertEquals(
+        AppConstants.Status.ERROR, accountTransactionsResponse.getStatus().getCode());
+
+    Assertions.assertEquals(
+        ResponseMessage.INTERNAL_SERVER_ERROR.getCode().toString(),
+        accountTransactionsResponse.getStatus().getErrorCode());
+
+    Assertions.assertEquals(
+        ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(),
+        accountTransactionsResponse.getStatus().getErrorMessage());
   }
 }
