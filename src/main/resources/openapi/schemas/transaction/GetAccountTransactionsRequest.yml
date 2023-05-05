@@ -5,8 +5,8 @@ required:
 properties:
   accNumber:
     type: string
-    description: Bank's account number
     maxLength: 50
+    description: Bank's account number
   page:
     type: integer
     minimum: 1

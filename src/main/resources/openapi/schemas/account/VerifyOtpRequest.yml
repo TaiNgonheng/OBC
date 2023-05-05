@@ -6,5 +6,4 @@ properties:
     type: string
     minLength: 6
     maxLength: 6
-    message: string must be in 6 digits
-    example: 123456
+    description: OTP must be in 6 digits

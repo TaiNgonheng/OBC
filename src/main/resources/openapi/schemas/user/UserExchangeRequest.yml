@@ -6,12 +6,12 @@ properties:
     type: string
   key:
     type: string
-    description: A hash password in SHA256
     minLength: 64
     maxLength: 64
+    description: A hash password in SHA256
   mobileNo:
     type: string
-    description: A user mobile number
     pattern: ^855\d{8,9}$
+    description: A user mobile number
   cifNo:
     type: string

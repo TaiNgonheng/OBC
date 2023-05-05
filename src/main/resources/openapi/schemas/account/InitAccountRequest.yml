@@ -14,16 +14,14 @@ properties:
     maxLength: 30
   key:
     type: string
-    description: A hash password in SHA256
     minLength: 64
     maxLength: 64
+    description: A hash password in SHA256
   bakongAccId:
     type: string
     pattern: ^[\w]+@[\w]+$
     minLength: 4
     maxLength: 60
-    example: moji_raa@oski
   phoneNumber:
     type: string
     pattern: ^855\d{8,9}$
-    example: 85512345678
