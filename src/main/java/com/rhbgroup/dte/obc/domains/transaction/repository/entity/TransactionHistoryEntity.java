@@ -23,8 +23,8 @@ public class TransactionHistoryEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "user_id", updatable = false, nullable = false)
-  private String userId;
+  @Column(name = "channel_id", updatable = false, nullable = false)
+  private String channelId;
 
   @Column(name = "transfer_type", updatable = false, nullable = false)
   @Enumerated(EnumType.STRING)

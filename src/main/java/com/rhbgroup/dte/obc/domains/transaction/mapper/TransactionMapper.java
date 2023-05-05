@@ -161,7 +161,7 @@ public interface TransactionMapper {
   @Mapping(source = "senderAccountNumber", target = "fromAccount")
   @Mapping(source = "receiverAccountNumber", target = "toAccount")
   @Mapping(source = "amount", target = "trxAmount")
-  @Mapping(source = "obcUserId", target = "userId")
+  @Mapping(source = "obcUserId", target = "channelId")
   @Mapping(source = "debitCreditCode", target = "creditDebitIndicator")
   @Mapping(source = "transferId", target = "trxId")
   @Mapping(source = "currency", target = "trxCcy")
@@ -229,7 +229,7 @@ public interface TransactionMapper {
   @Named("GetTransactionId")
   default String getTransferId(SIBSBatchTransaction transaction) {
     if (!ObjectUtils.isEmpty(transaction)) {
-      return transaction.getUserId()
+      return transaction.getChannelId()
           + transaction.getJournalSequence()
           + getTransactionHistoryInstant(transaction).toEpochMilli();
     }

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @JsonPropertyOrder({
   "Record Type",
   "Journal Seq",
-  "User ID",
+  "Channel ID",
   "Trx Date",
   "Trx Time",
   "Trx Code",
@@ -38,8 +38,8 @@ public class SIBSBatchTransaction {
   @JsonProperty("Journal Seq")
   private String journalSequence;
 
-  @JsonProperty("User ID")
-  private String userId;
+  @JsonProperty("Channel ID")
+  private String channelId;
 
   @JsonProperty("Trx Date")
   private String transactionDate;
