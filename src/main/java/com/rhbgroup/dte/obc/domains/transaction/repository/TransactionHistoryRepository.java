@@ -2,7 +2,7 @@ package com.rhbgroup.dte.obc.domains.transaction.repository;
 
 import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionHistoryEntity;
 import com.rhbgroup.dte.obc.domains.transaction.repository.query.TransactionHistoryQueries;
-import java.time.Instant;
+import java.time.LocalDate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
@@ -27,5 +27,6 @@ public interface TransactionHistoryRepository
 
   @Transactional
   @Modifying
-  void deleteAllByTrxDate(Instant date);
+  @Query(value = TransactionHistoryQueries.DELETE_RECORDS_BY_DATE, nativeQuery = true)
+  void deleteAllByTrxDate(LocalDate date);
 }

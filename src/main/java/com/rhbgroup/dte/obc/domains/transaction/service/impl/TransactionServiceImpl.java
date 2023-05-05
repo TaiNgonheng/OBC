@@ -427,13 +427,16 @@ public class TransactionServiceImpl implements TransactionService {
     MappingIterator<SIBSBatchTransaction> transactionIterator =
         new CsvMapper()
             .readerFor(SIBSBatchTransaction.class)
-            .with(csvSchema.withColumnSeparator(','))
+            .with(csvSchema.withColumnSeparator('|'))
             .readValues(is);
     List<SIBSBatchTransaction> batchTransactions = transactionIterator.readAll();
     List<TransactionHistoryEntity> transactions =
-        transactionMapper.toTransactionHistories(batchTransactions);
-    transactionHistoryRepository.deleteAllByTrxDate(
-        transactionMapper.getInstantFromLocalDate(date));
+        transactionMapper.toTransactionHistories(
+            batchTransactions.stream()
+                .filter(
+                    r -> r.getRecordType().equals(AppConstants.Transaction.RECORD_DETAIL_INDICATOR))
+                .collect(Collectors.toList()));
+    transactionHistoryRepository.deleteAllByTrxDate(date);
     transactionHistoryRepository.saveAll(transactions);
   }
 }

@@ -3,7 +3,6 @@ package com.rhbgroup.dte.obc.domains.transaction.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
-import com.rhbgroup.dte.obc.model.TransactionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +13,7 @@ import lombok.NoArgsConstructor;
   "Journal Seq",
   "User ID",
   "Trx Date",
+  "Trx Time",
   "Trx Code",
   "AccountNo",
   "Sender Account",
@@ -43,6 +43,9 @@ public class SIBSBatchTransaction {
 
   @JsonProperty("Trx Date")
   private String transactionDate;
+
+  @JsonProperty("Trx Time")
+  private String transactionTime;
 
   @JsonProperty("Trx Code")
   private String transactionCode;
@@ -75,5 +78,5 @@ public class SIBSBatchTransaction {
   private String paymentReferenceNumber;
 
   @JsonProperty("Bakong Status")
-  private TransactionStatus bakongStatus;
+  private String bakongStatus;
 }

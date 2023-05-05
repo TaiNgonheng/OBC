@@ -1,6 +1,7 @@
 package com.rhbgroup.dte.obc.common.constants;
 
 import java.util.Arrays;
+import java.util.List;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -55,5 +56,7 @@ public class AppConstants {
     public static final String DATE_FORMAT_YYYYMMDD = "yyyyMMdd";
     public static final String TRANSACTION_FILE_EXTENSION = ".csv";
     public static final String SIBS_SYNC_DATE_KEY = "SIBS_DATE_CONFIG";
+    public static final String RECORD_DETAIL_INDICATOR = "D";
+    public static final List<String> CASA_TO_WALLET_CODES = List.of("9186", "9187");
   }
 }

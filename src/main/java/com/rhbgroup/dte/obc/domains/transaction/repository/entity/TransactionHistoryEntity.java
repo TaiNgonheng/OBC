@@ -24,7 +24,7 @@ public class TransactionHistoryEntity {
   private Long id;
 
   @Column(name = "user_id", updatable = false, nullable = false)
-  private Long userId;
+  private String userId;
 
   @Column(name = "transfer_type", updatable = false, nullable = false)
   @Enumerated(EnumType.STRING)
