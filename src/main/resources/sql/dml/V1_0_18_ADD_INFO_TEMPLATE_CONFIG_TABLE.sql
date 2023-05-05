@@ -1,0 +1,4 @@
+INSERT INTO obc.tbl_obc_config (config_key,config_value,created_date,updated_date,updated_by)
+VALUES
+('INFO_BIP_APPLICATION_SETUP','{"name": "RHB OBC", "enabled": true, "configuration": {"pinAttempts": 5, "pinTimeToLive": "10m", "verifyPinLimit": "2/4s", "sendPinPerApplicationLimit": "5000/12h", "sendPinPerPhoneNumberLimit": "3/1d", "allowMultiplePinVerifications": true}}','2023-05-05 09:12:28',NULL,'OBC_SYSTEM'),
+('INFO_BIP_MESSAGE_TEMPLATE_SETUP','{"pinType": "NUMERIC", "language": "en", "senderId": "RHBBank", "pinLength": 6, "repeatDTMF": "1#", "speechRate": 1, "messageText": "{{pin}} at {{timestamp}}. DO NOT SHARE YOUR OTP TO ANYONE. Did not request? Call 1800-20-8118 (for free) or +85523 992 833"}','2023-05-05 09:13:46',NULL,'OBC_SYSTEM');
