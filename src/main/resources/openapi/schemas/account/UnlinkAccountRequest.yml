@@ -6,5 +6,3 @@ properties:
     type: string
     minLength: 1
     maxLength: 50
-    message: string must have 1 to 50 digits
-    example: 123456

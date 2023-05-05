@@ -26,3 +26,4 @@ properties:
   desc:
     type: string
     description: Description of transaction
+    maxLength: 30

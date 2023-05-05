@@ -78,7 +78,7 @@ public abstract class AbstractAccountTest {
     return new AuthenticationRequest()
         .loginType(LoginTypeEnum.USER_PWD)
         .login("admin")
-        .key("mypassword");
+        .key("7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358");
   }
 
   protected AuthenticationResponse mockAuthenticationResponse() {

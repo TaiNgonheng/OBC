@@ -7,15 +7,13 @@ properties:
     type: string
     minLength: 32
     maxLength: 32
-    message: string must be in 32 digits
+    message: Reference number must be in 32 digits
   otpCode:
     type: string
     minLength: 6
     maxLength: 6
-    message: string must be in 6 digits
-    example: 123456
+    message: OTP code must be in 6 digits
   key:
     type: string
     maxLength: 64
-    message: string must be atleast 1 digit and max of 64 digits
-    example: password
+    message: Key must be at least 1 digit and max of 64 digits
