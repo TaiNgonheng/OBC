@@ -1,6 +1,6 @@
 post:
   tags:
-    - transaction
+    - Transaction
   operationId: processTransactionHistoryBatchFile
   requestBody:
     description: Transaction Processing Request

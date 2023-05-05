@@ -12,6 +12,8 @@ tags:
     description: User Profile Exchange from GoWave
   - name: Transaction
     description: Account Transaction
+  - name: Scheduler
+    description: Scheduler jobs
 
 servers: # context path - /api/v1
   - url: http://localhost:8080

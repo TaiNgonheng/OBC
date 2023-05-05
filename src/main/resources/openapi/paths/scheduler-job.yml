@@ -1,6 +1,6 @@
 post:
   tags:
-    - scheduler
+    - Scheduler
   operationId: createSchedulerJob
   requestBody:
     content:
@@ -35,7 +35,7 @@ post:
       description: Service unavailable
 put:
   tags:
-    - scheduler
+    - Scheduler
   operationId: updateSchedulerJob
   requestBody:
     content:
