@@ -10,15 +10,16 @@ properties:
     $ref: '../common/LoginTypeEnum.yml'
   login:
     type: string
-    example: john789
   key:
     type: string
     description: A hash password in SHA256
-    example: sha256_password
+    minLength: 64
+    maxLength: 64
   bakongAccId:
     type: string
-    example: john@email.com
+    example: moji_raa@oski
+    pattern: ^[\w]+@[\w]+$
   phoneNumber:
     type: string
-    regex: ^855\d{8,9}$
-    example: '85512345678'
+    pattern: ^855\d{8,9}$
+    example: 85512345678

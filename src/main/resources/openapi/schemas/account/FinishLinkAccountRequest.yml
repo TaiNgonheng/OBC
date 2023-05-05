@@ -5,4 +5,3 @@ properties:
   accNumber:
     type: string
     maxLength: 50
-    example: 123456

@@ -46,14 +46,16 @@ import org.springframework.security.core.Authentication;
 public abstract class AbstractAccountTest {
 
   protected static final String MOBILE_NUMBER = "85512345678";
+  protected static final String OBC_PASSWORD =
+      "7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358";
 
   protected InitAccountRequest mockInitAccountRequest() {
     return new InitAccountRequest()
-        .key("user")
-        .login("login")
+        .key(OBC_PASSWORD)
+        .login("user")
         .phoneNumber(MOBILE_NUMBER)
         .loginType(LoginTypeEnum.USER_PWD)
-        .bakongAccId("123xxx");
+        .bakongAccId("user@oski");
   }
 
   protected InitAccountResponse mockInitAccountResponse() {
@@ -90,7 +92,7 @@ public abstract class AbstractAccountTest {
 
   protected PGProfileResponse mockProfileRequiredChangeMobile() {
     return new PGProfileResponse()
-        .accountName("test")
+        .accountName("test@oski")
         .accountId("123456xxx")
         .kycStatus(KycStatusEnum.FULL_KYC.getName())
         .phone("85500000000")
