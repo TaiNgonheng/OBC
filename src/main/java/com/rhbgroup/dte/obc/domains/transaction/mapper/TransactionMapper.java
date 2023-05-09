@@ -1,6 +1,7 @@
 package com.rhbgroup.dte.obc.domains.transaction.mapper;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
+import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.util.ObcDateUtils;
 import com.rhbgroup.dte.obc.common.util.RandomGenerator;
 import com.rhbgroup.dte.obc.domains.transaction.model.SIBSBatchTransaction;
@@ -24,12 +25,10 @@ import com.rhbgroup.dte.obc.model.TransactionStatus;
 import com.rhbgroup.dte.obc.model.TransactionType;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -162,7 +161,7 @@ public interface TransactionMapper {
   @Mapping(source = "senderAccountNumber", target = "fromAccount")
   @Mapping(source = "receiverAccountNumber", target = "toAccount")
   @Mapping(source = "amount", target = "trxAmount")
-  @Mapping(source = "obcUserId", target = "userId")
+  @Mapping(source = "obcUserId", target = "channelId")
   @Mapping(source = "debitCreditCode", target = "creditDebitIndicator")
   @Mapping(source = "transferId", target = "trxId")
   @Mapping(source = "currency", target = "trxCcy")
@@ -175,14 +174,17 @@ public interface TransactionMapper {
 
   @Mapping(source = "transactionCode", target = "transferType", qualifiedByName = "GetTransferType")
   @Mapping(source = "remark", target = "transferMessage")
-  @Mapping(source = "paymentReferenceNumber", target = "trxId")
   @Mapping(source = "amount", target = "trxAmount")
-  @Mapping(source = "transactionDate", target = "trxDate", qualifiedByName = "InstantFromDDMMYYYY")
+  @Mapping(
+      source = "transaction",
+      target = "trxDate",
+      qualifiedByName = "GetTransactionHistoryInstant")
   @Mapping(source = "transactionHash", target = "trxHash")
-  @Mapping(source = "bakongStatus", target = "trxStatus")
   @Mapping(source = "transactionCurrency", target = "trxCcy")
   @Mapping(source = "senderAccount", target = "fromAccount")
   @Mapping(source = "receiverAccount", target = "toAccount")
+  @Mapping(target = "trxStatus", constant = "COMPLETED")
+  @Mapping(source = "transaction", target = "trxId", qualifiedByName = "GetTransactionId")
   TransactionHistoryEntity toTransactionHistory(SIBSBatchTransaction transaction);
 
   List<TransactionHistoryEntity> toTransactionHistories(List<SIBSBatchTransaction> transactions);
@@ -208,9 +210,36 @@ public interface TransactionMapper {
     return ObcDateUtils.toInstant(dateStr, ObcDateUtils.YYYY_MM_DD);
   }
 
+  @Named("GetTransactionHistoryInstant")
+  default Instant getTransactionHistoryInstant(SIBSBatchTransaction transaction) {
+    if (!ObjectUtils.isEmpty(transaction)) {
+      return getInstantFromStringDateTime(
+          transaction.getTransactionDate(), transaction.getTransactionTime());
+    }
+    return null;
+  }
+
+  default Instant getInstantFromStringDateTime(String date, String time) {
+    LocalDate d = getDateFromDDMMYYYY(date);
+    if (time.length() == 5) time = "0" + time;
+    LocalTime t = LocalTime.parse(time, DateTimeFormatter.ofPattern("HHmmss"));
+    return LocalDateTime.of(d, t).atZone(ZoneId.systemDefault()).toInstant();
+  }
+
+  @Named("GetTransactionId")
+  default String getTransferId(SIBSBatchTransaction transaction) {
+    if (!ObjectUtils.isEmpty(transaction)) {
+      return transaction.getChannelId()
+          + transaction.getJournalSequence()
+          + getTransactionHistoryInstant(transaction).toEpochMilli();
+    }
+    return null;
+  }
+
   @Named("GetTransferType")
   default TransactionType getTransactionType(String transactionCode) {
-    if (StringUtils.isNotBlank(transactionCode) && "REAC2303".equals(transactionCode)) {
+    if (StringUtils.isNotBlank(transactionCode)
+        && AppConstants.Transaction.CASA_TO_WALLET_CODES.contains(transactionCode)) {
       return TransactionType.WALLET;
     }
     return null;
