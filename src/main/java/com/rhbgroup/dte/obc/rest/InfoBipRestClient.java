@@ -56,6 +56,9 @@ public class InfoBipRestClient {
   @Value("${obc.infobip.messageId}")
   protected String messageId;
 
+  @Value("${obc.infobip.ncNeeded}")
+  protected boolean ncNeeded;
+
   @Value("${obc.infobip.enabled}")
   protected boolean otpEnabled;
 
@@ -75,7 +78,8 @@ public class InfoBipRestClient {
 
     InfoBipSendOtpResponse sendSmsOtpResponse =
         restUtil.sendPost(
-            baseUrl.concat(INFO_BIP_SEND_OTP_URL),
+            baseUrl.concat(
+                ncNeeded ? INFO_BIP_SEND_OTP_URL : INFO_BIP_SEND_OTP_URL.concat("?ncNeeded=false")),
             headers,
             new InfoBipSendOtpRequest()
                 .applicationId(appId)
