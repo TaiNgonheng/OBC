@@ -41,7 +41,7 @@ server:
 
 obc:
   gowave-user: ${OBC_GOWAVE_USER:gowave_user}
-  gowave-password: ${OBC_GOWAVE_USER:gowave_password}
+  gowave-password: ${OBC_GOWAVE_PASSWORD:gowave_password}
   security:
     jwt-secret: ${JWT_SECRET:my-secret}
     jwt-ttl: ${JWT_TTL:300}
@@ -63,7 +63,8 @@ obc:
     messageId: ${INFOBIP_MESSAGE_ID:CFF95B6AC9CAB1CDE1E852762651F8A5}
     username: ${INFOBIP_USERNAME:tmnhat.cmcglobal}
     password: ${INFOBIP_PASSWORD:Sunn@123}
-    enabled: ${INFOBIP_ENABLED:false}
+    ncNeeded: ${INFOBIP_NC_NEEDED:false}
+    enabled: ${INFOBIP_ENABLED:true}
   sftp:
     username: ${SFTP_USERNAME:testuser}
     password: ${SFTP_PASSWORD:testpassword}
