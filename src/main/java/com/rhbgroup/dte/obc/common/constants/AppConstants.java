@@ -27,7 +27,6 @@ public class AppConstants {
     public static final String CAN_LINK_ACCOUNT = "can_link_account";
     public static final String CAN_UNLINK_ACCOUNT = "can_unlink_account";
     public static final String CAN_AUTH = "can_auth";
-    public static final String CAN_EXCHANGE_USER = "can_exchange_user";
 
     public static String concat(String... permissions) {
       return Arrays.stream(permissions).reduce((s1, s2) -> s1 + "," + s2).orElse(null);

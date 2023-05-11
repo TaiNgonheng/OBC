@@ -35,15 +35,12 @@ public class UserExchangeServiceImpl implements UserExchangeService {
   private PasswordEncoder passwordEncoder;
 
   private UserExchangeMapper userExchangeMapper;
-
   private UserRoleMapper userRoleMapper;
 
   private UserProfileRepository userProfileRepository;
-
   private UserRoleRepository userRoleRepository;
 
   private UserAuthService userAuthService;
-
   private JwtTokenUtils jwtTokenUtils;
 
   @Override
@@ -85,14 +82,14 @@ public class UserExchangeServiceImpl implements UserExchangeService {
 
         if (userOptional.isPresent()) {
           UserProfileEntity existingUser = userOptional.get();
-          // Update user credential & mobile number
-          String newPassword = newUser.getPassword();
-          String newMobileNo = newUser.getMobileNo();
-          if (StringUtils.isNotBlank(newPassword)) {
-            existingUser.setPassword(passwordEncoder.encode(newPassword));
+          if (StringUtils.isNotBlank(newUser.getPassword())) {
+            existingUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
           }
-          if (StringUtils.isNotBlank(newMobileNo)) {
-            existingUser.setMobileNo(newMobileNo);
+          if (StringUtils.isNotBlank(newUser.getMobileNo())) {
+            existingUser.setMobileNo(newUser.getMobileNo());
+          }
+          if (StringUtils.isNotBlank(newUser.getCifNo())) {
+            existingUser.setCifNo(newUser.getCifNo());
           }
           return existingUser;
         }

@@ -60,7 +60,7 @@ obc:
   infobip:
     url: ${INFOBIP_URL:https://9rmmnv.api.infobip.com}
     appId: ${INFOBIP_APP_ID:FA6C2DC0CCC7843B2395F3A91E0B5EC2}
-    messageId: ${INFOBIP_APP_ID:CFF95B6AC9CAB1CDE1E852762651F8A5}
+    messageId: ${INFOBIP_MESSAGE_ID:CFF95B6AC9CAB1CDE1E852762651F8A5}
     username: ${INFOBIP_USERNAME:tmnhat.cmcglobal}
     password: ${INFOBIP_PASSWORD:Sunn@123}
     enabled: ${INFOBIP_ENABLED:false}
