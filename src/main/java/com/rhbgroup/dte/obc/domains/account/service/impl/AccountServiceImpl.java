@@ -132,7 +132,7 @@ public class AccountServiceImpl implements AccountService {
               UserModel gowaveUser = userProfileService.findByUsername(request.getLogin());
               // Trigger infobip 2-fa sms
               if (gowaveUser.getMobileNo().equals(request.getPhoneNumber())) {
-                infoBipRestClient.sendOtp(request.getPhoneNumber(), request.getLogin());
+                infoBipRestClient.sendOtp(request.getPhoneNumber(), request.getBakongAccId());
               }
               return accountMapper.toInitAccountResponse(
                   gowaveUser, request.getPhoneNumber(), token, otpEnabled);
