@@ -24,7 +24,6 @@ import com.rhbgroup.dte.obc.model.GetAccountDetailResponseAllOfDataLimit;
 import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.InitAccountResponseAllOfData;
-import com.rhbgroup.dte.obc.model.PGProfileResponse;
 import com.rhbgroup.dte.obc.model.UserModel;
 import java.time.Instant;
 import org.mapstruct.Mapper;
@@ -44,12 +43,12 @@ public interface AccountMapper {
   AccountModel toModel(InitAccountRequest request);
 
   default InitAccountResponse toInitAccountResponse(
-      UserModel userModel, PGProfileResponse userProfile, String jwtToken, boolean otpEnabled) {
+      UserModel userModel, String requestPhone, String jwtToken, boolean otpEnabled) {
 
     InitAccountResponseAllOfData data =
         new InitAccountResponseAllOfData().accessToken(jwtToken).requireOtp(otpEnabled);
 
-    if (!userProfile.getPhone().equals(userModel.getMobileNo())) {
+    if (!requestPhone.equals(userModel.getMobileNo())) {
       data.setRequireOtp(false);
       data.setRequireChangePhone(true);
       data.setLast3DigitsPhone(ObcStringUtils.getLast3DigitsPhone(userModel.getMobileNo()));

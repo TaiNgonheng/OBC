@@ -126,16 +126,16 @@ public class AccountServiceImpl implements AccountService {
     // Get PG user profile, trigger OTP and build response
     return of(pgRestClient::getUserProfile)
         .andThen(peek(AccountValidator::validateAccount))
-        .andThen(
-            peek(
-                userProfile ->
-                    infoBipRestClient.sendOtp(userProfile.getPhone(), request.getLogin())))
         .andThen(peek(response -> insertBakongId(request.getLogin(), request.getBakongAccId())))
         .andThen(
             profileResponse -> {
               UserModel gowaveUser = userProfileService.findByUsername(request.getLogin());
+              // Trigger infobip 2-fa sms
+              if (gowaveUser.getMobileNo().equals(request.getPhoneNumber())) {
+                infoBipRestClient.sendOtp(request.getPhoneNumber(), request.getLogin());
+              }
               return accountMapper.toInitAccountResponse(
-                  gowaveUser, profileResponse, token, otpEnabled);
+                  gowaveUser, request.getPhoneNumber(), token, otpEnabled);
             })
         .apply(Collections.singletonList(request.getBakongAccId()));
   }

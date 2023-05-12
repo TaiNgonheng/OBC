@@ -4,7 +4,6 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +27,7 @@ import com.rhbgroup.dte.obc.model.BakongKYCStatus;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
+import com.rhbgroup.dte.obc.model.InitAccountRequest;
 import com.rhbgroup.dte.obc.model.InitAccountResponse;
 import com.rhbgroup.dte.obc.model.UnlinkAccountResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
@@ -89,7 +89,10 @@ class AccountServiceTest extends AbstractAccountTest {
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileRequiredChangeMobile());
     when(jwtTokenUtils.generateJwtAppUser(anyString(), any())).thenReturn(mockJwtToken());
 
-    InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
+    // Set to other phone number
+    InitAccountRequest initAccountRequest = mockInitAccountRequest();
+    initAccountRequest.setPhoneNumber("855xxxx");
+    InitAccountResponse response = accountService.initLinkAccount(initAccountRequest);
 
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
@@ -108,7 +111,7 @@ class AccountServiceTest extends AbstractAccountTest {
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
     Assertions.assertEquals(response.getData().getAccessToken(), mockJwtToken());
-    Assertions.assertEquals(true, response.getData().getRequireChangePhone());
+    Assertions.assertEquals(false, response.getData().getRequireChangePhone());
   }
 
   @Test
@@ -198,8 +201,8 @@ class AccountServiceTest extends AbstractAccountTest {
   void testInitLinkAccount_Failed_InfoBipServiceUnavailable() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(pgRestClient.getUserProfile(anyList())).thenReturn(mockProfileNotRequiredChangeMobile());
-    lenient()
-        .when(infoBipRestClient.sendOtp(anyString(), anyString()))
+    when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
+    when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenThrow(new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR));
 
     try {
