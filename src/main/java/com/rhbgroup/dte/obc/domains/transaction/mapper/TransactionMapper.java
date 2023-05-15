@@ -13,6 +13,7 @@ import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryResponseTransactions;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferRequest;
 import com.rhbgroup.dte.obc.model.CDRBTransferType;
+import com.rhbgroup.dte.obc.model.CasaAccountType;
 import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponseAllOfData;
@@ -97,6 +98,8 @@ public interface TransactionMapper {
     originalRequest.setCifNumber(userDetails.getCif());
     originalRequest.setObcUserId(BigDecimal.valueOf(userDetails.getUserId()));
     originalRequest.setAccountCurrencyCode(accountDetailResponse.getData().getAccCcy());
+    originalRequest.setFromAccountType(
+        CasaAccountType.fromValue(accountDetailResponse.getData().getAccType().getValue()));
 
     // Optional
     originalRequest.setTransactionCurrencyAmount(originalRequest.getAmount());

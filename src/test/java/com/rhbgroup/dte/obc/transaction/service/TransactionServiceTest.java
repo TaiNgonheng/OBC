@@ -25,6 +25,7 @@ import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.InternalException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
+import com.rhbgroup.dte.obc.model.BakongAccountType;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryResponse;
@@ -301,7 +302,10 @@ class TransactionServiceTest extends AbstractTransactionTest {
         .thenReturn(
             new GetAccountDetailResponse()
                 .status(ResponseHandler.ok())
-                .data(new GetAccountDetailResponseAllOfData().accCcy("USD")));
+                .data(
+                    new GetAccountDetailResponseAllOfData()
+                        .accCcy("USD")
+                        .accType(BakongAccountType.S)));
 
     when(cdrbRestClient.transfer(any())).thenReturn(mockCDRBTransferResponse());
 
@@ -343,7 +347,10 @@ class TransactionServiceTest extends AbstractTransactionTest {
         .thenReturn(
             new GetAccountDetailResponse()
                 .status(ResponseHandler.ok())
-                .data(new GetAccountDetailResponseAllOfData().accCcy("USD")));
+                .data(
+                    new GetAccountDetailResponseAllOfData()
+                        .accCcy("USD")
+                        .accType(BakongAccountType.S)));
 
     when(cdrbRestClient.transfer(any())).thenReturn(mockCDRBTransferResponse());
 
@@ -454,7 +461,10 @@ class TransactionServiceTest extends AbstractTransactionTest {
         .thenReturn(
             new GetAccountDetailResponse()
                 .status(ResponseHandler.ok())
-                .data(new GetAccountDetailResponseAllOfData().accCcy("USD")));
+                .data(
+                    new GetAccountDetailResponseAllOfData()
+                        .accCcy("USD")
+                        .accType(BakongAccountType.S)));
 
     when(cdrbRestClient.transfer(any())).thenReturn(mockCDRBTransferResponse());
     when(configService.getByConfigKey(ConfigConstants.Transaction.TRX_QUERY_MAX_DURATION, "value"))
