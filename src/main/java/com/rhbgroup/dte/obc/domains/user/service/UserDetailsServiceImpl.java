@@ -76,6 +76,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                     accountRepository
                         .findByUserIdAndLinkedStatus(
                             userProfile.getId(), LinkedStatusEnum.COMPLETED)
+                        .stream()
+                        .filter(
+                            account -> LinkedStatusEnum.COMPLETED.equals(account.getLinkedStatus()))
+                        .findFirst()
                         .flatMap(
                             account ->
                                 Optional.of(
