@@ -25,6 +25,13 @@ public interface TransactionHistoryRepository
   @Query(value = TransactionHistoryQueries.DELETE_TODAY_RECORD, nativeQuery = true)
   Integer deleteTodayTransactionByAccountNumber(@Param("fromAccount") String fromAccount);
 
+  @Modifying
+  @Query(
+      value = TransactionHistoryQueries.DELETE_SIBS_TODAY_RECORD_BY_ACCOUNT_NUMBER,
+      nativeQuery = true)
+  Integer deleteTodayTransactionByAccountNumber(
+      @Param("fromAccount") String fromAccount, @Param("sibsSyncDate") LocalDate sibSyncDate);
+
   @Transactional
   @Modifying
   @Query(value = TransactionHistoryQueries.DELETE_RECORDS_BY_DATE, nativeQuery = true)

@@ -20,4 +20,7 @@ public class TransactionHistoryQueries {
 
   public static final String DELETE_RECORDS_BY_DATE =
       "DELETE FROM obc.tbl_obc_sibs_transaction_history WHERE date(trx_date) = date(?1)";
+
+  public static final String DELETE_SIBS_TODAY_RECORD_BY_ACCOUNT_NUMBER =
+      "DELETE FROM obc.tbl_obc_sibs_transaction_history WHERE from_account = :fromAccount AND DATE(trx_date) = DATE(:sibsSyncDate)";
 }

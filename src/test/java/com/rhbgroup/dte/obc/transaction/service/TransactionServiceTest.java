@@ -38,6 +38,7 @@ import com.rhbgroup.dte.obc.model.GetAccountTransactionsRequest;
 import com.rhbgroup.dte.obc.model.GetAccountTransactionsResponse;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.InitTransactionResponse;
+import com.rhbgroup.dte.obc.model.SIBSSyncDateConfig;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
 import com.rhbgroup.dte.obc.model.TransactionType;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
@@ -489,6 +490,9 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(cdrbRestClient.fetchTodayTransactionHistory(any()))
         .thenReturn(new CDRBTransactionHistoryResponse().transactions(Collections.emptyList()));
     when(historyRepository.queryByFromAccount(anyString(), any())).thenReturn(mockTrxHistoryPage());
+    when(configService.getByConfigKey(
+            AppConstants.Transaction.SIBS_SYNC_DATE_KEY, SIBSSyncDateConfig.class))
+        .thenReturn(new SIBSSyncDateConfig().useSIBSSyncDate(false).sibsSyncDate("20230729"));
 
     GetAccountTransactionsRequest mockRequest = mockAccountTransactionRequest();
     GetAccountTransactionsResponse response =
@@ -511,6 +515,9 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(cdrbRestClient.fetchTodayTransactionHistory(any()))
         .thenReturn(new CDRBTransactionHistoryResponse().transactions(Collections.emptyList()));
     when(historyRepository.queryByFromAccount(anyString(), any())).thenReturn(mockTrxHistoryPage());
+    when(configService.getByConfigKey(
+            AppConstants.Transaction.SIBS_SYNC_DATE_KEY, SIBSSyncDateConfig.class))
+        .thenReturn(new SIBSSyncDateConfig().useSIBSSyncDate(true).sibsSyncDate("20230729"));
 
     GetAccountTransactionsRequest mockRequest = mockAccountTransactionRequest();
     GetAccountTransactionsResponse response =

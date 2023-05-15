@@ -11,6 +11,7 @@ import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
+import com.rhbgroup.dte.obc.common.util.ObcDateUtils;
 import com.rhbgroup.dte.obc.common.util.SFTPUtil;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
@@ -335,9 +336,22 @@ public class TransactionServiceImpl implements TransactionService {
       return;
     }
 
-    Integer refreshedRecords =
-        transactionHistoryRepository.deleteTodayTransactionByAccountNumber(accountNum);
-    log.info("Cleaning all the newly added by today record {}", refreshedRecords);
+    SIBSSyncDateConfig sibsSyncDateConfig =
+        configService.getByConfigKey(
+            AppConstants.Transaction.SIBS_SYNC_DATE_KEY, SIBSSyncDateConfig.class);
+
+    Integer cleanupRecords;
+    if (Boolean.TRUE.equals(sibsSyncDateConfig.getUseSIBSSyncDate())) {
+      cleanupRecords =
+          transactionHistoryRepository.deleteTodayTransactionByAccountNumber(
+              accountNum,
+              ObcDateUtils.toLocalDate(
+                  sibsSyncDateConfig.getSibsSyncDate(), ObcDateUtils.YYYY_MM_DD_NO_SPACE));
+    } else {
+      cleanupRecords =
+          transactionHistoryRepository.deleteTodayTransactionByAccountNumber(accountNum);
+    }
+    log.info("Cleaning all the newly added by today record {}", cleanupRecords);
 
     of(cdrbRestClient::fetchTodayTransactionHistory)
         .andThen(CDRBTransactionHistoryResponse::getTransactions)
