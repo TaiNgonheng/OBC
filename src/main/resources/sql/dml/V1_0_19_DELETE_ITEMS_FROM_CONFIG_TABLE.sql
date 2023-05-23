@@ -1,0 +1,11 @@
+DELETE FROM obc.tbl_obc_config WHERE config_key = 'CDRB_URL';
+DELETE FROM obc.tbl_obc_config WHERE config_key = 'CDRB_ACCOUNT';
+DELETE FROM obc.tbl_obc_config WHERE config_key = 'CDRB_HSM_ZMK';
+DELETE FROM obc.tbl_obc_config WHERE config_key = 'CDRB_HSM_IV';
+DELETE FROM obc.tbl_obc_config WHERE config_key = 'CDRB_X_API_KEY';
+DELETE FROM obc.tbl_obc_config WHERE config_key = 'PG1_ACCOUNT';
+DELETE FROM obc.tbl_obc_config WHERE config_key = 'PG1_URL';
+DELETE FROM obc.tbl_obc_config WHERE config_key = 'INFO_BIP_ACCOUNT';
+DELETE FROM obc.tbl_obc_config WHERE config_key = 'INFO_BIP_APP_ID';
+DELETE FROM obc.tbl_obc_config WHERE config_key = 'INFO_BIP_OTP_MESSAGE_ID';
+DELETE FROM obc.tbl_obc_config WHERE config_key = 'INFO_BIP_URL';
