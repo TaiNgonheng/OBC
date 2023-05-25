@@ -169,9 +169,9 @@ public interface TransactionMapper {
   @Mapping(source = "transferId", target = "trxId")
   @Mapping(source = "currency", target = "trxCcy")
   @Mapping(
-      source = "transactionDate",
+      source = "transactionHistory",
       target = "trxDate",
-      qualifiedByName = "InstantFromStringYYYYMMDD")
+      qualifiedByName = "GetInstantFromCDRBTrxHistory")
   TransactionHistoryEntity toTransactionHistoryEntity(
       CDRBTransactionHistoryResponseTransactions transactionHistory);
 
@@ -218,6 +218,16 @@ public interface TransactionMapper {
     if (!ObjectUtils.isEmpty(transaction)) {
       return getInstantFromStringDateTime(
           transaction.getTransactionDate(), transaction.getTransactionTime());
+    }
+    return null;
+  }
+
+  @Named("GetInstantFromCDRBTrxHistory")
+  default Instant getInstantFromCDRBTrxHistory(
+      CDRBTransactionHistoryResponseTransactions cdrbTrxHistory) {
+    if (!ObjectUtils.isEmpty(cdrbTrxHistory)) {
+      return getInstantFromStringDateTime(
+          cdrbTrxHistory.getTransactionDate(), String.valueOf(cdrbTrxHistory.getTransactionTime()));
     }
     return null;
   }

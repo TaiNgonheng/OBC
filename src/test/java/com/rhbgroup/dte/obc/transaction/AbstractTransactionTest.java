@@ -11,6 +11,8 @@ import com.rhbgroup.dte.obc.model.AccountModel;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
+import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryResponse;
+import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryResponseTransactions;
 import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
 import com.rhbgroup.dte.obc.model.CDRBTransferResponse;
 import com.rhbgroup.dte.obc.model.CasaAccountStatus;
@@ -253,5 +255,17 @@ public abstract class AbstractTransactionTest {
     entity2.setTrxStatus(TransactionStatus.COMPLETED);
 
     return new PageImpl<>(Arrays.asList(entity1, entity2));
+  }
+
+  protected CDRBTransactionHistoryResponse mock2MoreRecordsToday() {
+    return new CDRBTransactionHistoryResponse()
+        .transactions(
+            Arrays.asList(
+                new CDRBTransactionHistoryResponseTransactions()
+                    .transactionDate("01012023")
+                    .transactionTime(135623L),
+                new CDRBTransactionHistoryResponseTransactions()
+                    .transactionDate("01012023")
+                    .transactionTime(123456L)));
   }
 }

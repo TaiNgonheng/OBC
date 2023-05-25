@@ -512,8 +512,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
 
     // Update this one to return 2 more results
-    when(cdrbRestClient.fetchTodayTransactionHistory(any()))
-        .thenReturn(new CDRBTransactionHistoryResponse().transactions(Collections.emptyList()));
+    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
     when(historyRepository.queryByFromAccount(anyString(), any())).thenReturn(mockTrxHistoryPage());
     when(configService.getByConfigKey(
             AppConstants.Transaction.SIBS_SYNC_DATE_KEY, SIBSSyncDateConfig.class))
