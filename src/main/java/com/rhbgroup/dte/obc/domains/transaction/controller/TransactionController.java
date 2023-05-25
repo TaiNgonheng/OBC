@@ -1,8 +1,11 @@
 package com.rhbgroup.dte.obc.domains.transaction.controller;
 
 import com.rhbgroup.dte.obc.api.TransactionApiDelegate;
+import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.func.Functions;
 import com.rhbgroup.dte.obc.domains.transaction.service.TransactionService;
+import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
 import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Component;
 public class TransactionController implements TransactionApiDelegate {
 
   private final TransactionService transactionService;
+  private final ApplicationProperties properties;
 
   @Override
   public ResponseEntity<InitTransactionResponse> initTransaction(
@@ -35,8 +39,11 @@ public class TransactionController implements TransactionApiDelegate {
 
   @Override
   public ResponseEntity<Void> processTransactionHistoryBatchFile(
-      TransactionBatchFileProcessingRequest request) {
+      String allWatchToken, TransactionBatchFileProcessingRequest request) {
     log.info("Start Api - process transaction history batch file");
+    if (!properties.getAllWatchToken().equals(allWatchToken)) {
+      throw new BizException(ResponseMessage.BAD_REQUEST);
+    }
     CompletableFuture.runAsync(
         () -> transactionService.processTransactionHistoryBatchFile(request));
     return ResponseEntity.status(HttpStatus.OK).build();

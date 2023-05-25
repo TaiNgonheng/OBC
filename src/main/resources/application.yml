@@ -74,3 +74,4 @@ obc:
 
 config:
   maxStackTraceLength: ${MAX_STACK_TRACE_LENGTH:19999}
+  allWatchToken: ${ALL_WATCH_TOKEN:ALL_WATCH_TOKEN}

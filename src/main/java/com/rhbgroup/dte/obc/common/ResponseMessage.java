@@ -31,6 +31,7 @@ public enum ResponseMessage {
   NO_SUCH_USER_FOUND(100, "User not found."),
   USER_ALREADY_EXIST(101, "User already exist."),
   FILE_PROCESSED(102, "The file input date has been processed"),
+  BAD_REQUEST(103, "Bad Request"),
 
   // Generic error message
   CONSTRAINT_VIOLATION_ERROR(300, "Constraint violation exception."),

@@ -2,6 +2,12 @@ post:
   tags:
     - Scheduler
   operationId: createSchedulerJob
+  parameters:
+    - in: header
+      name: ALL_WATCH_TOKEN
+      schema:
+        type: string
+      required: true
   requestBody:
     content:
       application/json:
@@ -37,6 +43,12 @@ put:
   tags:
     - Scheduler
   operationId: updateSchedulerJob
+  parameters:
+    - in: header
+      name: ALL_WATCH_TOKEN
+      schema:
+        type: string
+      required: true
   requestBody:
     content:
       application/json:
