@@ -153,17 +153,7 @@ public class CDRBRestClient {
 
   private String login() {
 
-    // Decrypted stored password using AES
-    byte[] passwordDecrypted =
-        AESCryptoUtil.decrypt(
-            Base64.getDecoder().decode(encPassword.getBytes(StandardCharsets.UTF_8)),
-            aesKey,
-            Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)));
-
-    String passwordStr = new String(passwordDecrypted, StandardCharsets.UTF_8);
-
-    // Construct password and split password into 2 parts as per condition
-    String[] passwords = constructPasswords(passwordStr);
+    String[] passwords = generateHSMEncryptedPwd();
     CDRBLoginRequest loginRequest =
         new CDRBLoginRequest().username(username).encPwd1(passwords[0]).encPwd2(passwords[1]);
 
@@ -175,6 +165,21 @@ public class CDRBRestClient {
             ParameterizedTypeReference.forType(CDRBLoginResponse.class));
 
     return cdrbLoginResponse.getToken();
+  }
+
+  public String[] generateHSMEncryptedPwd() {
+    // Decrypted stored password using AES
+    byte[] passwordDecrypted =
+        AESCryptoUtil.decrypt(
+            Base64.getDecoder().decode(encPassword.getBytes(StandardCharsets.UTF_8)),
+            aesKey,
+            Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)));
+
+    String passwordStr = new String(passwordDecrypted, StandardCharsets.UTF_8);
+
+    // Construct password and split password into 2 parts as per condition
+    String[] passwords = constructPasswords(passwordStr);
+    return passwords;
   }
 
   private String getAccessToken() {
