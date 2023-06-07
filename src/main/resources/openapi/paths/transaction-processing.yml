@@ -2,6 +2,12 @@ post:
   tags:
     - Transaction
   operationId: processTransactionHistoryBatchFile
+  parameters:
+    - in: header
+      name: ALL_WATCH_TOKEN
+      schema:
+        type: string
+      required: true
   requestBody:
     description: Transaction Processing Request
     content:

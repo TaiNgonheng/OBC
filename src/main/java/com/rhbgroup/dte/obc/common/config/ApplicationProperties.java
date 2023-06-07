@@ -25,4 +25,7 @@ public class ApplicationProperties {
 
   @Value("${config.maxStackTraceLength}")
   private Integer maxStackTraceLength;
+
+  @Value("${config.allWatchToken}")
+  private String allWatchToken;
 }
