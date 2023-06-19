@@ -133,7 +133,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     // validate phone number
-    String regex = "^([855]{3}|[+855]{4})([1-9]{1})([0-9]{7,8})$";
+    String regex = "^([[+]8]55)([1-9])(\\d{7,8})$";
 
     Pattern pattern = Pattern.compile(regex);
     Matcher matcher = pattern.matcher(request.getPhoneNumber());

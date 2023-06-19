@@ -103,7 +103,6 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(GatewayTimeoutException.class)
   public ResponseEntity<ResponseWrapper> gatewayTimeoutException(GatewayTimeoutException ex) {
 
-    // TODO update response detail later
     ResponseStatus status =
         new ResponseStatus()
             .code(AppConstants.Status.ERROR)
