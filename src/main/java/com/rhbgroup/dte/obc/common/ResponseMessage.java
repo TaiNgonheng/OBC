@@ -14,6 +14,10 @@ public enum ResponseMessage {
   AUTHENTICATION_FAILED(4, "Authentication error, please try again."),
   SESSION_EXPIRED(5, "Your Session has expired."),
   MANDATORY_FIELD_MISSING(6, "Missing mandatory element."),
+
+  INVALID_LOGIN_TYPE(6, "Invalid login type."),
+
+  INVALID_PHONE_NUMBER(6, "Invalid phone number. Please check the format and try again."),
   INVALID_TOKEN(7, "Token is invalid."),
   FAIL_TO_FETCH_ACCOUNT_DETAILS(8, "Getting user account information failed."),
   TRANSACTION_TO_UNAVAILABLE_ACCOUNT(9, "Transaction to unavailable account."),

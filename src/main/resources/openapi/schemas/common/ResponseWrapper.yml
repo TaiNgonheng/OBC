@@ -2,3 +2,5 @@ type: object
 properties:
   status:
     $ref: './ResponseStatus.yml'
+  data:
+    type: object

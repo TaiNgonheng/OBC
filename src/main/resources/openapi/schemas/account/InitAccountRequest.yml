@@ -24,4 +24,3 @@ properties:
     maxLength: 60
   phoneNumber:
     type: string
-    pattern: ^855\d{8,9}$
