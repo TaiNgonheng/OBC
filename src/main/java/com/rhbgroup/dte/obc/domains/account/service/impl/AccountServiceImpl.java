@@ -18,24 +18,7 @@ import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
-import com.rhbgroup.dte.obc.model.AccountFilterCondition;
-import com.rhbgroup.dte.obc.model.AccountModel;
-import com.rhbgroup.dte.obc.model.AuthenticationRequest;
-import com.rhbgroup.dte.obc.model.AuthenticationResponse;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
-import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
-import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
-import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
-import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
-import com.rhbgroup.dte.obc.model.InitAccountRequest;
-import com.rhbgroup.dte.obc.model.InitAccountResponse;
-import com.rhbgroup.dte.obc.model.UnlinkAccountRequest;
-import com.rhbgroup.dte.obc.model.UnlinkAccountResponse;
-import com.rhbgroup.dte.obc.model.UserModel;
-import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
-import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
-import com.rhbgroup.dte.obc.model.VerifyOtpResponseAllOfData;
+import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
@@ -44,6 +27,8 @@ import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -112,6 +97,7 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public InitAccountResponse initLinkAccount(InitAccountRequest request) {
+    validateRequest(request);
 
     // Generate OBC token
     String token =
@@ -138,6 +124,22 @@ public class AccountServiceImpl implements AccountService {
                   gowaveUser, request.getPhoneNumber(), token, otpEnabled);
             })
         .apply(Collections.singletonList(request.getBakongAccId()));
+  }
+
+  private void validateRequest(InitAccountRequest request) {
+    // validate login type
+    if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD)) {
+      throw new BizException(ResponseMessage.INVALID_LOGIN_TYPE);
+    }
+
+    // validate phone number
+    String regex = "^([[+]8]55)([1-9])(\\d{7,8})$";
+
+    Pattern pattern = Pattern.compile(regex);
+    Matcher matcher = pattern.matcher(request.getPhoneNumber());
+    if (!matcher.find()) {
+      throw new BizException(ResponseMessage.INVALID_PHONE_NUMBER);
+    }
   }
 
   private void insertBakongId(String username, String bakongId) {

@@ -36,7 +36,7 @@ public class UserAuthService {
                 () -> new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED));
 
     if (profile.getLockTime() != null && profile.getLockTime().isAfter(Instant.now())) {
-      throw new UserAuthenticationException(ResponseMessage.AUTHENTICATION_LOCKED);
+      throw new BizException(ResponseMessage.AUTHENTICATION_LOCKED);
     }
 
     int loginAttempts = profile.getLoginAttempt() == null ? 0 : profile.getLoginAttempt();

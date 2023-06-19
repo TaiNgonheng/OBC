@@ -71,7 +71,8 @@ public class GlobalExceptionHandler {
             .errorCode(ex.getResponseMessage().getCode().toString())
             .errorMessage(ex.getResponseMessage().getMsg());
 
-    return new ResponseEntity<>(new ResponseWrapper().status(status), HttpStatus.BAD_REQUEST);
+    return new ResponseEntity<>(
+        new ResponseWrapper().status(status).data(null), HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(InternalException.class)
@@ -102,7 +103,6 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(GatewayTimeoutException.class)
   public ResponseEntity<ResponseWrapper> gatewayTimeoutException(GatewayTimeoutException ex) {
 
-    // TODO update response detail later
     ResponseStatus status =
         new ResponseStatus()
             .code(AppConstants.Status.ERROR)

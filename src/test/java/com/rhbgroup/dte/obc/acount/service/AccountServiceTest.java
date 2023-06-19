@@ -91,7 +91,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
     // Set to other phone number
     InitAccountRequest initAccountRequest = mockInitAccountRequest();
-    initAccountRequest.setPhoneNumber("855xxxx");
+    initAccountRequest.setPhoneNumber("85512862862");
     InitAccountResponse response = accountService.initLinkAccount(initAccountRequest);
 
     Assertions.assertEquals(0, response.getStatus().getCode());
