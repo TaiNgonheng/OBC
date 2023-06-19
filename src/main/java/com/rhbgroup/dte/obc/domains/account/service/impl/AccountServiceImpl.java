@@ -132,7 +132,11 @@ public class AccountServiceImpl implements AccountService {
       throw new BizException(ResponseMessage.INVALID_LOGIN_TYPE);
     }
 
-    // validate phone number
+    if (StringUtils.isEmpty(request.getPhoneNumber())) {
+      throw new BizException(ResponseMessage.MISSING_PHONE_NUMBER);
+    }
+
+    // validate phone number formate
     String regex = "^([[+]8]55)([1-9])(\\d{7,8})$";
 
     Pattern pattern = Pattern.compile(regex);
@@ -165,6 +169,7 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public VerifyOtpResponse verifyOtp(VerifyOtpRequest request) {
+    validateVerifyOTPRequest(request);
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     boolean otpVerified =
@@ -186,6 +191,12 @@ public class AccountServiceImpl implements AccountService {
     return new VerifyOtpResponse()
         .status(ResponseHandler.ok())
         .data(new VerifyOtpResponseAllOfData().isValid(otpVerified));
+  }
+
+  private void validateVerifyOTPRequest(VerifyOtpRequest request) {
+    if (StringUtils.isEmpty(request.getOtpCode())) {
+      throw new BizException(ResponseMessage.MISSING_OTP_CODE);
+    }
   }
 
   @Override

@@ -18,6 +18,11 @@ public enum ResponseMessage {
   INVALID_LOGIN_TYPE(6, "Invalid login type."),
 
   INVALID_PHONE_NUMBER(6, "Invalid phone number. Please check the format and try again."),
+
+  MISSING_PHONE_NUMBER(
+      6,
+      "phoneNumber is mandatory, phoneNumber length must be between 1 and 30, Invalid phone number. Please check the format and try again."),
+  MISSING_OTP_CODE(6, "OTP is mandatory, OTP length must be 6"),
   INVALID_TOKEN(7, "Token is invalid."),
   FAIL_TO_FETCH_ACCOUNT_DETAILS(8, "Getting user account information failed."),
   TRANSACTION_TO_UNAVAILABLE_ACCOUNT(9, "Transaction to unavailable account."),
