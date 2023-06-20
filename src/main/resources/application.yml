@@ -64,7 +64,7 @@ obc:
     username: ${INFOBIP_USERNAME:tmnhat.cmcglobal}
     password: ${INFOBIP_PASSWORD:Sunn@123}
     ncNeeded: ${INFOBIP_NC_NEEDED:false}
-    enabled: ${INFOBIP_ENABLED:true}
+    enabled: ${INFOBIP_ENABLED:false}
   sftp:
     username: ${SFTP_USERNAME:testuser}
     password: ${SFTP_PASSWORD:testpassword}
