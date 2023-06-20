@@ -101,11 +101,16 @@ public class AccountServiceImpl implements AccountService {
     if (StringUtils.isEmpty(request.getKey())) {
       throw new BizException(ResponseMessage.MISSING_KEY);
     }
+
+    if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD.getValue())
+        && !request.getLoginType().equals(LoginTypeEnum.PHONE_PIN.getValue())) {
+      throw new BizException(ResponseMessage.OUT_OF_RANGE_LOGIN_TYPE);
+    }
   }
 
   @Override
   public InitAccountResponse initLinkAccount(InitAccountRequest request) {
-    validateRequest(request);
+    validateInitAccountRequest(request);
 
     // Generate OBC token
     String token =
@@ -134,13 +139,8 @@ public class AccountServiceImpl implements AccountService {
         .apply(Collections.singletonList(request.getBakongAccId()));
   }
 
-  private void validateRequest(InitAccountRequest request) {
+  private void validateInitAccountRequest(InitAccountRequest request) {
     // validate login type
-    if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD.getValue())
-        && !request.getLoginType().equals(LoginTypeEnum.PHONE_PIN.getValue())) {
-      throw new BizException(ResponseMessage.OUT_OF_RANGE_LOGIN_TYPE);
-    }
-
     if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD.getValue())) {
       throw new BizException(ResponseMessage.INVALID_LOGIN_TYPE);
     }
@@ -259,6 +259,8 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public GetAccountDetailResponse getAccountDetail(GetAccountDetailRequest request) {
 
+    validateGetAccountDetailRequest(request);
+
     UserModel userModel =
         userProfileService.findByUserId(userAuthService.getCurrentUser().getUserId());
 
@@ -289,6 +291,12 @@ public class AccountServiceImpl implements AccountService {
             new CDRBGetAccountDetailRequest()
                 .cifNo(userModel.getCifNo())
                 .accountNo(request.getAccNumber()));
+  }
+
+  void validateGetAccountDetailRequest(GetAccountDetailRequest request) {
+    if (StringUtils.isEmpty(request.getAccNumber())) {
+      throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
+    }
   }
 
   @Override

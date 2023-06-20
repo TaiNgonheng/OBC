@@ -5,7 +5,7 @@ required:
   - login
 properties:
   loginType:
-    $ref: '../common/LoginTypeEnum.yml'
+    type: string
   login:
     type: string
     maxLength: 30
