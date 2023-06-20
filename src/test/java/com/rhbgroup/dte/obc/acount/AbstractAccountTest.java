@@ -54,7 +54,7 @@ public abstract class AbstractAccountTest {
         .key(OBC_PASSWORD)
         .login("user")
         .phoneNumber(MOBILE_NUMBER)
-        .loginType(LoginTypeEnum.USER_PWD)
+        .loginType("USER_PWD")
         .bakongAccId("user@oski");
   }
 

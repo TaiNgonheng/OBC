@@ -136,7 +136,12 @@ public class AccountServiceImpl implements AccountService {
 
   private void validateRequest(InitAccountRequest request) {
     // validate login type
-    if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD)) {
+    if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD.getValue())
+        && !request.getLoginType().equals(LoginTypeEnum.PHONE_PIN.getValue())) {
+      throw new BizException(ResponseMessage.OUT_OF_RANGE_LOGIN_TYPE);
+    }
+
+    if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD.getValue())) {
       throw new BizException(ResponseMessage.INVALID_LOGIN_TYPE);
     }
 

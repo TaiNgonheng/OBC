@@ -6,7 +6,7 @@ required:
   - bakongAccId
 properties:
   loginType:
-    $ref: '../common/LoginTypeEnum.yml'
+    type: string
   login:
     type: string
     minLength: 1
