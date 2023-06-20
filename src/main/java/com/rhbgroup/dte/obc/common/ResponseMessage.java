@@ -23,6 +23,9 @@ public enum ResponseMessage {
       6,
       "phoneNumber is mandatory, phoneNumber length must be between 1 and 30, Invalid phone number. Please check the format and try again."),
   MISSING_OTP_CODE(6, "OTP is mandatory, OTP length must be 6"),
+  MISSING_ACC_NUMBER(6, "accNumber is mandatory, accNumber length must be between 1 and 50"),
+
+  MISSING_KEY(6, "key is mandatory, key length must be between 1 and 64"),
   INVALID_TOKEN(7, "Token is invalid."),
   FAIL_TO_FETCH_ACCOUNT_DETAILS(8, "Getting user account information failed."),
   TRANSACTION_TO_UNAVAILABLE_ACCOUNT(9, "Transaction to unavailable account."),

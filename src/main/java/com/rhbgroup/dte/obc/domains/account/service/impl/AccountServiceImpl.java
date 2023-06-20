@@ -60,6 +60,8 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    validateAuthenticationRequest(request);
+
     return of(accountMapper::toUserModel)
         .andThen(userAuthService::authenticate)
         .andThen(
@@ -93,6 +95,12 @@ public class AccountServiceImpl implements AccountService {
         .andThen(jwtTokenUtils::generateJwtAppUser)
         .andThen(accountMapper::toAuthResponse)
         .apply(request);
+  }
+
+  private void validateAuthenticationRequest(AuthenticationRequest request) {
+    if (StringUtils.isEmpty(request.getKey())) {
+      throw new BizException(ResponseMessage.MISSING_KEY);
+    }
   }
 
   @Override
@@ -201,6 +209,7 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public FinishLinkAccountResponse finishLinkAccount(FinishLinkAccountRequest request) {
+    validateFinishLinkAccountRequest(request);
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     if (StringUtils.isBlank(currentUser.getBakongId())) {
@@ -234,6 +243,12 @@ public class AccountServiceImpl implements AccountService {
         .andThen(peek(accountRepository::save))
         .andThen(account -> accountMapper.toFinishLinkAccountResponse())
         .apply(accountDetailRequest);
+  }
+
+  private void validateFinishLinkAccountRequest(FinishLinkAccountRequest request) {
+    if (StringUtils.isEmpty(request.getAccNumber())) {
+      throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
+    }
   }
 
   @Override

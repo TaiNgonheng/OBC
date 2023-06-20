@@ -3,7 +3,6 @@ description: Authentication request
 required:
   - loginType
   - login
-  - key
 properties:
   loginType:
     $ref: '../common/LoginTypeEnum.yml'
@@ -12,4 +11,3 @@ properties:
     maxLength: 30
   key:
     type: string
-    pattern: ^[a-fA-F0-9]{64}$
