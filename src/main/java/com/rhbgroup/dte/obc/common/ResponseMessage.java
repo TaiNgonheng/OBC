@@ -26,6 +26,8 @@ public enum ResponseMessage {
   MISSING_ACC_NUMBER(6, "accNumber is mandatory, accNumber length must be between 1 and 50"),
   MISSING_KEY(6, "key is mandatory, key length must be between 1 and 64"),
   OUT_OF_RANGE_LOGIN_TYPE(6, "loginType must be one of the following values: PHONE_PIN, USER_PWD"),
+
+  INVALID_AMOUNT(6, "Invalid amount"),
   INVALID_TOKEN(7, "Token is invalid."),
   FAIL_TO_FETCH_ACCOUNT_DETAILS(8, "Getting user account information failed."),
   TRANSACTION_TO_UNAVAILABLE_ACCOUNT(9, "Transaction to unavailable account."),

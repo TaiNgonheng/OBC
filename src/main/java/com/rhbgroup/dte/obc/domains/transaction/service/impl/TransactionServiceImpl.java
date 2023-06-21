@@ -110,7 +110,7 @@ public class TransactionServiceImpl implements TransactionService {
   @Override
   @Transactional
   public InitTransactionResponse initTransaction(InitTransactionRequest request) {
-
+    validateInitTransactionRequest(request);
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
 
     AccountModel linkedAccount =
@@ -178,6 +178,13 @@ public class TransactionServiceImpl implements TransactionService {
                 .debitCcy(pendingTransaction.getTrxCcy())
                 .requireOtp(trxOtpEnabled)
                 .fee(feeAndCashback.getFee()));
+  }
+
+  private void validateInitTransactionRequest(InitTransactionRequest request) {
+    boolean amountIsDecimal = request.getAmount() % 1 != 0;
+    if(request.getCcy().equals("KHR") && amountIsDecimal) {
+        throw new BizException(ResponseMessage.INVALID_AMOUNT);
+    }
   }
 
   @Override
