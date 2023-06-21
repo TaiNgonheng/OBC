@@ -28,6 +28,7 @@ public enum ResponseMessage {
   OUT_OF_RANGE_LOGIN_TYPE(6, "loginType must be one of the following values: PHONE_PIN, USER_PWD"),
 
   INVALID_AMOUNT(6, "Invalid amount"),
+  DESC_TOO_LONG(6, "desc length must be less than 30"),
   INVALID_TOKEN(7, "Token is invalid."),
   FAIL_TO_FETCH_ACCOUNT_DETAILS(8, "Getting user account information failed."),
   TRANSACTION_TO_UNAVAILABLE_ACCOUNT(9, "Transaction to unavailable account."),

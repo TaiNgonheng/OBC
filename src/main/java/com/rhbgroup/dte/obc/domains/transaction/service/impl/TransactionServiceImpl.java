@@ -182,8 +182,12 @@ public class TransactionServiceImpl implements TransactionService {
 
   private void validateInitTransactionRequest(InitTransactionRequest request) {
     boolean amountIsDecimal = request.getAmount() % 1 != 0;
-    if(request.getCcy().equals("KHR") && amountIsDecimal) {
-        throw new BizException(ResponseMessage.INVALID_AMOUNT);
+    if (request.getCcy().equals("KHR") && amountIsDecimal) {
+      throw new BizException(ResponseMessage.INVALID_AMOUNT);
+    }
+
+    if (request.getDesc() != null && request.getDesc().length() > 30) {
+      throw new BizException(ResponseMessage.DESC_TOO_LONG);
     }
   }
 

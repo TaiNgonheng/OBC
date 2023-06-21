@@ -25,5 +25,4 @@ properties:
     description: Transaction currency
   desc:
     type: string
-    maxLength: 30
     description: Description of transaction
