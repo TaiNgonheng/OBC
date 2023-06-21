@@ -29,8 +29,9 @@ public enum ResponseMessage {
 
   INVALID_AMOUNT(6, "Invalid amount"),
   DESC_TOO_LONG(6, "desc length must be less than 30"),
-  INVALID_TRANSFER_TYPE(
+  MISSING_TRANSFER_TYPE(
       6, "type is mandatory, type must in these values ['CASA_TO_WALLET', 'CASA_TO_CASA']"),
+  INVALID_TRANSFER_TYPE(6, "Invalid transaction type."),
   INVALID_TOKEN(7, "Token is invalid."),
   FAIL_TO_FETCH_ACCOUNT_DETAILS(8, "Getting user account information failed."),
   TRANSACTION_TO_UNAVAILABLE_ACCOUNT(9, "Transaction to unavailable account."),

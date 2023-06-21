@@ -26,7 +26,6 @@ public class TransactionEntity {
   private Long userId;
 
   @Column(name = "transfer_type", length = 20, nullable = false)
-  @Enumerated(EnumType.STRING)
   private String transferType;
 
   @Column(name = "transfer_message", length = 250)

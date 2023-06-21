@@ -164,6 +164,10 @@ public class TransactionServiceImpl implements TransactionService {
       throw new BizException(ResponseMessage.DESC_TOO_LONG);
     }
 
+    if (StringUtils.isBlank(request.getType())) {
+      throw new BizException(ResponseMessage.MISSING_TRANSFER_TYPE);
+    }
+
     if (!request.getType().equals(TransactionType.CASA.getValue())
         && !request.getType().equals(TransactionType.WALLET.getValue())) {
       throw new BizException(ResponseMessage.INVALID_TRANSFER_TYPE);
