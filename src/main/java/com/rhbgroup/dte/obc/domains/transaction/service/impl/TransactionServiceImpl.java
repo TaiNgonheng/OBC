@@ -339,6 +339,10 @@ public class TransactionServiceImpl implements TransactionService {
     if (request.getSize() < 1) {
       throw new BizException(ResponseMessage.PAGE_SIZE_LESS_THAN_ONE);
     }
+
+    if (StringUtils.isBlank(request.getAccNumber())) {
+      throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
+    }
   }
 
   private void updateTodayTransaction(
