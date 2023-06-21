@@ -172,6 +172,10 @@ public class TransactionServiceImpl implements TransactionService {
         && !request.getType().equals(TransactionType.WALLET.getValue())) {
       throw new BizException(ResponseMessage.INVALID_TRANSFER_TYPE);
     }
+
+    if (!request.getCcy().equals("KHR") && !request.getCcy().equals("USD")) {
+      throw new BizException(ResponseMessage.INVALID_CURRENCY);
+    }
   }
 
   @Override

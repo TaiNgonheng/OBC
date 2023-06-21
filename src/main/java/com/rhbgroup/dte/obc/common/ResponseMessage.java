@@ -35,6 +35,7 @@ public enum ResponseMessage {
   INVALID_INITREFNUMBER(6, "initRefNumber length must be 32"),
   PAGE_LESS_THAN_ZERO(6, "page must not be less than 0"),
   PAGE_SIZE_LESS_THAN_ONE(6, "size must not be less than 1"),
+  INVALID_CURRENCY(6, "Invalid currency"),
   INVALID_TOKEN(7, "Token is invalid."),
   FAIL_TO_FETCH_ACCOUNT_DETAILS(8, "Getting user account information failed."),
   TRANSACTION_TO_UNAVAILABLE_ACCOUNT(9, "Transaction to unavailable account."),
