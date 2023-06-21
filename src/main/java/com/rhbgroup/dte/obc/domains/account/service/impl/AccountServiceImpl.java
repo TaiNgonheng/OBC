@@ -311,7 +311,7 @@ public class AccountServiceImpl implements AccountService {
   @Override
   @Transactional
   public UnlinkAccountResponse unlinkAccount(UnlinkAccountRequest unlinkAccountRequest) {
-
+    validateUnlinkAccountRequest(unlinkAccountRequest);
     AccountEntity accountEntity =
         accountRepository
             .findByAccountIdAndLinkedStatus(
@@ -322,5 +322,11 @@ public class AccountServiceImpl implements AccountService {
     accountRepository.save(accountEntity);
 
     return new UnlinkAccountResponse().status(ResponseHandler.ok()).data(null);
+  }
+
+  private void validateUnlinkAccountRequest(UnlinkAccountRequest unlinkAccountRequest) {
+    if (StringUtils.isBlank(unlinkAccountRequest.getAccNumber())) {
+      throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
+    }
   }
 }
