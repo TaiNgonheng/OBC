@@ -9,7 +9,6 @@ properties:
     description: Bank's account number
   page:
     type: integer
-    minimum: 1
     default: 1
     desciption: Page number of requesting transaction history
   size:

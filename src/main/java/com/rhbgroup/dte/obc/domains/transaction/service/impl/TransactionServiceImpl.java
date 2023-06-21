@@ -297,6 +297,7 @@ public class TransactionServiceImpl implements TransactionService {
   @Transactional
   public GetAccountTransactionsResponse queryTransactionHistory(
       GetAccountTransactionsRequest request) {
+    validateGetAccountTransactionsRequest(request);
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     return of(accountService::getActiveAccount)
@@ -328,6 +329,12 @@ public class TransactionServiceImpl implements TransactionService {
                           .totalElement(resultPage.getTotalElements()));
             })
         .apply(new AccountFilterCondition().accountNo(request.getAccNumber()));
+  }
+
+  private void validateGetAccountTransactionsRequest(GetAccountTransactionsRequest request) {
+    if (request.getPage() < 0) {
+      throw new BizException(ResponseMessage.PAGE_LESS_THAN_ZERO);
+    }
   }
 
   private void updateTodayTransaction(
