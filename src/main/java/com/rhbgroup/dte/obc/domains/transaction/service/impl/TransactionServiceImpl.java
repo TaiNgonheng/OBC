@@ -30,33 +30,7 @@ import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.InternalException;
-import com.rhbgroup.dte.obc.model.AccountFilterCondition;
-import com.rhbgroup.dte.obc.model.AccountModel;
-import com.rhbgroup.dte.obc.model.BatchReportStatus;
-import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
-import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
-import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryRequest;
-import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryResponse;
-import com.rhbgroup.dte.obc.model.CDRBTransferInquiryRequest;
-import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
-import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
-import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
-import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
-import com.rhbgroup.dte.obc.model.GetAccountTransactionsRequest;
-import com.rhbgroup.dte.obc.model.GetAccountTransactionsResponse;
-import com.rhbgroup.dte.obc.model.GetAccountTransactionsResponseAllOfData;
-import com.rhbgroup.dte.obc.model.InitTransactionRequest;
-import com.rhbgroup.dte.obc.model.InitTransactionResponse;
-import com.rhbgroup.dte.obc.model.InitTransactionResponseAllOfData;
-import com.rhbgroup.dte.obc.model.PGProfileResponse;
-import com.rhbgroup.dte.obc.model.SIBSSyncDateConfig;
-import com.rhbgroup.dte.obc.model.TransactionBatchFileProcessingRequest;
-import com.rhbgroup.dte.obc.model.TransactionHistoryModel;
-import com.rhbgroup.dte.obc.model.TransactionModel;
-import com.rhbgroup.dte.obc.model.TransactionStatus;
-import com.rhbgroup.dte.obc.model.UserModel;
+import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
@@ -188,6 +162,11 @@ public class TransactionServiceImpl implements TransactionService {
 
     if (request.getDesc() != null && request.getDesc().length() > 30) {
       throw new BizException(ResponseMessage.DESC_TOO_LONG);
+    }
+
+    if (!request.getType().equals(TransactionType.CASA.getValue())
+        && !request.getType().equals(TransactionType.WALLET.getValue())) {
+      throw new BizException(ResponseMessage.INVALID_TRANSFER_TYPE);
     }
   }
 

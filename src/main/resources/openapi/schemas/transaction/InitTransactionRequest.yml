@@ -7,7 +7,7 @@ required:
   - ccy
 properties:
   type:
-    $ref: '../common/TransactionType.yml'
+    type: string
   sourceAcc:
     type: string
     maxLength: 30

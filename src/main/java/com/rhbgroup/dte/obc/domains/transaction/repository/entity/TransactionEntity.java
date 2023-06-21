@@ -2,7 +2,6 @@ package com.rhbgroup.dte.obc.domains.transaction.repository.entity;
 
 import com.rhbgroup.dte.obc.model.CreditDebitIndicator;
 import com.rhbgroup.dte.obc.model.TransactionStatus;
-import com.rhbgroup.dte.obc.model.TransactionType;
 import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -28,7 +27,7 @@ public class TransactionEntity {
 
   @Column(name = "transfer_type", length = 20, nullable = false)
   @Enumerated(EnumType.STRING)
-  private TransactionType transferType;
+  private String transferType;
 
   @Column(name = "transfer_message", length = 250)
   private String transferMessage;

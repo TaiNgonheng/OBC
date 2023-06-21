@@ -6,7 +6,7 @@ properties:
   userId:
     type: number
   transferType:
-    $ref: '../common/TransactionType.yml'
+    type: string
   transferMessage:
     type: string
   initRefNumber:

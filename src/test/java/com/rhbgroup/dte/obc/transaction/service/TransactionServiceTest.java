@@ -113,10 +113,13 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig_NonOTP());
+    when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
+    when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockCDRBFeeAndCashback());
+    when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     // Update transaction type to CASA_TO_CASA
-    initTransactionRequest.setType(TransactionType.CASA);
+    initTransactionRequest.setType(TransactionType.CASA.getValue());
 
     try {
       transactionService.initTransaction(initTransactionRequest);
