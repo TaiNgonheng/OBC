@@ -177,7 +177,7 @@ public class TransactionServiceImpl implements TransactionService {
   @Override
   @Transactional
   public FinishTransactionResponse finishTransaction(FinishTransactionRequest request) {
-
+    validateFinishTransactionRequest(request);
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     // Authenticate again to confirm password
     userAuthService.authenticate(
@@ -238,6 +238,13 @@ public class TransactionServiceImpl implements TransactionService {
             })
         .andThen(transactionMapper::toFinishTransactionResponse)
         .apply(transaction);
+  }
+
+  private void validateFinishTransactionRequest(FinishTransactionRequest request) {
+    if (StringUtils.isBlank(request.getInitRefNumber())
+        || request.getInitRefNumber().length() != 32) {
+      throw new BizException(ResponseMessage.INVALID_INITREFNUMBER);
+    }
   }
 
   private CDRBTransferInquiryResponse transactionInquiryRecursive(
