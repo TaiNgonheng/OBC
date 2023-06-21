@@ -335,6 +335,10 @@ public class TransactionServiceImpl implements TransactionService {
     if (request.getPage() < 0) {
       throw new BizException(ResponseMessage.PAGE_LESS_THAN_ZERO);
     }
+
+    if (request.getSize() < 1) {
+      throw new BizException(ResponseMessage.PAGE_SIZE_LESS_THAN_ONE);
+    }
   }
 
   private void updateTodayTransaction(
