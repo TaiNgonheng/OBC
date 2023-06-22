@@ -222,9 +222,14 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(false);
 
-    VerifyOtpResponse response = accountService.verifyOtp(mockVerifyOtpRequest());
-    Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
-    Assertions.assertFalse(response.getData().getIsValid());
+    try {
+      accountService.verifyOtp(mockVerifyOtpRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.INVALID_OTP.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.INVALID_OTP.getMsg(), ex.getResponseMessage().getMsg());
+    }
   }
 
   @Test

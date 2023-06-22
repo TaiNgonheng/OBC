@@ -199,11 +199,12 @@ public class AccountServiceImpl implements AccountService {
                     userProfileService.updateUserProfile(userProfile);
                   }))
           .apply(currentUser.getUserId());
+      return new VerifyOtpResponse()
+          .status(ResponseHandler.ok())
+          .data(new VerifyOtpResponseAllOfData().isValid(otpVerified));
+    } else {
+      throw new BizException(ResponseMessage.INVALID_OTP);
     }
-
-    return new VerifyOtpResponse()
-        .status(ResponseHandler.ok())
-        .data(new VerifyOtpResponseAllOfData().isValid(otpVerified));
   }
 
   private void validateVerifyOTPRequest(VerifyOtpRequest request) {
