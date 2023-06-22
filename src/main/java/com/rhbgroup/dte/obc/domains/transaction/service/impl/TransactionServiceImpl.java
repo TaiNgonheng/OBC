@@ -59,6 +59,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class TransactionServiceImpl implements TransactionService {
 
+  private static final String CURRENCY_KHR = "KHR";
+  private static final String CURRENCY_USD = "USD";
   private final UserAuthService userAuthService;
   private final ConfigService configService;
   private final AccountService accountService;
@@ -156,7 +158,7 @@ public class TransactionServiceImpl implements TransactionService {
 
   private void validateInitTransactionRequest(InitTransactionRequest request) {
     boolean amountIsDecimal = request.getAmount() % 1 != 0;
-    if (request.getCcy().equals("KHR") && amountIsDecimal) {
+    if (request.getCcy().equals(CURRENCY_KHR) && amountIsDecimal) {
       throw new BizException(ResponseMessage.INVALID_AMOUNT);
     }
 
@@ -173,7 +175,7 @@ public class TransactionServiceImpl implements TransactionService {
       throw new BizException(ResponseMessage.INVALID_TRANSFER_TYPE);
     }
 
-    if (!request.getCcy().equals("KHR") && !request.getCcy().equals("USD")) {
+    if (!request.getCcy().equals(CURRENCY_KHR) && !request.getCcy().equals(CURRENCY_USD)) {
       throw new BizException(ResponseMessage.INVALID_CURRENCY);
     }
   }
