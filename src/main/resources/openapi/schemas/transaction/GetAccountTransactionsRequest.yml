@@ -1,19 +1,14 @@
 type: object
 description: Get account transaction history request
-required:
-  - accNumber
 properties:
   accNumber:
     type: string
-    maxLength: 50
     description: Bank's account number
   page:
     type: integer
-    minimum: 1
     default: 1
     desciption: Page number of requesting transaction history
   size:
     type: integer
-    minimum: 1
     default: 10
     description: Number of record per request. Default value = 10

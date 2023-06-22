@@ -1,13 +1,12 @@
 type: object
 required:
-  - type
   - sourceAcc
   - destinationAcc
   - amount
   - ccy
 properties:
   type:
-    $ref: '../common/TransactionType.yml'
+    type: string
   sourceAcc:
     type: string
     maxLength: 30
@@ -25,5 +24,4 @@ properties:
     description: Transaction currency
   desc:
     type: string
-    maxLength: 30
     description: Description of transaction

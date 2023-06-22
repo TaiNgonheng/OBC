@@ -60,6 +60,8 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    validateAuthenticationRequest(request);
+
     return of(accountMapper::toUserModel)
         .andThen(userAuthService::authenticate)
         .andThen(
@@ -95,9 +97,20 @@ public class AccountServiceImpl implements AccountService {
         .apply(request);
   }
 
+  private void validateAuthenticationRequest(AuthenticationRequest request) {
+    if (StringUtils.isEmpty(request.getKey())) {
+      throw new BizException(ResponseMessage.MISSING_KEY);
+    }
+
+    if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD.getValue())
+        && !request.getLoginType().equals(LoginTypeEnum.PHONE_PIN.getValue())) {
+      throw new BizException(ResponseMessage.OUT_OF_RANGE_LOGIN_TYPE);
+    }
+  }
+
   @Override
   public InitAccountResponse initLinkAccount(InitAccountRequest request) {
-    validateRequest(request);
+    validateInitAccountRequest(request);
 
     // Generate OBC token
     String token =
@@ -126,13 +139,17 @@ public class AccountServiceImpl implements AccountService {
         .apply(Collections.singletonList(request.getBakongAccId()));
   }
 
-  private void validateRequest(InitAccountRequest request) {
+  private void validateInitAccountRequest(InitAccountRequest request) {
     // validate login type
-    if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD)) {
+    if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD.getValue())) {
       throw new BizException(ResponseMessage.INVALID_LOGIN_TYPE);
     }
 
-    // validate phone number
+    if (StringUtils.isEmpty(request.getPhoneNumber())) {
+      throw new BizException(ResponseMessage.MISSING_PHONE_NUMBER);
+    }
+
+    // validate phone number formate
     String regex = "^([[+]8]55)([1-9])(\\d{7,8})$";
 
     Pattern pattern = Pattern.compile(regex);
@@ -165,6 +182,7 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public VerifyOtpResponse verifyOtp(VerifyOtpRequest request) {
+    validateVerifyOTPRequest(request);
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     boolean otpVerified =
@@ -181,15 +199,23 @@ public class AccountServiceImpl implements AccountService {
                     userProfileService.updateUserProfile(userProfile);
                   }))
           .apply(currentUser.getUserId());
+      return new VerifyOtpResponse()
+          .status(ResponseHandler.ok())
+          .data(new VerifyOtpResponseAllOfData().isValid(otpVerified));
+    } else {
+      throw new BizException(ResponseMessage.INVALID_OTP);
     }
+  }
 
-    return new VerifyOtpResponse()
-        .status(ResponseHandler.ok())
-        .data(new VerifyOtpResponseAllOfData().isValid(otpVerified));
+  private void validateVerifyOTPRequest(VerifyOtpRequest request) {
+    if (StringUtils.isEmpty(request.getOtpCode())) {
+      throw new BizException(ResponseMessage.MISSING_OTP_CODE);
+    }
   }
 
   @Override
   public FinishLinkAccountResponse finishLinkAccount(FinishLinkAccountRequest request) {
+    validateFinishLinkAccountRequest(request);
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     if (StringUtils.isBlank(currentUser.getBakongId())) {
@@ -225,8 +251,16 @@ public class AccountServiceImpl implements AccountService {
         .apply(accountDetailRequest);
   }
 
+  private void validateFinishLinkAccountRequest(FinishLinkAccountRequest request) {
+    if (StringUtils.isEmpty(request.getAccNumber())) {
+      throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
+    }
+  }
+
   @Override
   public GetAccountDetailResponse getAccountDetail(GetAccountDetailRequest request) {
+
+    validateGetAccountDetailRequest(request);
 
     UserModel userModel =
         userProfileService.findByUserId(userAuthService.getCurrentUser().getUserId());
@@ -260,6 +294,12 @@ public class AccountServiceImpl implements AccountService {
                 .accountNo(request.getAccNumber()));
   }
 
+  void validateGetAccountDetailRequest(GetAccountDetailRequest request) {
+    if (StringUtils.isEmpty(request.getAccNumber())) {
+      throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
+    }
+  }
+
   @Override
   public AccountModel getActiveAccount(AccountFilterCondition condition) {
 
@@ -272,7 +312,7 @@ public class AccountServiceImpl implements AccountService {
   @Override
   @Transactional
   public UnlinkAccountResponse unlinkAccount(UnlinkAccountRequest unlinkAccountRequest) {
-
+    validateUnlinkAccountRequest(unlinkAccountRequest);
     AccountEntity accountEntity =
         accountRepository
             .findByAccountIdAndLinkedStatus(
@@ -283,5 +323,11 @@ public class AccountServiceImpl implements AccountService {
     accountRepository.save(accountEntity);
 
     return new UnlinkAccountResponse().status(ResponseHandler.ok()).data(null);
+  }
+
+  private void validateUnlinkAccountRequest(UnlinkAccountRequest unlinkAccountRequest) {
+    if (StringUtils.isBlank(unlinkAccountRequest.getAccNumber())) {
+      throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
+    }
   }
 }

@@ -30,33 +30,7 @@ import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.InternalException;
-import com.rhbgroup.dte.obc.model.AccountFilterCondition;
-import com.rhbgroup.dte.obc.model.AccountModel;
-import com.rhbgroup.dte.obc.model.BatchReportStatus;
-import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
-import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
-import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryRequest;
-import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryResponse;
-import com.rhbgroup.dte.obc.model.CDRBTransferInquiryRequest;
-import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
-import com.rhbgroup.dte.obc.model.FinishTransactionRequest;
-import com.rhbgroup.dte.obc.model.FinishTransactionResponse;
-import com.rhbgroup.dte.obc.model.GetAccountDetailRequest;
-import com.rhbgroup.dte.obc.model.GetAccountTransactionsRequest;
-import com.rhbgroup.dte.obc.model.GetAccountTransactionsResponse;
-import com.rhbgroup.dte.obc.model.GetAccountTransactionsResponseAllOfData;
-import com.rhbgroup.dte.obc.model.InitTransactionRequest;
-import com.rhbgroup.dte.obc.model.InitTransactionResponse;
-import com.rhbgroup.dte.obc.model.InitTransactionResponseAllOfData;
-import com.rhbgroup.dte.obc.model.PGProfileResponse;
-import com.rhbgroup.dte.obc.model.SIBSSyncDateConfig;
-import com.rhbgroup.dte.obc.model.TransactionBatchFileProcessingRequest;
-import com.rhbgroup.dte.obc.model.TransactionHistoryModel;
-import com.rhbgroup.dte.obc.model.TransactionModel;
-import com.rhbgroup.dte.obc.model.TransactionStatus;
-import com.rhbgroup.dte.obc.model.UserModel;
+import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
@@ -85,6 +59,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class TransactionServiceImpl implements TransactionService {
 
+  private static final String CURRENCY_KHR = "KHR";
+  private static final String CURRENCY_USD = "USD";
   private final UserAuthService userAuthService;
   private final ConfigService configService;
   private final AccountService accountService;
@@ -110,7 +86,7 @@ public class TransactionServiceImpl implements TransactionService {
   @Override
   @Transactional
   public InitTransactionResponse initTransaction(InitTransactionRequest request) {
-
+    validateInitTransactionRequest(request);
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
 
     AccountModel linkedAccount =
@@ -180,10 +156,34 @@ public class TransactionServiceImpl implements TransactionService {
                 .fee(feeAndCashback.getFee()));
   }
 
+  private void validateInitTransactionRequest(InitTransactionRequest request) {
+    boolean amountIsDecimal = request.getAmount() % 1 != 0;
+    if (request.getCcy().equals(CURRENCY_KHR) && amountIsDecimal) {
+      throw new BizException(ResponseMessage.INVALID_AMOUNT);
+    }
+
+    if (request.getDesc() != null && request.getDesc().length() > 30) {
+      throw new BizException(ResponseMessage.DESC_TOO_LONG);
+    }
+
+    if (StringUtils.isBlank(request.getType())) {
+      throw new BizException(ResponseMessage.MISSING_TRANSFER_TYPE);
+    }
+
+    if (!request.getType().equals(TransactionType.CASA.getValue())
+        && !request.getType().equals(TransactionType.WALLET.getValue())) {
+      throw new BizException(ResponseMessage.INVALID_TRANSFER_TYPE);
+    }
+
+    if (!request.getCcy().equals(CURRENCY_KHR) && !request.getCcy().equals(CURRENCY_USD)) {
+      throw new BizException(ResponseMessage.INVALID_CURRENCY);
+    }
+  }
+
   @Override
   @Transactional
   public FinishTransactionResponse finishTransaction(FinishTransactionRequest request) {
-
+    validateFinishTransactionRequest(request);
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     // Authenticate again to confirm password
     userAuthService.authenticate(
@@ -246,6 +246,13 @@ public class TransactionServiceImpl implements TransactionService {
         .apply(transaction);
   }
 
+  private void validateFinishTransactionRequest(FinishTransactionRequest request) {
+    if (StringUtils.isBlank(request.getInitRefNumber())
+        || request.getInitRefNumber().length() != 32) {
+      throw new BizException(ResponseMessage.INVALID_INITREFNUMBER);
+    }
+  }
+
   private CDRBTransferInquiryResponse transactionInquiryRecursive(
       CDRBTransferInquiryRequest request,
       String initRef,
@@ -296,6 +303,7 @@ public class TransactionServiceImpl implements TransactionService {
   @Transactional
   public GetAccountTransactionsResponse queryTransactionHistory(
       GetAccountTransactionsRequest request) {
+    validateGetAccountTransactionsRequest(request);
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     return of(accountService::getActiveAccount)
@@ -327,6 +335,20 @@ public class TransactionServiceImpl implements TransactionService {
                           .totalElement(resultPage.getTotalElements()));
             })
         .apply(new AccountFilterCondition().accountNo(request.getAccNumber()));
+  }
+
+  private void validateGetAccountTransactionsRequest(GetAccountTransactionsRequest request) {
+    if (request.getPage() < 0) {
+      throw new BizException(ResponseMessage.PAGE_LESS_THAN_ZERO);
+    }
+
+    if (request.getSize() < 1) {
+      throw new BizException(ResponseMessage.PAGE_SIZE_LESS_THAN_ONE);
+    }
+
+    if (StringUtils.isBlank(request.getAccNumber())) {
+      throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
+    }
   }
 
   private void updateTodayTransaction(

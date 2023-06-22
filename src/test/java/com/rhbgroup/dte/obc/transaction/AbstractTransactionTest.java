@@ -55,7 +55,7 @@ public abstract class AbstractTransactionTest {
 
   protected InitTransactionRequest mockInitTransactionRequest() {
     return new InitTransactionRequest()
-        .type(TransactionType.WALLET)
+        .type(TransactionType.WALLET.getValue())
         .sourceAcc(CASA_ACCOUNT_TEST)
         .destinationAcc(BAKONG_ACCOUNT_TEST)
         .amount(TRX_AMOUNT)

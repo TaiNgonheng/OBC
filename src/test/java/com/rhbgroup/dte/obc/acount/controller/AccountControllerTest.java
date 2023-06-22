@@ -17,11 +17,9 @@ import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.BakongAccountStatus;
 import com.rhbgroup.dte.obc.model.BakongKYCStatus;
-import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
 import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
 import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.UnlinkAccountResponse;
-import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -252,73 +250,6 @@ class AccountControllerTest extends AbstractAccountTest {
   }
 
   @Test
-  void testVerifyOtp_Failed_Missing_Mandatory_Field() throws Exception {
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                MockMvcRequestBuilders.post("/verify-otp")
-                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .characterEncoding(StandardCharsets.UTF_8)
-                    .content(objectMapper.writeValueAsBytes(new VerifyOtpRequest())))
-            .andExpect(MockMvcResultMatchers.status().isBadRequest())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.data").doesNotExist())
-            .andReturn()
-            .getResponse();
-
-    String contentAsString = response.getContentAsString();
-    AuthenticationResponse authResponse =
-        objectMapper.readValue(contentAsString, AuthenticationResponse.class);
-
-    Assertions.assertNotNull(authResponse.getStatus());
-    Assertions.assertNull(authResponse.getData());
-    Assertions.assertEquals(AppConstants.Status.ERROR, authResponse.getStatus().getCode());
-    Assertions.assertEquals(
-        ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(),
-        authResponse.getStatus().getErrorMessage());
-    Assertions.assertEquals(
-        ResponseMessage.MANDATORY_FIELD_MISSING.getCode().toString(),
-        authResponse.getStatus().getErrorCode());
-  }
-
-  @Test
-  void testVerifyOtp_Failed_InvalidOtpFormat() throws Exception {
-
-    // The valid OTP code must include 6 digits
-    String invalidOtpCode = "0000";
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                MockMvcRequestBuilders.post("/verify-otp")
-                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .characterEncoding(StandardCharsets.UTF_8)
-                    .content(
-                        objectMapper.writeValueAsBytes(
-                            new VerifyOtpRequest().otpCode(invalidOtpCode))))
-            .andExpect(MockMvcResultMatchers.status().isBadRequest())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.data").doesNotExist())
-            .andReturn()
-            .getResponse();
-
-    String contentAsString = response.getContentAsString();
-    AuthenticationResponse authResponse =
-        objectMapper.readValue(contentAsString, AuthenticationResponse.class);
-
-    Assertions.assertNotNull(authResponse.getStatus());
-    Assertions.assertNull(authResponse.getData());
-    Assertions.assertEquals(AppConstants.Status.ERROR, authResponse.getStatus().getCode());
-    Assertions.assertEquals(
-        ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(),
-        authResponse.getStatus().getErrorMessage());
-    Assertions.assertEquals(
-        ResponseMessage.MANDATORY_FIELD_MISSING.getCode().toString(),
-        authResponse.getStatus().getErrorCode());
-  }
-
-  @Test
   void testAuthenticate_Success_200() throws Exception {
     Mockito.when(accountApiDelegate.authenticate(Mockito.any()))
         .thenReturn(ResponseEntity.ok(mockAuthenticationResponse()));
@@ -474,41 +405,6 @@ class AccountControllerTest extends AbstractAccountTest {
         finishLinkAccountResponse.getStatus().getErrorCode());
     Assertions.assertEquals(
         ResponseMessage.KYC_NOT_VERIFIED.getMsg(),
-        finishLinkAccountResponse.getStatus().getErrorMessage());
-  }
-
-  @Test
-  void testFinishLinkAccount_Failed_MissingMandatoryFields() throws Exception {
-
-    FinishLinkAccountRequest invalidRequest = new FinishLinkAccountRequest();
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                MockMvcRequestBuilders.post("/finish-link-account")
-                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .characterEncoding(StandardCharsets.UTF_8)
-                    .content(objectMapper.writeValueAsBytes(invalidRequest)))
-            .andExpect(MockMvcResultMatchers.status().isBadRequest())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.data").doesNotExist())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
-            .andReturn()
-            .getResponse();
-
-    String contentAsString = response.getContentAsString();
-    FinishLinkAccountResponse finishLinkAccountResponse =
-        objectMapper.readValue(contentAsString, FinishLinkAccountResponse.class);
-
-    Assertions.assertNotNull(finishLinkAccountResponse.getStatus());
-    Assertions.assertNull(finishLinkAccountResponse.getData());
-
-    Assertions.assertEquals(
-        AppConstants.Status.ERROR, finishLinkAccountResponse.getStatus().getCode());
-    Assertions.assertEquals(
-        ResponseMessage.MANDATORY_FIELD_MISSING.getCode().toString(),
-        finishLinkAccountResponse.getStatus().getErrorCode());
-    Assertions.assertEquals(
-        ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(),
         finishLinkAccountResponse.getStatus().getErrorMessage());
   }
 

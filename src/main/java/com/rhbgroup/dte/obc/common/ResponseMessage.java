@@ -18,6 +18,24 @@ public enum ResponseMessage {
   INVALID_LOGIN_TYPE(6, "Invalid login type."),
 
   INVALID_PHONE_NUMBER(6, "Invalid phone number. Please check the format and try again."),
+
+  MISSING_PHONE_NUMBER(
+      6,
+      "phoneNumber is mandatory, phoneNumber length must be between 1 and 30, Invalid phone number. Please check the format and try again."),
+  MISSING_OTP_CODE(6, "OTP is mandatory, OTP length must be 6"),
+  MISSING_ACC_NUMBER(6, "accNumber is mandatory, accNumber length must be between 1 and 50"),
+  MISSING_KEY(6, "key is mandatory, key length must be between 1 and 64"),
+  OUT_OF_RANGE_LOGIN_TYPE(6, "loginType must be one of the following values: PHONE_PIN, USER_PWD"),
+
+  INVALID_AMOUNT(6, "Invalid amount"),
+  DESC_TOO_LONG(6, "desc length must be less than 30"),
+  MISSING_TRANSFER_TYPE(
+      6, "type is mandatory, type must in these values ['CASA_TO_WALLET', 'CASA_TO_CASA']"),
+  INVALID_TRANSFER_TYPE(6, "Invalid transaction type."),
+  INVALID_INITREFNUMBER(6, "initRefNumber length must be 32"),
+  PAGE_LESS_THAN_ZERO(6, "page must not be less than 0"),
+  PAGE_SIZE_LESS_THAN_ONE(6, "size must not be less than 1"),
+  INVALID_CURRENCY(6, "Invalid currency"),
   INVALID_TOKEN(7, "Token is invalid."),
   FAIL_TO_FETCH_ACCOUNT_DETAILS(8, "Getting user account information failed."),
   TRANSACTION_TO_UNAVAILABLE_ACCOUNT(9, "Transaction to unavailable account."),
@@ -26,6 +44,7 @@ public enum ResponseMessage {
       11,
       "Transaction failed as the amount entered exceeds the allowed limit. Please enter a lower amount and try again or reach out to the merchant for further assistance."),
   DUPLICATE_SUBMISSION_ID(12, "Duplicate submissionId."),
+  INVALID_OTP(13, "Invalid OTP. Please try again."),
   OTP_EXPIRED(17, "OTP expired. Please try again."),
   KYC_NOT_VERIFIED(14, "Cannot link account due to your account not yet verified."),
   ACCOUNT_ALREADY_LINKED(15, "This account is already linked to another Bakong account."),
@@ -40,8 +59,7 @@ public enum ResponseMessage {
   // Generic error message
   CONSTRAINT_VIOLATION_ERROR(300, "Constraint violation exception."),
   DATA_NOT_FOUND(301, "Data not found."),
-  DATA_STRUCTURE_INVALID(302, "Data structure invalid."),
-  ;
+  DATA_STRUCTURE_INVALID(302, "Data structure invalid.");
 
   private final Integer code;
   private final String msg;

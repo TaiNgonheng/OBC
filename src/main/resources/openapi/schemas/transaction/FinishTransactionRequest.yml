@@ -5,8 +5,6 @@ required:
 properties:
   initRefNumber:
     type: string
-    minLength: 32
-    maxLength: 32
     description: Reference number must be in 32 digits
   otpCode:
     type: string

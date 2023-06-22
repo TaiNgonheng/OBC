@@ -54,7 +54,7 @@ public abstract class AbstractAccountTest {
         .key(OBC_PASSWORD)
         .login("user")
         .phoneNumber(MOBILE_NUMBER)
-        .loginType(LoginTypeEnum.USER_PWD)
+        .loginType("USER_PWD")
         .bakongAccId("user@oski");
   }
 
@@ -76,7 +76,7 @@ public abstract class AbstractAccountTest {
 
   protected AuthenticationRequest mockAuthenticationRequest() {
     return new AuthenticationRequest()
-        .loginType(LoginTypeEnum.USER_PWD)
+        .loginType(LoginTypeEnum.USER_PWD.getValue())
         .login("admin")
         .key("7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358");
   }

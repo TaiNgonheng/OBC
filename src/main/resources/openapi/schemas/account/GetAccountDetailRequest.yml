@@ -1,7 +1,4 @@
 type: object
-required:
-  - acctNumber
 properties:
   accNumber:
     type: string
-    maxLength: 50

@@ -21,16 +21,7 @@ import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.InternalException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
-import com.rhbgroup.dte.obc.model.AuthenticationResponse;
-import com.rhbgroup.dte.obc.model.BakongAccountStatus;
-import com.rhbgroup.dte.obc.model.BakongKYCStatus;
-import com.rhbgroup.dte.obc.model.FinishLinkAccountRequest;
-import com.rhbgroup.dte.obc.model.FinishLinkAccountResponse;
-import com.rhbgroup.dte.obc.model.GetAccountDetailResponse;
-import com.rhbgroup.dte.obc.model.InitAccountRequest;
-import com.rhbgroup.dte.obc.model.InitAccountResponse;
-import com.rhbgroup.dte.obc.model.UnlinkAccountResponse;
-import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
+import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
@@ -231,9 +222,14 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(false);
 
-    VerifyOtpResponse response = accountService.verifyOtp(mockVerifyOtpRequest());
-    Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
-    Assertions.assertFalse(response.getData().getIsValid());
+    try {
+      accountService.verifyOtp(mockVerifyOtpRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.INVALID_OTP.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.INVALID_OTP.getMsg(), ex.getResponseMessage().getMsg());
+    }
   }
 
   @Test
@@ -249,6 +245,31 @@ class AccountServiceTest extends AbstractAccountTest {
           ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
       Assertions.assertEquals(
           ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testVerifyOtp_Failed_Missing_Mandatory_Field() throws Exception {
+
+    try {
+      accountService.verifyOtp(new VerifyOtpRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.MISSING_OTP_CODE.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.MISSING_OTP_CODE.getMsg(), ex.getResponseMessage().getMsg());
+    }
+  }
+
+  @Test
+  void testFinishLinkAccount_Failed_MissingMandatoryFields() {
+    try {
+      accountService.finishLinkAccount(new FinishLinkAccountRequest());
+    } catch (BizException ex) {
+      Assertions.assertEquals(
+          ResponseMessage.MISSING_ACC_NUMBER.getCode(), ex.getResponseMessage().getCode());
+      Assertions.assertEquals(
+          ResponseMessage.MISSING_ACC_NUMBER.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 
