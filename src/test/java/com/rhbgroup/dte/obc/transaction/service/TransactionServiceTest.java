@@ -53,6 +53,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest extends AbstractTransactionTest {
@@ -261,7 +262,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testInitTransaction_Success_OtpRequired() {
-
+    ReflectionTestUtils.setField(transactionService, "initTransferRequiredOtp", true);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))

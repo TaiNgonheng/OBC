@@ -50,6 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -77,6 +78,9 @@ public class TransactionServiceImpl implements TransactionService {
   private final ApplicationProperties applicationProperties;
 
   private final TransactionMapper transactionMapper = new TransactionMapperImpl();
+
+  @Value("${obc.infobip.init-transger-required-opt}")
+  private boolean initTransferRequiredOtp;
 
   @Override
   public void save(TransactionModel transactionModel) {
@@ -137,11 +141,7 @@ public class TransactionServiceImpl implements TransactionService {
             feeAndCashback);
     save(pendingTransaction);
 
-    // Get otp required config
-    boolean trxOtpEnabled =
-        transactionConfig.getValue(ConfigConstants.Transaction.OTP_REQUIRED, Integer.class) == 1;
-
-    if (trxOtpEnabled) {
+    if (initTransferRequiredOtp) {
       infoBipRestClient.sendOtp(currentUser.getPhoneNumber(), currentUser.getBakongId());
     }
 
@@ -152,7 +152,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .initRefNumber(pendingTransaction.getInitRefNumber())
                 .debitAmount(pendingTransaction.getTrxAmount())
                 .debitCcy(pendingTransaction.getTrxCcy())
-                .requireOtp(trxOtpEnabled)
+                .requireOtp(initTransferRequiredOtp)
                 .fee(feeAndCashback.getFee()));
   }
 

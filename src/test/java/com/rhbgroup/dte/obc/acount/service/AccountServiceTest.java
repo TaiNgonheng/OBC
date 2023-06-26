@@ -36,6 +36,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest extends AbstractAccountTest {
@@ -149,6 +150,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(jwtTokenUtils.generateJwtAppUser(anyString(), any())).thenReturn(mockJwtToken());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenReturn(mockInfoBipSendOtpResponse());
+    ReflectionTestUtils.setField(accountService, "initLinkRequiredOtp", true);
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
@@ -195,6 +197,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenThrow(new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR));
+    ReflectionTestUtils.setField(accountService, "initLinkRequiredOtp", true);
     try {
       accountService.initLinkAccount(mockInitAccountRequest());
     } catch (InternalException ex) {

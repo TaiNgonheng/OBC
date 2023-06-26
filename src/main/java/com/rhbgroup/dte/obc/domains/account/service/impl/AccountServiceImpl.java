@@ -33,6 +33,7 @@ import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,7 +41,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
 
-  private static final boolean INIT_LINK_REQUIRED_OTP = true;
   private final JwtTokenUtils jwtTokenUtils;
 
   private final UserAuthService userAuthService;
@@ -54,6 +54,9 @@ public class AccountServiceImpl implements AccountService {
   private final CDRBRestClient cdrbRestClient;
 
   private final AccountMapper accountMapper = new AccountMapperImpl();
+
+  @Value("${obc.infobip.init-link-required-opt}")
+  private boolean initLinkRequiredOtp;
 
   @Override
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -127,11 +130,12 @@ public class AccountServiceImpl implements AccountService {
             profileResponse -> {
               UserModel gowaveUser = userProfileService.findByUsername(request.getLogin());
               // Trigger infobip 2-fa sms
-              if (gowaveUser.getMobileNo().equals(request.getPhoneNumber())) {
+              if (gowaveUser.getMobileNo().equals(request.getPhoneNumber())
+                  && initLinkRequiredOtp) {
                 infoBipRestClient.sendOtp(request.getPhoneNumber(), request.getBakongAccId());
               }
               return accountMapper.toInitAccountResponse(
-                  gowaveUser, request.getPhoneNumber(), token, INIT_LINK_REQUIRED_OTP);
+                  gowaveUser, request.getPhoneNumber(), token, initLinkRequiredOtp);
             })
         .apply(Collections.singletonList(request.getBakongAccId()));
   }
