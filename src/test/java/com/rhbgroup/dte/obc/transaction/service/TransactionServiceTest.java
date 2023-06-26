@@ -266,7 +266,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
-        .thenReturn(mockTransactionConfig_RequireOTP());
+        .thenReturn(mockTransactionConfig());
 
     when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
@@ -295,13 +295,10 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testFinishTransaction_Success_OTPNotIncluded() {
-
+    ReflectionTestUtils.setField(transactionService, "initTransferRequiredOtp", false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(transactionRepository.findByInitRefNumber(anyString()))
         .thenReturn(Optional.of(mockTransactionEntity(TransactionStatus.PENDING)));
-
-    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
-        .thenReturn(mockTransactionConfig_NonOTP());
 
     when(accountService.getAccountDetail(any()))
         .thenReturn(
@@ -338,13 +335,10 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testFinishTransaction_Success_OTPIncluded() {
-
+    ReflectionTestUtils.setField(transactionService, "initTransferRequiredOtp", true);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(transactionRepository.findByInitRefNumber(anyString()))
         .thenReturn(Optional.of(mockTransactionEntity(TransactionStatus.PENDING)));
-
-    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
-        .thenReturn(mockTransactionConfig_RequireOTP());
 
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(true);
 
@@ -433,13 +427,10 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testFinishTransaction_Failed_InvalidOTPToken() {
-
+    ReflectionTestUtils.setField(transactionService, "initTransferRequiredOtp", true);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(transactionRepository.findByInitRefNumber(anyString()))
         .thenReturn(Optional.of(mockTransactionEntity(TransactionStatus.PENDING)));
-
-    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
-        .thenReturn(mockTransactionConfig_RequireOTP());
 
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(false);
     FinishTransactionRequest requestWithOTP = mockFinishTransactionRequest();
@@ -454,13 +445,10 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testFinishTransaction_Failed_CoreTransferError() {
-
+    ReflectionTestUtils.setField(transactionService, "initTransferRequiredOtp", false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(transactionRepository.findByInitRefNumber(anyString()))
         .thenReturn(Optional.of(mockTransactionEntity(TransactionStatus.PENDING)));
-
-    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
-        .thenReturn(mockTransactionConfig_NonOTP());
 
     when(accountService.getAccountDetail(any()))
         .thenReturn(

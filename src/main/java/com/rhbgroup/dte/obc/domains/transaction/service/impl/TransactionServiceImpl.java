@@ -200,15 +200,7 @@ public class TransactionServiceImpl implements TransactionService {
             .andThen(
                 peek(
                     entity -> {
-                      ConfigService transactionConfig =
-                          this.configService.loadJSONValue(
-                              ConfigConstants.Transaction.mapCurrency(entity.getTrxCcy()));
-                      // Verify OTP
-                      boolean otpRequired =
-                          transactionConfig.getValue(
-                                  ConfigConstants.Transaction.OTP_REQUIRED, Integer.class)
-                              == 1;
-                      if (otpRequired
+                      if (initTransferRequiredOtp
                           && Boolean.FALSE.equals(
                               infoBipRestClient.verifyOtp(
                                   request.getOtpCode(), currentUser.getBakongId()))) {

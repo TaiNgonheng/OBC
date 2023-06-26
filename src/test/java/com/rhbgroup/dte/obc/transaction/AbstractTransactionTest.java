@@ -127,11 +127,10 @@ public abstract class AbstractTransactionTest {
     }
   }
 
-  protected ConfigServiceImpl mockTransactionConfig_RequireOTP() {
+  protected ConfigServiceImpl mockTransactionConfig() {
     try {
       ConfigServiceImpl transactionConfig = new ConfigServiceImpl(null);
-      transactionConfig.setJsonValue(
-          new JSONObject().put("txMinAmt", 1.0).put("txMaxAmt", 1000.0).put("txOtpRequired", 1));
+      transactionConfig.setJsonValue(new JSONObject().put("txMinAmt", 1.0).put("txMaxAmt", 1000.0));
 
       return transactionConfig;
     } catch (JSONException ex) {
