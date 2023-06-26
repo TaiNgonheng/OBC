@@ -75,11 +75,6 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Mock private ApplicationProperties properties;
 
-  @BeforeEach
-  void cleanUp() {
-    reset(properties);
-  }
-
   @Test
   void testInitTransaction_Success_CASA_TO_WALLET() {
     when(properties.getInitTransferRequiredOtp()).thenReturn(false);
