@@ -78,11 +78,11 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testInitTransaction_Success_CASA_TO_WALLET() {
-
+    ReflectionTestUtils.setField(transactionService, "initTransferRequiredOtp", false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
-        .thenReturn(mockTransactionConfig_NonOTP());
+        .thenReturn(mockTransactionConfig());
     when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
 
@@ -109,11 +109,11 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testInitTransaction_OperationNotSupported_CASA_TO_CASA() {
-
+    ReflectionTestUtils.setField(transactionService, "initTransferRequiredOtp", false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
-        .thenReturn(mockTransactionConfig_NonOTP());
+        .thenReturn(mockTransactionConfig());
     when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
     when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockCDRBFeeAndCashback());
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
@@ -134,13 +134,13 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testInitTransaction_Failed_SourceAccNotFound() {
-
+    ReflectionTestUtils.setField(transactionService, "initTransferRequiredOtp", false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
 
     // Return a CASA account which is not matched with request source account
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModelSourceAccNotMatched());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
-        .thenReturn(mockTransactionConfig_NonOTP());
+        .thenReturn(mockTransactionConfig());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     try {
@@ -156,11 +156,11 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testInitTransaction_Failed_TransferAmtExceedLimitation() {
-
+    ReflectionTestUtils.setField(transactionService, "initTransferRequiredOtp", false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
-        .thenReturn(mockTransactionConfig_NonOTP());
+        .thenReturn(mockTransactionConfig());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     // Mimic a huge transfer amount
@@ -182,11 +182,11 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testInitTransaction_Failed_CurrencyNotMatchWithCasaAccount() {
-
+    ReflectionTestUtils.setField(transactionService, "initTransferRequiredOtp", false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_KHR))
-        .thenReturn(mockTransactionConfig_NonOTP());
+        .thenReturn(mockTransactionConfig());
     when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
 
@@ -208,11 +208,11 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testInitTransaction_Failed_NotEnoughBalance() {
-
+    ReflectionTestUtils.setField(transactionService, "initTransferRequiredOtp", false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
-        .thenReturn(mockTransactionConfig_NonOTP());
+        .thenReturn(mockTransactionConfig());
     when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
 
@@ -237,11 +237,11 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testInitTransaction_Failed_TransferToUnavailableSource() {
-
+    ReflectionTestUtils.setField(transactionService, "initTransferRequiredOtp", false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
-        .thenReturn(mockTransactionConfig_NonOTP());
+        .thenReturn(mockTransactionConfig());
     when(pgRestClient.getUserProfile(any()))
         .thenThrow(new BizException(ResponseMessage.TRANSACTION_TO_UNAVAILABLE_ACCOUNT));
 
