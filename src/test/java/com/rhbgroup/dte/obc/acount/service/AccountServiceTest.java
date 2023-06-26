@@ -149,7 +149,6 @@ class AccountServiceTest extends AbstractAccountTest {
     when(jwtTokenUtils.generateJwtAppUser(anyString(), any())).thenReturn(mockJwtToken());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenReturn(mockInfoBipSendOtpResponse());
-    //    ReflectionTestUtils.setField(accountService, "otpEnabled", true);
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
