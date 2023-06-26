@@ -182,8 +182,7 @@ public class CDRBRestClient {
     String passwordStr = new String(passwordDecrypted, StandardCharsets.UTF_8);
 
     // Construct password and split password into 2 parts as per condition
-    String[] passwords = constructPasswords(passwordStr);
-    return passwords;
+    return constructPasswords(passwordStr);
   }
 
   private String getAccessToken() {
