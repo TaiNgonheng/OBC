@@ -33,7 +33,6 @@ import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -41,6 +40,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
 
+  private static final boolean INIT_LINK_REQUIRED_OTP = true;
   private final JwtTokenUtils jwtTokenUtils;
 
   private final UserAuthService userAuthService;
@@ -54,9 +54,6 @@ public class AccountServiceImpl implements AccountService {
   private final CDRBRestClient cdrbRestClient;
 
   private final AccountMapper accountMapper = new AccountMapperImpl();
-
-  @Value("${obc.infobip.enabled}")
-  protected boolean otpEnabled;
 
   @Override
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -134,7 +131,7 @@ public class AccountServiceImpl implements AccountService {
                 infoBipRestClient.sendOtp(request.getPhoneNumber(), request.getBakongAccId());
               }
               return accountMapper.toInitAccountResponse(
-                  gowaveUser, request.getPhoneNumber(), token, otpEnabled);
+                  gowaveUser, request.getPhoneNumber(), token, INIT_LINK_REQUIRED_OTP);
             })
         .apply(Collections.singletonList(request.getBakongAccId()));
   }
