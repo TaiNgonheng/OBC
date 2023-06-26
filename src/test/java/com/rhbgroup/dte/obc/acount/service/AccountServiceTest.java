@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
@@ -36,12 +37,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest extends AbstractAccountTest {
-
-  private static final String INIT_LINK_REQUIRED_OTP = "initLinkRequiredOtp";
   @InjectMocks AccountServiceImpl accountService;
 
   @Mock JwtTokenUtils jwtTokenUtils;
@@ -60,6 +58,8 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock AccountRepository accountRepository;
 
+  @Mock private ApplicationProperties properties;
+
   @BeforeEach
   void cleanUp() {
     reset(
@@ -70,7 +70,8 @@ class AccountServiceTest extends AbstractAccountTest {
         infoBipRestClient,
         cdrbRestClient,
         accountRepository,
-        userProfileService);
+        userProfileService,
+        properties);
   }
 
   @Test
@@ -151,7 +152,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(jwtTokenUtils.generateJwtAppUser(anyString(), any())).thenReturn(mockJwtToken());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenReturn(mockInfoBipSendOtpResponse());
-    ReflectionTestUtils.setField(accountService, INIT_LINK_REQUIRED_OTP, true);
+    when(properties.getInitLinkRequiredOtp()).thenReturn(true);
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
@@ -198,7 +199,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenThrow(new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR));
-    ReflectionTestUtils.setField(accountService, INIT_LINK_REQUIRED_OTP, true);
+    when(properties.getInitLinkRequiredOtp()).thenReturn(true);
     try {
       accountService.initLinkAccount(mockInitAccountRequest());
     } catch (InternalException ex) {

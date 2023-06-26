@@ -50,7 +50,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -79,8 +78,7 @@ public class TransactionServiceImpl implements TransactionService {
 
   private final TransactionMapper transactionMapper = new TransactionMapperImpl();
 
-  @Value("${obc.infobip.init-transger-required-opt}")
-  private boolean initTransferRequiredOtp;
+  private final ApplicationProperties properties;
 
   @Override
   public void save(TransactionModel transactionModel) {
@@ -141,7 +139,7 @@ public class TransactionServiceImpl implements TransactionService {
             feeAndCashback);
     save(pendingTransaction);
 
-    if (initTransferRequiredOtp) {
+    if (properties.getInitTransferRequiredOtp()) {
       infoBipRestClient.sendOtp(currentUser.getPhoneNumber(), currentUser.getBakongId());
     }
 
@@ -152,7 +150,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .initRefNumber(pendingTransaction.getInitRefNumber())
                 .debitAmount(pendingTransaction.getTrxAmount())
                 .debitCcy(pendingTransaction.getTrxCcy())
-                .requireOtp(initTransferRequiredOtp)
+                .requireOtp(properties.getInitTransferRequiredOtp())
                 .fee(feeAndCashback.getFee()));
   }
 
@@ -200,7 +198,7 @@ public class TransactionServiceImpl implements TransactionService {
             .andThen(
                 peek(
                     entity -> {
-                      if (initTransferRequiredOtp
+                      if (properties.getInitTransferRequiredOtp()
                           && Boolean.FALSE.equals(
                               infoBipRestClient.verifyOtp(
                                   request.getOtpCode(), currentUser.getBakongId()))) {
