@@ -59,19 +59,12 @@ public class InfoBipRestClient {
   @Value("${obc.infobip.ncNeeded}")
   protected boolean ncNeeded;
 
-  @Value("${obc.infobip.enabled}")
-  protected boolean otpEnabled;
-
   @PostConstruct
   private void initCache() {
     cacheUtil.createCache(CacheConstants.InfoBipCache.CACHE_NAME, Duration.FIVE_MINUTES);
   }
 
   public InfoBipSendOtpResponse sendOtp(String phone, String loginKey) {
-
-    if (!otpEnabled) {
-      return new InfoBipSendOtpResponse().pinId("pinId");
-    }
 
     Map<String, String> headers = new HashMap<>();
     headers.put("Authorization", "Bearer ".concat(getAccessToken()));
@@ -100,10 +93,6 @@ public class InfoBipRestClient {
   }
 
   public Boolean verifyOtp(String otp, String loginKey) {
-
-    if (!otpEnabled) {
-      return true;
-    }
 
     String pinId =
         cacheUtil.getValueFromKey(

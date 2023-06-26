@@ -195,7 +195,6 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenThrow(new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR));
-
     try {
       accountService.initLinkAccount(mockInitAccountRequest());
     } catch (InternalException ex) {
