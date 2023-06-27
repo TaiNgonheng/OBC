@@ -261,7 +261,8 @@ public class TransactionServiceImpl implements TransactionService {
       throw new BizException(ResponseMessage.INVALID_INITREFNUMBER);
     }
 
-    if (StringUtils.isBlank(request.getOtpCode()) && applicationProperties.isInitTransferRequiredOtp()) {
+    if (StringUtils.isBlank(request.getOtpCode())
+        && applicationProperties.isInitTransferRequiredOtp()) {
       throw new BizException(ResponseMessage.MISSING_OTP_CODE);
     }
 
