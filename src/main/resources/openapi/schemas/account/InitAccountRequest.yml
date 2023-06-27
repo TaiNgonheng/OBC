@@ -1,9 +1,4 @@
 type: object
-required:
-  - loginType
-  - login
-  - key
-  - bakongAccId
 properties:
   loginType:
     type: string

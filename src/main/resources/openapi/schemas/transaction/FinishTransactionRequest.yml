@@ -1,17 +1,11 @@
 type: object
-required:
-  - initRefNumber
-  - key
 properties:
   initRefNumber:
     type: string
     description: Reference number must be in 32 digits
   otpCode:
     type: string
-    minLength: 6
-    maxLength: 6
     description: OTP code must be in 6 digits
   key:
     type: string
-    maxLength: 64
     description: Key must be at least 1 digit and max of 64 digits
