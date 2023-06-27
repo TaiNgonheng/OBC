@@ -144,7 +144,7 @@ public class AccountServiceImpl implements AccountService {
       throw new BizException(ResponseMessage.MISSING_LOGIN_TYPE);
     }
 
-    if (StringUtils.isEmpty(request.getLoginType())) {
+    if (StringUtils.isEmpty(request.getLogin())) {
       throw new BizException(ResponseMessage.MISSING_LOGIN);
     }
 

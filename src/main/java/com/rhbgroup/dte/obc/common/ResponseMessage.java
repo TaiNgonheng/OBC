@@ -22,7 +22,9 @@ public enum ResponseMessage {
 
   INVALID_AMOUNT(6, "Invalid amount"),
   DESC_TOO_LONG(6, "desc length must be less than 30"),
-  MISSING_LOGIN_TYPE(6, "loginType is mandatory"),
+  MISSING_LOGIN_TYPE(
+      6,
+      "loginType is mandatory, loginType must be one of the following values: PHONE_PIN, USER_PWD"),
 
   MISSING_LOGIN(6, "login is mandatory, login length must be between 1 and 30"),
   MISSING_PHONE_NUMBER(
