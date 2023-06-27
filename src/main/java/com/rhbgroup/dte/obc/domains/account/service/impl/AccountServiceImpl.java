@@ -140,9 +140,24 @@ public class AccountServiceImpl implements AccountService {
   }
 
   private void validateInitAccountRequest(InitAccountRequest request) {
-    // validate login type
+    if (StringUtils.isEmpty(request.getLoginType())) {
+      throw new BizException(ResponseMessage.MISSING_LOGIN_TYPE);
+    }
+
     if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD.getValue())) {
       throw new BizException(ResponseMessage.INVALID_LOGIN_TYPE);
+    }
+
+    if (StringUtils.isEmpty(request.getLogin())) {
+      throw new BizException(ResponseMessage.MISSING_LOGIN);
+    }
+
+    if (StringUtils.isEmpty(request.getKey())) {
+      throw new BizException(ResponseMessage.MISSING_KEY);
+    }
+
+    if (StringUtils.isEmpty(request.getBakongAccId())) {
+      throw new BizException(ResponseMessage.MISSING_BAKONG_ACC_ID);
     }
 
     if (StringUtils.isEmpty(request.getPhoneNumber())) {
