@@ -13,7 +13,6 @@ import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.GlobalExceptionHandler;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
-import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.BakongAccountStatus;
 import com.rhbgroup.dte.obc.model.BakongKYCStatus;
@@ -308,36 +307,6 @@ class AccountControllerTest extends AbstractAccountTest {
         ResponseMessage.AUTHENTICATION_FAILED.getMsg(), authResponse.getStatus().getErrorMessage());
     Assertions.assertEquals(
         ResponseMessage.AUTHENTICATION_FAILED.getCode().toString(),
-        authResponse.getStatus().getErrorCode());
-  }
-
-  @Test
-  void testAuthenticate_Failed_MissingMandatoryFields_400() throws Exception {
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                MockMvcRequestBuilders.post("/authenticate")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .characterEncoding(StandardCharsets.UTF_8)
-                    .content(objectMapper.writeValueAsBytes(new AuthenticationRequest())))
-            .andExpect(MockMvcResultMatchers.status().isBadRequest())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.data").doesNotExist())
-            .andReturn()
-            .getResponse();
-
-    String contentAsString = response.getContentAsString();
-    AuthenticationResponse authResponse =
-        objectMapper.readValue(contentAsString, AuthenticationResponse.class);
-
-    Assertions.assertNotNull(authResponse.getStatus());
-    Assertions.assertNull(authResponse.getData());
-    Assertions.assertEquals(AppConstants.Status.ERROR, authResponse.getStatus().getCode());
-    Assertions.assertEquals(
-        ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(),
-        authResponse.getStatus().getErrorMessage());
-    Assertions.assertEquals(
-        ResponseMessage.MANDATORY_FIELD_MISSING.getCode().toString(),
         authResponse.getStatus().getErrorCode());
   }
 

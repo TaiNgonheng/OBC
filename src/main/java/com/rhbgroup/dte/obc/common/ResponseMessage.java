@@ -36,13 +36,24 @@ public enum ResponseMessage {
   MISSING_OTP_CODE(6, "OTP is mandatory, OTP length must be 6"),
   MISSING_ACC_NUMBER(6, "accNumber is mandatory, accNumber length must be between 1 and 50"),
   MISSING_KEY(6, "key is mandatory, key length must be between 1 and 64"),
+  MISSING_SOURCE_ACC(6, "sourceAcc is mandatory, sourceAcc length must be between 1 and 64"),
+  MISSING_BAKONG_ACC_ID(6, "bakongAccId is mandatory, bakongAccId length must be between 1 and 50"),
+  MISSING_DESTINATION_ACC_ID(
+      6, "destinationAcc is mandatory, destinationAcc length must be between 1 and 50"),
 
-  MISSING_BAKONG_ACC_ID(6, "bakongAccId is mandatory, bakongAccId length must be between 4 and 60"),
+  MISSING_AMOUNT(6, "amount is mandatory"),
+
+  MISSING_CCY(6, "ccy is mandatory"),
+
+  MISSING_PAGE(6, "page is mandatory"),
+  MISSING_PAGE_SIZE(6, "size is mandatory"),
   INVALID_TRANSFER_TYPE(6, "Invalid transaction type."),
   INVALID_INITREFNUMBER(6, "initRefNumber length must be 32"),
   PAGE_LESS_THAN_ZERO(6, "page must not be less than 0"),
   PAGE_SIZE_LESS_THAN_ONE(6, "size must not be less than 1"),
   INVALID_CURRENCY(6, "Invalid currency"),
+
+  MISSING_INITREFNUMBER(6, "initRefNumber is mandatory, initRefNumber length must be 32"),
   INVALID_TOKEN(7, "Token is invalid."),
   FAIL_TO_FETCH_ACCOUNT_DETAILS(8, "Getting user account information failed."),
   TRANSACTION_TO_UNAVAILABLE_ACCOUNT(9, "Transaction to unavailable account."),
