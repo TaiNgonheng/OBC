@@ -144,6 +144,10 @@ public class AccountServiceImpl implements AccountService {
       throw new BizException(ResponseMessage.MISSING_LOGIN_TYPE);
     }
 
+    if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD.getValue())) {
+      throw new BizException(ResponseMessage.INVALID_LOGIN_TYPE);
+    }
+
     if (StringUtils.isEmpty(request.getLogin())) {
       throw new BizException(ResponseMessage.MISSING_LOGIN);
     }
@@ -158,11 +162,6 @@ public class AccountServiceImpl implements AccountService {
 
     if (StringUtils.isEmpty(request.getPhoneNumber())) {
       throw new BizException(ResponseMessage.MISSING_PHONE_NUMBER);
-    }
-
-    // validate login type
-    if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD.getValue())) {
-      throw new BizException(ResponseMessage.INVALID_LOGIN_TYPE);
     }
 
     // validate phone number formate
