@@ -97,13 +97,21 @@ public class AccountServiceImpl implements AccountService {
   }
 
   private void validateAuthenticationRequest(AuthenticationRequest request) {
-    if (StringUtils.isEmpty(request.getKey())) {
-      throw new BizException(ResponseMessage.MISSING_KEY);
+    if (StringUtils.isEmpty(request.getLoginType())) {
+      throw new BizException(ResponseMessage.MISSING_LOGIN_TYPE);
     }
 
     if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD.getValue())
         && !request.getLoginType().equals(LoginTypeEnum.PHONE_PIN.getValue())) {
       throw new BizException(ResponseMessage.OUT_OF_RANGE_LOGIN_TYPE);
+    }
+
+    if (StringUtils.isEmpty(request.getLogin())) {
+      throw new BizException(ResponseMessage.MISSING_LOGIN);
+    }
+
+    if (StringUtils.isEmpty(request.getKey())) {
+      throw new BizException(ResponseMessage.MISSING_KEY);
     }
   }
 
