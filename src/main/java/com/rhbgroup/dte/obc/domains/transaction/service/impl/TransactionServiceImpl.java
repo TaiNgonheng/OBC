@@ -139,7 +139,7 @@ public class TransactionServiceImpl implements TransactionService {
             feeAndCashback);
     save(pendingTransaction);
 
-    if (properties.getInitTransferRequiredOtp()) {
+    if (properties.isInitTransferRequiredOtp()) {
       infoBipRestClient.sendOtp(currentUser.getPhoneNumber(), currentUser.getBakongId());
     }
 
@@ -150,7 +150,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .initRefNumber(pendingTransaction.getInitRefNumber())
                 .debitAmount(pendingTransaction.getTrxAmount())
                 .debitCcy(pendingTransaction.getTrxCcy())
-                .requireOtp(properties.getInitTransferRequiredOtp())
+                .requireOtp(properties.isInitTransferRequiredOtp())
                 .fee(feeAndCashback.getFee()));
   }
 
@@ -198,7 +198,7 @@ public class TransactionServiceImpl implements TransactionService {
             .andThen(
                 peek(
                     entity -> {
-                      if (properties.getInitTransferRequiredOtp()
+                      if (properties.isInitTransferRequiredOtp()
                           && Boolean.FALSE.equals(
                               infoBipRestClient.verifyOtp(
                                   request.getOtpCode(), currentUser.getBakongId()))) {
