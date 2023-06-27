@@ -28,4 +28,10 @@ public class ApplicationProperties {
 
   @Value("${config.allWatchToken}")
   private String allWatchToken;
+
+  @Value("${obc.infobip.init-link-required-opt}")
+  private boolean initLinkRequiredOtp;
+
+  @Value("${obc.infobip.init-transger-required-opt}")
+  private boolean initTransferRequiredOtp;
 }

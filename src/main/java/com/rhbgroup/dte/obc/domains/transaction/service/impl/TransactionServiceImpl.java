@@ -78,6 +78,8 @@ public class TransactionServiceImpl implements TransactionService {
 
   private final TransactionMapper transactionMapper = new TransactionMapperImpl();
 
+  private final ApplicationProperties properties;
+
   @Override
   public void save(TransactionModel transactionModel) {
     of(transactionMapper::toEntity).andThen(transactionRepository::save).apply(transactionModel);
@@ -137,11 +139,7 @@ public class TransactionServiceImpl implements TransactionService {
             feeAndCashback);
     save(pendingTransaction);
 
-    // Get otp required config
-    boolean trxOtpEnabled =
-        transactionConfig.getValue(ConfigConstants.Transaction.OTP_REQUIRED, Integer.class) == 1;
-
-    if (trxOtpEnabled) {
+    if (properties.isInitTransferRequiredOtp()) {
       infoBipRestClient.sendOtp(currentUser.getPhoneNumber(), currentUser.getBakongId());
     }
 
@@ -152,7 +150,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .initRefNumber(pendingTransaction.getInitRefNumber())
                 .debitAmount(pendingTransaction.getTrxAmount())
                 .debitCcy(pendingTransaction.getTrxCcy())
-                .requireOtp(trxOtpEnabled)
+                .requireOtp(properties.isInitTransferRequiredOtp())
                 .fee(feeAndCashback.getFee()));
   }
 
@@ -200,15 +198,7 @@ public class TransactionServiceImpl implements TransactionService {
             .andThen(
                 peek(
                     entity -> {
-                      ConfigService transactionConfig =
-                          this.configService.loadJSONValue(
-                              ConfigConstants.Transaction.mapCurrency(entity.getTrxCcy()));
-                      // Verify OTP
-                      boolean otpRequired =
-                          transactionConfig.getValue(
-                                  ConfigConstants.Transaction.OTP_REQUIRED, Integer.class)
-                              == 1;
-                      if (otpRequired
+                      if (properties.isInitTransferRequiredOtp()
                           && Boolean.FALSE.equals(
                               infoBipRestClient.verifyOtp(
                                   request.getOtpCode(), currentUser.getBakongId()))) {

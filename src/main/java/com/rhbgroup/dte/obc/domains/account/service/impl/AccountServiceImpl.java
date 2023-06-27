@@ -5,6 +5,7 @@ import static com.rhbgroup.dte.obc.common.func.Functions.peek;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
@@ -33,7 +34,6 @@ import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -55,8 +55,7 @@ public class AccountServiceImpl implements AccountService {
 
   private final AccountMapper accountMapper = new AccountMapperImpl();
 
-  @Value("${obc.infobip.enabled}")
-  protected boolean otpEnabled;
+  private final ApplicationProperties properties;
 
   @Override
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -130,11 +129,12 @@ public class AccountServiceImpl implements AccountService {
             profileResponse -> {
               UserModel gowaveUser = userProfileService.findByUsername(request.getLogin());
               // Trigger infobip 2-fa sms
-              if (gowaveUser.getMobileNo().equals(request.getPhoneNumber()) && otpEnabled) {
+              if (gowaveUser.getMobileNo().equals(request.getPhoneNumber())
+                  && properties.isInitLinkRequiredOtp()) {
                 infoBipRestClient.sendOtp(request.getPhoneNumber(), request.getBakongAccId());
               }
               return accountMapper.toInitAccountResponse(
-                  gowaveUser, request.getPhoneNumber(), token, otpEnabled);
+                  gowaveUser, request.getPhoneNumber(), token, properties.isInitLinkRequiredOtp());
             })
         .apply(Collections.singletonList(request.getBakongAccId()));
   }
