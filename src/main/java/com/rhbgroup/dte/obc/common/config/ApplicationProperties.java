@@ -30,8 +30,8 @@ public class ApplicationProperties {
   private String allWatchToken;
 
   @Value("${obc.infobip.init-link-required-opt}")
-  private Boolean initLinkRequiredOtp;
+  private boolean initLinkRequiredOtp;
 
   @Value("${obc.infobip.init-transger-required-opt}")
-  private Boolean initTransferRequiredOtp;
+  private boolean initTransferRequiredOtp;
 }

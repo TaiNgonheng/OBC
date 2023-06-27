@@ -76,7 +76,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testInitTransaction_Success_CASA_TO_WALLET() {
-    when(properties.getInitTransferRequiredOtp()).thenReturn(false);
+    when(properties.isInitTransferRequiredOtp()).thenReturn(false);
 
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
@@ -108,7 +108,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testInitTransaction_OperationNotSupported_CASA_TO_CASA() {
-    when(properties.getInitTransferRequiredOtp()).thenReturn(false);
+    when(properties.isInitTransferRequiredOtp()).thenReturn(false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
@@ -256,7 +256,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testInitTransaction_Success_OtpRequired() {
-    when(properties.getInitTransferRequiredOtp()).thenReturn(true);
+    when(properties.isInitTransferRequiredOtp()).thenReturn(true);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
@@ -289,7 +289,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testFinishTransaction_Success_OTPNotIncluded() {
-    when(properties.getInitTransferRequiredOtp()).thenReturn(false);
+    when(properties.isInitTransferRequiredOtp()).thenReturn(false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(transactionRepository.findByInitRefNumber(anyString()))
         .thenReturn(Optional.of(mockTransactionEntity(TransactionStatus.PENDING)));
@@ -329,7 +329,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testFinishTransaction_Success_OTPIncluded() {
-    when(properties.getInitTransferRequiredOtp()).thenReturn(true);
+    when(properties.isInitTransferRequiredOtp()).thenReturn(true);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(transactionRepository.findByInitRefNumber(anyString()))
         .thenReturn(Optional.of(mockTransactionEntity(TransactionStatus.PENDING)));
@@ -421,7 +421,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testFinishTransaction_Failed_InvalidOTPToken() {
-    when(properties.getInitTransferRequiredOtp()).thenReturn(true);
+    when(properties.isInitTransferRequiredOtp()).thenReturn(true);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(transactionRepository.findByInitRefNumber(anyString()))
         .thenReturn(Optional.of(mockTransactionEntity(TransactionStatus.PENDING)));
@@ -439,7 +439,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testFinishTransaction_Failed_CoreTransferError() {
-    when(properties.getInitTransferRequiredOtp()).thenReturn(false);
+    when(properties.isInitTransferRequiredOtp()).thenReturn(false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(transactionRepository.findByInitRefNumber(anyString()))
         .thenReturn(Optional.of(mockTransactionEntity(TransactionStatus.PENDING)));

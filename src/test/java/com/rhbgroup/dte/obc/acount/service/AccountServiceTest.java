@@ -152,7 +152,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(jwtTokenUtils.generateJwtAppUser(anyString(), any())).thenReturn(mockJwtToken());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenReturn(mockInfoBipSendOtpResponse());
-    when(properties.getInitLinkRequiredOtp()).thenReturn(true);
+    when(properties.isInitLinkRequiredOtp()).thenReturn(true);
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
@@ -199,7 +199,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenThrow(new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR));
-    when(properties.getInitLinkRequiredOtp()).thenReturn(true);
+    when(properties.isInitLinkRequiredOtp()).thenReturn(true);
     try {
       accountService.initLinkAccount(mockInitAccountRequest());
     } catch (InternalException ex) {
