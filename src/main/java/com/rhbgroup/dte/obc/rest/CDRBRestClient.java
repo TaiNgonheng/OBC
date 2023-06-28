@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientResponseException;
 
 @Component
 @RequiredArgsConstructor
@@ -97,7 +98,10 @@ public class CDRBRestClient {
           request,
           ParameterizedTypeReference.forType(CDRBGetAccountDetailResponse.class));
 
-    } catch (BizException ex) {
+    } catch (RestClientResponseException exception) {
+      if (exception.getRawStatusCode() == 404) {
+        throw new BizException(ResponseMessage.NO_ACCOUNT_FOUND);
+      }
       throw new BizException(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS);
     }
   }
@@ -178,8 +182,7 @@ public class CDRBRestClient {
     String passwordStr = new String(passwordDecrypted, StandardCharsets.UTF_8);
 
     // Construct password and split password into 2 parts as per condition
-    String[] passwords = constructPasswords(passwordStr);
-    return passwords;
+    return constructPasswords(passwordStr);
   }
 
   private String getAccessToken() {
