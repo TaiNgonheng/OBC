@@ -83,7 +83,7 @@ public class AccountServiceImpl implements AccountService {
                         "No active account found for user {} with bakong id {}",
                         principal.getUserId(),
                         principal.getBakongId());
-                    throw new BizException(ResponseMessage.NO_ACCOUNT_FOUND);
+                    throw new BizException(ResponseMessage.ACC_NOT_LINKED);
                   }
                 }))
         .andThen(
