@@ -66,6 +66,7 @@ public enum ResponseMessage {
   ACCOUNT_ALREADY_LINKED(15, "This account is already linked to another Bakong account."),
   AUTHENTICATION_LOCKED(16, "Too many incorrect authentication attempts. Please try again later."),
 
+  ACC_NOT_LINKED(30, "Your credential is not associated with any account"),
   // CDRB error messages
   NO_SUCH_USER_FOUND(100, "User not found."),
   USER_ALREADY_EXIST(101, "User already exist."),
