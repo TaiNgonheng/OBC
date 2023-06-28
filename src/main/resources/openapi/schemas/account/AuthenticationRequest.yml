@@ -1,8 +1,5 @@
 type: object
 description: Authentication request
-required:
-  - loginType
-  - login
 properties:
   loginType:
     type: string

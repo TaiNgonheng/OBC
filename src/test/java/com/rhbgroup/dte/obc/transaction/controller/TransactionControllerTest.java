@@ -135,42 +135,6 @@ class TransactionControllerTest extends AbstractTransactionTest {
   }
 
   @Test
-  void testInitTransaction_Failed_400_MissingMandatoryFields() throws Exception {
-
-    InitTransactionRequest invalidRequest = new InitTransactionRequest();
-
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                MockMvcRequestBuilders.post("/init-transaction")
-                    .header(HttpHeaders.AUTHORIZATION, mockBearerString())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .characterEncoding(StandardCharsets.UTF_8)
-                    .content(objectMapper.writeValueAsBytes(invalidRequest)))
-            .andExpect(MockMvcResultMatchers.status().isBadRequest())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.data").doesNotExist())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.status").exists())
-            .andReturn()
-            .getResponse();
-
-    String contentAsString = response.getContentAsString();
-    InitTransactionResponse initTransactionResponse =
-        objectMapper.readValue(contentAsString, InitTransactionResponse.class);
-
-    Assertions.assertNotNull(initTransactionResponse.getStatus());
-    Assertions.assertNull(initTransactionResponse.getData());
-
-    Assertions.assertEquals(
-        AppConstants.Status.ERROR, initTransactionResponse.getStatus().getCode());
-    Assertions.assertEquals(
-        ResponseMessage.MANDATORY_FIELD_MISSING.getCode().toString(),
-        initTransactionResponse.getStatus().getErrorCode());
-    Assertions.assertEquals(
-        ResponseMessage.MANDATORY_FIELD_MISSING.getMsg(),
-        initTransactionResponse.getStatus().getErrorMessage());
-  }
-
-  @Test
   void testFinishTransaction_Success_200() throws Exception {
 
     FinishTransactionRequest mockRequest = mockFinishTransactionRequest();

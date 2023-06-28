@@ -1,19 +1,12 @@
 type: object
-required:
-  - sourceAcc
-  - destinationAcc
-  - amount
-  - ccy
 properties:
   type:
     type: string
   sourceAcc:
     type: string
-    maxLength: 30
     description: Source account that will be debit from
   destinationAcc:
     type: string
-    maxLength: 30
     description: Destination account that will be credit to
   amount:
     type: number

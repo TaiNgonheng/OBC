@@ -1,25 +1,13 @@
 type: object
-required:
-  - loginType
-  - login
-  - key
-  - bakongAccId
 properties:
   loginType:
     type: string
   login:
     type: string
-    minLength: 1
-    maxLength: 30
   key:
     type: string
-    minLength: 64
-    maxLength: 64
     description: A hash password in SHA256
   bakongAccId:
     type: string
-    pattern: ^[\w]+@[\w]+$
-    minLength: 4
-    maxLength: 60
   phoneNumber:
     type: string
