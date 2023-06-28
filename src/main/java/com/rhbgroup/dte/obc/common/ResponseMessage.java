@@ -58,9 +58,7 @@ public enum ResponseMessage {
   FAIL_TO_FETCH_ACCOUNT_DETAILS(8, "Getting user account information failed."),
   TRANSACTION_TO_UNAVAILABLE_ACCOUNT(9, "Transaction to unavailable account."),
   BALANCE_NOT_ENOUGH(10, "Not enough balance to do a transaction."),
-  TRANSACTION_EXCEED_AMOUNT_LIMIT(
-      11,
-      "Transaction failed as the amount entered exceeds the allowed limit. Please enter a lower amount and try again or reach out to the merchant for further assistance."),
+  TRANSACTION_EXCEED_AMOUNT_LIMIT(11, "The amount entered is below or exceed the allowed limit."),
   DUPLICATE_SUBMISSION_ID(12, "Duplicate submissionId."),
   INVALID_OTP(13, "Invalid OTP. Please try again."),
   OTP_EXPIRED(17, "OTP expired. Please try again."),
