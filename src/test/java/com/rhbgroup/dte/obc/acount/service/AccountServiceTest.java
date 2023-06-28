@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.rhbgroup.dte.obc.acount.AbstractAccountTest;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
@@ -39,7 +40,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest extends AbstractAccountTest {
-
   @InjectMocks AccountServiceImpl accountService;
 
   @Mock JwtTokenUtils jwtTokenUtils;
@@ -58,6 +58,8 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Mock AccountRepository accountRepository;
 
+  @Mock private ApplicationProperties properties;
+
   @BeforeEach
   void cleanUp() {
     reset(
@@ -68,7 +70,8 @@ class AccountServiceTest extends AbstractAccountTest {
         infoBipRestClient,
         cdrbRestClient,
         accountRepository,
-        userProfileService);
+        userProfileService,
+        properties);
   }
 
   @Test
@@ -149,6 +152,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(jwtTokenUtils.generateJwtAppUser(anyString(), any())).thenReturn(mockJwtToken());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenReturn(mockInfoBipSendOtpResponse());
+    when(properties.isInitLinkRequiredOtp()).thenReturn(true);
 
     InitAccountResponse response = accountService.initLinkAccount(mockInitAccountRequest());
     Assertions.assertEquals(0, response.getStatus().getCode());
@@ -195,6 +199,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userProfileService.findByUsername(anyString())).thenReturn(mockUserModel());
     when(infoBipRestClient.sendOtp(anyString(), anyString()))
         .thenThrow(new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR));
+    when(properties.isInitLinkRequiredOtp()).thenReturn(true);
     try {
       accountService.initLinkAccount(mockInitAccountRequest());
     } catch (InternalException ex) {

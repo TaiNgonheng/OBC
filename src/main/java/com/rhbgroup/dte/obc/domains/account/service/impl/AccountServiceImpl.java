@@ -5,6 +5,7 @@ import static com.rhbgroup.dte.obc.common.func.Functions.peek;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
@@ -40,7 +41,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
 
-  private static final boolean INIT_LINK_REQUIRED_OTP = true;
   private final JwtTokenUtils jwtTokenUtils;
 
   private final UserAuthService userAuthService;
@@ -54,6 +54,8 @@ public class AccountServiceImpl implements AccountService {
   private final CDRBRestClient cdrbRestClient;
 
   private final AccountMapper accountMapper = new AccountMapperImpl();
+
+  private final ApplicationProperties properties;
 
   @Override
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -95,13 +97,21 @@ public class AccountServiceImpl implements AccountService {
   }
 
   private void validateAuthenticationRequest(AuthenticationRequest request) {
-    if (StringUtils.isEmpty(request.getKey())) {
-      throw new BizException(ResponseMessage.MISSING_KEY);
+    if (StringUtils.isEmpty(request.getLoginType())) {
+      throw new BizException(ResponseMessage.MISSING_LOGIN_TYPE);
     }
 
     if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD.getValue())
         && !request.getLoginType().equals(LoginTypeEnum.PHONE_PIN.getValue())) {
       throw new BizException(ResponseMessage.OUT_OF_RANGE_LOGIN_TYPE);
+    }
+
+    if (StringUtils.isEmpty(request.getLogin())) {
+      throw new BizException(ResponseMessage.MISSING_LOGIN);
+    }
+
+    if (StringUtils.isEmpty(request.getKey())) {
+      throw new BizException(ResponseMessage.MISSING_KEY);
     }
   }
 
@@ -127,19 +137,35 @@ public class AccountServiceImpl implements AccountService {
             profileResponse -> {
               UserModel gowaveUser = userProfileService.findByUsername(request.getLogin());
               // Trigger infobip 2-fa sms
-              if (gowaveUser.getMobileNo().equals(request.getPhoneNumber())) {
+              if (gowaveUser.getMobileNo().equals(request.getPhoneNumber())
+                  && properties.isInitLinkRequiredOtp()) {
                 infoBipRestClient.sendOtp(request.getPhoneNumber(), request.getBakongAccId());
               }
               return accountMapper.toInitAccountResponse(
-                  gowaveUser, request.getPhoneNumber(), token, INIT_LINK_REQUIRED_OTP);
+                  gowaveUser, request.getPhoneNumber(), token, properties.isInitLinkRequiredOtp());
             })
         .apply(Collections.singletonList(request.getBakongAccId()));
   }
 
   private void validateInitAccountRequest(InitAccountRequest request) {
-    // validate login type
+    if (StringUtils.isEmpty(request.getLoginType())) {
+      throw new BizException(ResponseMessage.MISSING_LOGIN_TYPE);
+    }
+
     if (!request.getLoginType().equals(LoginTypeEnum.USER_PWD.getValue())) {
       throw new BizException(ResponseMessage.INVALID_LOGIN_TYPE);
+    }
+
+    if (StringUtils.isEmpty(request.getLogin())) {
+      throw new BizException(ResponseMessage.MISSING_LOGIN);
+    }
+
+    if (StringUtils.isEmpty(request.getKey())) {
+      throw new BizException(ResponseMessage.MISSING_KEY);
+    }
+
+    if (StringUtils.isEmpty(request.getBakongAccId())) {
+      throw new BizException(ResponseMessage.MISSING_BAKONG_ACC_ID);
     }
 
     if (StringUtils.isEmpty(request.getPhoneNumber())) {

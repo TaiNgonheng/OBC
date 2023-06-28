@@ -115,23 +115,10 @@ public abstract class AbstractTransactionTest {
         .accountCcy(CURRENCY_USD);
   }
 
-  protected ConfigServiceImpl mockTransactionConfig_NonOTP() {
+  protected ConfigServiceImpl mockTransactionConfig() {
     try {
       ConfigServiceImpl transactionConfig = new ConfigServiceImpl(null);
-      transactionConfig.setJsonValue(
-          new JSONObject().put("txMinAmt", 1.0).put("txMaxAmt", 1000.0).put("txOtpRequired", 0));
-
-      return transactionConfig;
-    } catch (JSONException ex) {
-      return null;
-    }
-  }
-
-  protected ConfigServiceImpl mockTransactionConfig_RequireOTP() {
-    try {
-      ConfigServiceImpl transactionConfig = new ConfigServiceImpl(null);
-      transactionConfig.setJsonValue(
-          new JSONObject().put("txMinAmt", 1.0).put("txMaxAmt", 1000.0).put("txOtpRequired", 1));
+      transactionConfig.setJsonValue(new JSONObject().put("txMinAmt", 1.0).put("txMaxAmt", 1000.0));
 
       return transactionConfig;
     } catch (JSONException ex) {

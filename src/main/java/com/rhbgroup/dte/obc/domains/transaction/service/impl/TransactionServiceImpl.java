@@ -78,6 +78,8 @@ public class TransactionServiceImpl implements TransactionService {
 
   private final TransactionMapper transactionMapper = new TransactionMapperImpl();
 
+  private final ApplicationProperties properties;
+
   @Override
   public void save(TransactionModel transactionModel) {
     of(transactionMapper::toEntity).andThen(transactionRepository::save).apply(transactionModel);
@@ -137,11 +139,7 @@ public class TransactionServiceImpl implements TransactionService {
             feeAndCashback);
     save(pendingTransaction);
 
-    // Get otp required config
-    boolean trxOtpEnabled =
-        transactionConfig.getValue(ConfigConstants.Transaction.OTP_REQUIRED, Integer.class) == 1;
-
-    if (trxOtpEnabled) {
+    if (properties.isInitTransferRequiredOtp()) {
       infoBipRestClient.sendOtp(currentUser.getPhoneNumber(), currentUser.getBakongId());
     }
 
@@ -152,20 +150,11 @@ public class TransactionServiceImpl implements TransactionService {
                 .initRefNumber(pendingTransaction.getInitRefNumber())
                 .debitAmount(pendingTransaction.getTrxAmount())
                 .debitCcy(pendingTransaction.getTrxCcy())
-                .requireOtp(trxOtpEnabled)
+                .requireOtp(properties.isInitTransferRequiredOtp())
                 .fee(feeAndCashback.getFee()));
   }
 
   private void validateInitTransactionRequest(InitTransactionRequest request) {
-    boolean amountIsDecimal = request.getAmount() % 1 != 0;
-    if (request.getCcy().equals(CURRENCY_KHR) && amountIsDecimal) {
-      throw new BizException(ResponseMessage.INVALID_AMOUNT);
-    }
-
-    if (request.getDesc() != null && request.getDesc().length() > 30) {
-      throw new BizException(ResponseMessage.DESC_TOO_LONG);
-    }
-
     if (StringUtils.isBlank(request.getType())) {
       throw new BizException(ResponseMessage.MISSING_TRANSFER_TYPE);
     }
@@ -173,6 +162,31 @@ public class TransactionServiceImpl implements TransactionService {
     if (!request.getType().equals(TransactionType.CASA.getValue())
         && !request.getType().equals(TransactionType.WALLET.getValue())) {
       throw new BizException(ResponseMessage.INVALID_TRANSFER_TYPE);
+    }
+
+    if (StringUtils.isBlank(request.getSourceAcc())) {
+      throw new BizException(ResponseMessage.MISSING_SOURCE_ACC);
+    }
+
+    if (StringUtils.isBlank(request.getDestinationAcc())) {
+      throw new BizException(ResponseMessage.MISSING_DESTINATION_ACC_ID);
+    }
+
+    if (request.getAmount() == null) {
+      throw new BizException(ResponseMessage.MISSING_AMOUNT);
+    }
+
+    if (StringUtils.isBlank(request.getCcy())) {
+      throw new BizException(ResponseMessage.MISSING_CCY);
+    }
+
+    boolean amountIsDecimal = request.getAmount() % 1 != 0;
+    if (request.getCcy().equals(CURRENCY_KHR) && amountIsDecimal) {
+      throw new BizException(ResponseMessage.INVALID_AMOUNT);
+    }
+
+    if (request.getDesc() != null && request.getDesc().length() > 30) {
+      throw new BizException(ResponseMessage.DESC_TOO_LONG);
     }
 
     if (!request.getCcy().equals(CURRENCY_KHR) && !request.getCcy().equals(CURRENCY_USD)) {
@@ -200,15 +214,7 @@ public class TransactionServiceImpl implements TransactionService {
             .andThen(
                 peek(
                     entity -> {
-                      ConfigService transactionConfig =
-                          this.configService.loadJSONValue(
-                              ConfigConstants.Transaction.mapCurrency(entity.getTrxCcy()));
-                      // Verify OTP
-                      boolean otpRequired =
-                          transactionConfig.getValue(
-                                  ConfigConstants.Transaction.OTP_REQUIRED, Integer.class)
-                              == 1;
-                      if (otpRequired
+                      if (properties.isInitTransferRequiredOtp()
                           && Boolean.FALSE.equals(
                               infoBipRestClient.verifyOtp(
                                   request.getOtpCode(), currentUser.getBakongId()))) {
@@ -247,9 +253,21 @@ public class TransactionServiceImpl implements TransactionService {
   }
 
   private void validateFinishTransactionRequest(FinishTransactionRequest request) {
-    if (StringUtils.isBlank(request.getInitRefNumber())
-        || request.getInitRefNumber().length() != 32) {
+    if (StringUtils.isBlank(request.getInitRefNumber())) {
+      throw new BizException(ResponseMessage.MISSING_INITREFNUMBER);
+    }
+
+    if (request.getInitRefNumber().length() != 32) {
       throw new BizException(ResponseMessage.INVALID_INITREFNUMBER);
+    }
+
+    if (StringUtils.isBlank(request.getOtpCode())
+        && applicationProperties.isInitTransferRequiredOtp()) {
+      throw new BizException(ResponseMessage.MISSING_OTP_CODE);
+    }
+
+    if (StringUtils.isBlank(request.getKey())) {
+      throw new BizException(ResponseMessage.MISSING_KEY);
     }
   }
 
@@ -338,16 +356,24 @@ public class TransactionServiceImpl implements TransactionService {
   }
 
   private void validateGetAccountTransactionsRequest(GetAccountTransactionsRequest request) {
+    if (StringUtils.isBlank(request.getAccNumber())) {
+      throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
+    }
+
+    if (request.getPage() == null) {
+      throw new BizException(ResponseMessage.MISSING_PAGE);
+    }
+
     if (request.getPage() < 0) {
       throw new BizException(ResponseMessage.PAGE_LESS_THAN_ZERO);
     }
 
-    if (request.getSize() < 1) {
-      throw new BizException(ResponseMessage.PAGE_SIZE_LESS_THAN_ONE);
+    if (request.getSize() == null) {
+      throw new BizException(ResponseMessage.MISSING_PAGE_SIZE);
     }
 
-    if (StringUtils.isBlank(request.getAccNumber())) {
-      throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
+    if (request.getSize() < 1) {
+      throw new BizException(ResponseMessage.PAGE_SIZE_LESS_THAN_ONE);
     }
   }
 

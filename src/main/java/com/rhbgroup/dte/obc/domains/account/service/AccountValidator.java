@@ -48,7 +48,7 @@ public class AccountValidator {
       CDRBGetAccountDetailResponse account, InitTransactionRequest request) {
 
     if (!request.getCcy().equalsIgnoreCase(account.getAcct().getCurrencyCode())) {
-      throw new BizException(ResponseMessage.MANDATORY_FIELD_MISSING);
+      throw new BizException(ResponseMessage.INVALID_CURRENCY);
     }
 
     // Do we need to include fee + transaction amount?
