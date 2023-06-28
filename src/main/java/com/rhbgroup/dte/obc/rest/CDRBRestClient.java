@@ -140,8 +140,11 @@ public class CDRBRestClient {
           buildHeader(getAccessToken()),
           request,
           ParameterizedTypeReference.forType(CDRBTransferInquiryResponse.class));
-    } catch (BizException ex) {
-      throw new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR);
+    } catch (RestClientResponseException exception) {
+      if (exception.getRawStatusCode() == 404) {
+        throw new BizException(ResponseMessage.INIT_REFNUMBER_NOT_FOUND);
+      }
+      throw new BizException(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS);
     }
   }
 

@@ -65,6 +65,8 @@ public enum ResponseMessage {
   KYC_NOT_VERIFIED(14, "Cannot link account due to your account not yet verified."),
   ACCOUNT_ALREADY_LINKED(15, "This account is already linked to another Bakong account."),
   AUTHENTICATION_LOCKED(16, "Too many incorrect authentication attempts. Please try again later."),
+  INIT_REFNUMBER_NOT_FOUND(
+      35, "initRefNumber was not found or already used in another transaction."),
 
   ACC_NOT_LINKED(30, "Your credential is not associated with any account"),
   // CDRB error messages
