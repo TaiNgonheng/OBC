@@ -112,6 +112,8 @@ public class AccountServiceImpl implements AccountService {
 
     if (StringUtils.isEmpty(request.getKey())) {
       throw new BizException(ResponseMessage.MISSING_KEY);
+    } else {
+      validateKey(request.getKey());
     }
   }
 
@@ -162,6 +164,8 @@ public class AccountServiceImpl implements AccountService {
 
     if (StringUtils.isEmpty(request.getKey())) {
       throw new BizException(ResponseMessage.MISSING_KEY);
+    } else {
+      validateKey(request.getKey());
     }
 
     if (StringUtils.isEmpty(request.getBakongAccId())) {
@@ -173,12 +177,22 @@ public class AccountServiceImpl implements AccountService {
     }
 
     // validate phone number formate
-    String regex = "^([[+]8]55)([1-9])(\\d{7,8})$";
+    String phoneRegex = "^([[+]8]55)([1-9])(\\d{7,8})$";
 
-    Pattern pattern = Pattern.compile(regex);
+    Pattern pattern = Pattern.compile(phoneRegex);
     Matcher matcher = pattern.matcher(request.getPhoneNumber());
     if (!matcher.find()) {
       throw new BizException(ResponseMessage.INVALID_PHONE_NUMBER);
+    }
+  }
+
+  private void validateKey(String key) {
+    String pwdRegex = "^[a-f0-9]{64}$";
+
+    Pattern pwdPattern = Pattern.compile(pwdRegex);
+    Matcher pwdMatcher = pwdPattern.matcher(key);
+    if (!pwdMatcher.find()) {
+      throw new BizException(ResponseMessage.AUTHENTICATION_FAILED);
     }
   }
 
