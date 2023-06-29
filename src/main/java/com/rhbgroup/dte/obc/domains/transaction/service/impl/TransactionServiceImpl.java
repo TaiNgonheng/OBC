@@ -43,6 +43,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -268,6 +270,14 @@ public class TransactionServiceImpl implements TransactionService {
 
     if (StringUtils.isBlank(request.getKey())) {
       throw new BizException(ResponseMessage.MISSING_KEY);
+    } else {
+      String pwdRegex = "^[a-f0-9]{64}$";
+
+      Pattern pwdPattern = Pattern.compile(pwdRegex);
+      Matcher pwdMatcher = pwdPattern.matcher(request.getKey());
+      if (!pwdMatcher.find()) {
+        throw new BizException(ResponseMessage.AUTHENTICATION_FAILED);
+      }
     }
   }
 
