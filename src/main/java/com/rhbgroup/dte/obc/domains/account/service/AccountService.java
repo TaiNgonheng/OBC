@@ -30,4 +30,6 @@ public interface AccountService {
   AccountModel getActiveAccount(AccountFilterCondition condition);
 
   UnlinkAccountResponse unlinkAccount(UnlinkAccountRequest unlinkAccountRequest);
+
+  boolean checkAccountLinkedWithBakongId(String bakongId, String accountId);
 }

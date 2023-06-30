@@ -1,5 +1,6 @@
 package com.rhbgroup.dte.obc.transaction.service;
 
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowableOfType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -79,6 +80,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(properties.isInitTransferRequiredOtp()).thenReturn(false);
 
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(accountService.checkAccountLinkedWithBakongId(anyString(), anyString())).thenReturn(true);
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
@@ -110,6 +112,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
   void testInitTransaction_OperationNotSupported_CASA_TO_CASA() {
     when(properties.isInitTransferRequiredOtp()).thenReturn(false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(accountService.checkAccountLinkedWithBakongId(anyString(), anyString())).thenReturn(true);
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
@@ -134,7 +137,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
   @Test
   void testInitTransaction_Failed_SourceAccNotFound() {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
-
+    when(accountService.checkAccountLinkedWithBakongId(anyString(), anyString())).thenReturn(true);
     // Return a CASA account which is not matched with request source account
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModelSourceAccNotMatched());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
@@ -155,6 +158,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
   @Test
   void testInitTransaction_Failed_TransferAmtExceedLimitation() {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(accountService.checkAccountLinkedWithBakongId(anyString(), anyString())).thenReturn(true);
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
@@ -180,6 +184,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
   @Test
   void testInitTransaction_Failed_CurrencyNotMatchWithCasaAccount() {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(accountService.checkAccountLinkedWithBakongId(anyString(), anyString())).thenReturn(true);
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_KHR))
         .thenReturn(mockTransactionConfig());
@@ -203,6 +208,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
   @Test
   void testInitTransaction_Failed_NotEnoughBalance() {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(accountService.checkAccountLinkedWithBakongId(anyString(), anyString())).thenReturn(true);
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
@@ -231,6 +237,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
   @Test
   void testInitTransaction_Failed_TransferToUnavailableSource() {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(accountService.checkAccountLinkedWithBakongId(anyString(), anyString())).thenReturn(true);
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
@@ -256,6 +263,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
   void testInitTransaction_Success_OtpRequired() {
     when(properties.isInitTransferRequiredOtp()).thenReturn(true);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(accountService.checkAccountLinkedWithBakongId(anyString(), anyString())).thenReturn(true);
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
@@ -533,5 +541,22 @@ class TransactionServiceTest extends AbstractTransactionTest {
     assertEquals(
         response.getData().getTransactions().size(),
         response.getData().getTotalElement().intValue());
+  }
+
+  @Test
+  void testInitTransactionWithAccountDoesNotLinkWithBakongId() {
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(accountService.checkAccountLinkedWithBakongId(anyString(), anyString())).thenReturn(false);
+    BizException execption =
+        catchThrowableOfType(
+            () -> transactionService.initTransaction(mockInitTransactionRequest()),
+            BizException.class);
+
+    assertEquals(
+        ResponseMessage.ACCOUNT_NOT_LINKED_WITH_BAKONG_ACCOUNT.getCode(),
+        execption.getResponseMessage().getCode());
+    assertEquals(
+        ResponseMessage.ACCOUNT_NOT_LINKED_WITH_BAKONG_ACCOUNT.getMsg(),
+        execption.getResponseMessage().getMsg());
   }
 }

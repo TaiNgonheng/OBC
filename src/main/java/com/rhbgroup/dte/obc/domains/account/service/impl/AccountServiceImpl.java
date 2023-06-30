@@ -362,6 +362,11 @@ public class AccountServiceImpl implements AccountService {
     return new UnlinkAccountResponse().status(ResponseHandler.ok()).data(null);
   }
 
+  @Override
+  public boolean checkAccountLinkedWithBakongId(String bakongId, String accountId) {
+    return accountRepository.existsByBakongIdAndAccountId(bakongId, accountId);
+  }
+
   private void validateUnlinkAccountRequest(UnlinkAccountRequest unlinkAccountRequest) {
     if (StringUtils.isBlank(unlinkAccountRequest.getAccNumber())) {
       throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
