@@ -364,7 +364,8 @@ public class AccountServiceImpl implements AccountService {
 
   @Override
   public boolean checkAccountLinkedWithBakongId(String bakongId, String accountId) {
-    return accountRepository.existsByBakongIdAndAccountId(bakongId, accountId);
+    return accountRepository.existsByBakongIdAndAccountIdAndLinkedStatus(
+        bakongId, accountId, LinkedStatusEnum.COMPLETED);
   }
 
   private void validateUnlinkAccountRequest(UnlinkAccountRequest unlinkAccountRequest) {

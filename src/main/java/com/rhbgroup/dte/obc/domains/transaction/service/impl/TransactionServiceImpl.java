@@ -93,11 +93,11 @@ public class TransactionServiceImpl implements TransactionService {
     validateInitTransactionRequest(request);
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
 
-    validateUserAccountWithBakongId(currentUser.getBakongId(), request.getSourceAcc());
-
     AccountModel linkedAccount =
         accountService.getActiveAccount(
             new AccountFilterCondition().accountNo(request.getSourceAcc()));
+
+    validateUserAccountWithBakongId(request.getDestinationAcc(), request.getSourceAcc());
 
     ConfigService transactionConfig =
         this.configService.loadJSONValue(ConfigConstants.Transaction.mapCurrency(request.getCcy()));
