@@ -65,6 +65,8 @@ public enum ResponseMessage {
   KYC_NOT_VERIFIED(14, "Cannot link account due to your account not yet verified."),
   ACCOUNT_ALREADY_LINKED(15, "This account is already linked to another Bakong account."),
   AUTHENTICATION_LOCKED(16, "Too many incorrect authentication attempts. Please try again later."),
+  ACCOUNT_NOT_LINKED_WITH_BAKONG_ACCOUNT(
+      32, "The Bakong account you are trying to transfer to is not linked to your account."),
   INIT_REFNUMBER_NOT_FOUND(
       35, "initRefNumber was not found or already used in another transaction."),
 

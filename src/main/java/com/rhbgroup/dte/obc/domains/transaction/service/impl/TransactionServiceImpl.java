@@ -97,6 +97,8 @@ public class TransactionServiceImpl implements TransactionService {
         accountService.getActiveAccount(
             new AccountFilterCondition().accountNo(request.getSourceAcc()));
 
+    validateUserAccountWithBakongId(request.getDestinationAcc(), request.getSourceAcc());
+
     ConfigService transactionConfig =
         this.configService.loadJSONValue(ConfigConstants.Transaction.mapCurrency(request.getCcy()));
 
@@ -154,6 +156,14 @@ public class TransactionServiceImpl implements TransactionService {
                 .debitCcy(pendingTransaction.getTrxCcy())
                 .requireOtp(properties.isInitTransferRequiredOtp())
                 .fee(feeAndCashback.getFee()));
+  }
+
+  private void validateUserAccountWithBakongId(String bakongId, String accountId) {
+    boolean isAccountLinkedToBakongId =
+        accountService.checkAccountLinkedWithBakongId(bakongId, accountId);
+    if (!isAccountLinkedToBakongId) {
+      throw new BizException(ResponseMessage.ACCOUNT_NOT_LINKED_WITH_BAKONG_ACCOUNT);
+    }
   }
 
   private void validateInitTransactionRequest(InitTransactionRequest request) {
