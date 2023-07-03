@@ -22,7 +22,6 @@ import com.rhbgroup.dte.obc.domains.transaction.repository.entity.TransactionEnt
 import com.rhbgroup.dte.obc.domains.transaction.service.impl.TransactionServiceImpl;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
-import com.rhbgroup.dte.obc.exceptions.InternalException;
 import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.BakongAccountType;
 import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
@@ -417,11 +416,11 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
     try {
       transactionService.finishTransaction(mockFinishTransactionRequest());
-    } catch (InternalException ex) {
+    } catch (BizException ex) {
       assertEquals(
-          ResponseMessage.INTERNAL_SERVER_ERROR.getCode(), ex.getResponseMessage().getCode());
+          ResponseMessage.INIT_REFNUMBER_NOT_FOUND.getCode(), ex.getResponseMessage().getCode());
       assertEquals(
-          ResponseMessage.INTERNAL_SERVER_ERROR.getMsg(), ex.getResponseMessage().getMsg());
+          ResponseMessage.INIT_REFNUMBER_NOT_FOUND.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 
