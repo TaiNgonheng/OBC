@@ -38,7 +38,7 @@ public class TransactionValidator {
 
   public static void validateTransactionStatus(TransactionEntity transaction) {
     if (TransactionStatus.COMPLETED.equals(transaction.getTrxStatus())) {
-      throw new BizException(ResponseMessage.DUPLICATE_SUBMISSION_ID);
+      throw new BizException(ResponseMessage.INIT_REFNUMBER_NOT_FOUND);
     }
   }
 }

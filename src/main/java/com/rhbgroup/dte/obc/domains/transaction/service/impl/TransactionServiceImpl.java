@@ -221,7 +221,7 @@ public class TransactionServiceImpl implements TransactionService {
             .andThen(
                 trxOptional ->
                     trxOptional.orElseThrow(
-                        () -> new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR)))
+                        () -> new BizException(ResponseMessage.INIT_REFNUMBER_NOT_FOUND)))
             .andThen(peek(TransactionValidator::validateTransactionStatus))
             .andThen(
                 peek(
