@@ -19,6 +19,7 @@ import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
@@ -245,6 +246,10 @@ public class AccountServiceImpl implements AccountService {
   }
 
   private void validateVerifyOTPRequest(VerifyOtpRequest request) {
+    if (!properties.isInitLinkRequiredOtp()) {
+      throw new UserAuthenticationException(ResponseMessage.INVALID_TOKEN);
+    }
+
     if (StringUtils.isEmpty(request.getOtpCode())) {
       throw new BizException(ResponseMessage.MISSING_OTP_CODE);
     }

@@ -30,6 +30,7 @@ import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.InternalException;
+import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
@@ -276,6 +277,11 @@ public class TransactionServiceImpl implements TransactionService {
     if (StringUtils.isBlank(request.getOtpCode())
         && applicationProperties.isInitTransferRequiredOtp()) {
       throw new BizException(ResponseMessage.MISSING_OTP_CODE);
+    }
+
+    if (!StringUtils.isBlank(request.getOtpCode())
+        && !applicationProperties.isInitTransferRequiredOtp()) {
+      throw new UserAuthenticationException(ResponseMessage.INVALID_TOKEN);
     }
 
     if (StringUtils.isBlank(request.getKey())) {
