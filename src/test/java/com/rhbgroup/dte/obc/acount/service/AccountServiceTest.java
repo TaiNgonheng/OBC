@@ -215,6 +215,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(true);
     when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
+    when(properties.isInitLinkRequiredOtp()).thenReturn(true);
 
     VerifyOtpResponse response = accountService.verifyOtp(mockVerifyOtpRequest());
     Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
@@ -225,6 +226,7 @@ class AccountServiceTest extends AbstractAccountTest {
   void testVerifyOTP_Success_IsValid_False() {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(false);
+    when(properties.isInitLinkRequiredOtp()).thenReturn(true);
 
     try {
       accountService.verifyOtp(mockVerifyOtpRequest());
@@ -241,6 +243,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(infoBipRestClient.verifyOtp(anyString(), anyString()))
         .thenThrow(new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR));
+    when(properties.isInitLinkRequiredOtp()).thenReturn(true);
 
     try {
       accountService.verifyOtp(mockVerifyOtpRequest());
@@ -254,7 +257,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOtp_Failed_Missing_Mandatory_Field() throws Exception {
-
+    when(properties.isInitLinkRequiredOtp()).thenReturn(true);
     try {
       accountService.verifyOtp(new VerifyOtpRequest());
     } catch (BizException ex) {
