@@ -17,6 +17,7 @@ import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.cache.expiry.Duration;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,8 @@ public class InfoBipRestClient {
   private final CacheUtil cacheUtil;
   private final JwtTokenUtils jwtTokenUtils;
 
+  private static final Duration EXPIRE_TIME_TWO_MINUTES = new Duration(TimeUnit.MINUTES, 2);
+
   @Value("${obc.infobip.username}")
   protected String username;
 
@@ -61,7 +64,7 @@ public class InfoBipRestClient {
 
   @PostConstruct
   private void initCache() {
-    cacheUtil.createCache(CacheConstants.InfoBipCache.CACHE_NAME, Duration.FIVE_MINUTES);
+    cacheUtil.createCache(CacheConstants.InfoBipCache.CACHE_NAME, EXPIRE_TIME_TWO_MINUTES
   }
 
   public InfoBipSendOtpResponse sendOtp(String phone, String loginKey) {
