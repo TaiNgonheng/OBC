@@ -39,6 +39,7 @@ import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -246,6 +247,7 @@ public class TransactionServiceImpl implements TransactionService {
                     accountService.getAccountDetail(
                         new GetAccountDetailRequest()
                             .accNumber(transferRequest.getFromAccountNo()))))
+        .andThen(this::setExchangeRateRelatedFields)
         .andThen(cdrbRestClient::transfer)
         .andThen(
             transferResponse ->
@@ -263,6 +265,36 @@ public class TransactionServiceImpl implements TransactionService {
             })
         .andThen(transactionMapper::toFinishTransactionResponse)
         .apply(transaction);
+  }
+
+  CDRBTransferRequest setExchangeRateRelatedFields(CDRBTransferRequest cdrbTransferRequest) {
+    if (CURRENCY_KHR.equals(cdrbTransferRequest.getAccountCurrencyCode())
+        && CURRENCY_KHR.equals(cdrbTransferRequest.getCurrencyCode())) {
+      DecimalFormat df = new DecimalFormat("###.##");
+      CDRBGetExchangeRateRequest cdrbGetExchangeRateRequest = new CDRBGetExchangeRateRequest();
+      cdrbGetExchangeRateRequest.setCurrencyCode(cdrbTransferRequest.getCurrencyCode());
+      cdrbGetExchangeRateRequest.setFrAccountNo(cdrbTransferRequest.getFromAccountNo());
+      cdrbGetExchangeRateRequest.setFrAccountType(
+          cdrbTransferRequest.getFromAccountType().getValue());
+      ExchangeRateResponse exchangeRateResponse =
+          cdrbRestClient.fetchExchangeRates(cdrbGetExchangeRateRequest);
+      cdrbTransferRequest.setBuyRate(exchangeRateResponse.getBuyRate());
+      cdrbTransferRequest.setSellRate(exchangeRateResponse.getSellRate());
+      cdrbTransferRequest.setFeeAmountInUSD(
+          Double.parseDouble(
+              df.format(exchangeRateResponse.getMidRate() * cdrbTransferRequest.getFees())));
+      cdrbTransferRequest.setTransactionAmountInUSD(
+          Double.parseDouble(
+              df.format(exchangeRateResponse.getMidRate() * cdrbTransferRequest.getAmount())));
+      cdrbTransferRequest.setCashBackAmountInUSD(
+          Double.parseDouble(
+              df.format(exchangeRateResponse.getMidRate() * cdrbTransferRequest.getCashBack())));
+    } else {
+      cdrbTransferRequest.setFeeAmountInUSD(cdrbTransferRequest.getFees());
+      cdrbTransferRequest.setTransactionAmountInUSD(cdrbTransferRequest.getAmount());
+      cdrbTransferRequest.setCashBackAmountInUSD(cdrbTransferRequest.getCashBack());
+    }
+    return cdrbTransferRequest;
   }
 
   private void validateFinishTransactionRequest(FinishTransactionRequest request) {

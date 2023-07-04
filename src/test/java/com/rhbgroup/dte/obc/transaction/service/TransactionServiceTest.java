@@ -507,7 +507,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(historyRepository.queryByFromAccount(anyString(), any())).thenReturn(mockTrxHistoryPage());
     when(configService.getByConfigKey(
             AppConstants.Transaction.SIBS_SYNC_DATE_KEY, SIBSSyncDateConfig.class))
-        .thenReturn(new SIBSSyncDateConfig().useSIBSSyncDate(true).sibsSyncDate("20230729"));
+        .thenReturn(new SIBSSyncDateConfig().useSIBSSyncDate(true).sibsSyncDate("2023-07-29"));
 
     GetAccountTransactionsRequest mockRequest = mockAccountTransactionRequest();
     GetAccountTransactionsResponse response =

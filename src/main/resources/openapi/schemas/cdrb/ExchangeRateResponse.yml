@@ -1,0 +1,23 @@
+type: object
+description: Exchange rate response for USD to KHR
+properties:
+  buyRate:
+    type: number
+    format: double
+    description: Buy rate
+  sellRate:
+    type: number
+    format: double
+    description: Sell rate
+  midRate:
+    type: number
+    format: double
+    description: Mid rate
+  avgRate:
+    type: number
+    format: double
+    description: Average rate
+  officialRate:
+    type: number
+    format: double
+    description: official rate

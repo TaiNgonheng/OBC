@@ -42,3 +42,20 @@ properties:
     $ref: '../common/CDRBTransferType.yml'
   accountCurrencyCode:
     type: string
+  buyRate:
+    type: number
+    format: double
+    description: Buy rate
+  sellRate:
+    type: number
+    format: double
+    description: Sell rate
+  feeAmountInUSD:
+    type: number
+    format: double
+  transactionAmountInUSD:
+    type: number
+    format: double
+  cashBackAmountInUSD:
+    type: number
+    format: double

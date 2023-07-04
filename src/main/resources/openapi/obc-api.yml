@@ -149,6 +149,10 @@ components:
       $ref: './schemas/cdrb/CDRBTransactionHistoryRequest.yml'
     CDRBTransactionHistoryResponse:
       $ref: './schemas/cdrb/CDRBTransactionHistoryResponse.yml'
+    CDRBGetExchangeRateRequest:
+      $ref: './schemas/cdrb/CDRBGetExchangeRateRequest.yml'
+    ExchangeRateResponse:
+      $ref: './schemas/cdrb/ExchangeRateResponse.yml'
     SchedulerJobRequest:
       $ref: './schemas/scheduler/JobRequest.yml'
     SFTPConfig:

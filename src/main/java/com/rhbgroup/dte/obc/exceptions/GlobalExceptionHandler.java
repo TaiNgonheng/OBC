@@ -6,6 +6,8 @@ import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.model.ResponseStatus;
 import com.rhbgroup.dte.obc.model.ResponseWrapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,11 +16,13 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(DataIntegrityViolationException.class)
   public ResponseEntity<ResponseWrapper> jpaException(DataIntegrityViolationException ex) {
 
+    log.error(ExceptionUtils.getStackTrace(ex));
     try {
       JsonNode constraintViolationException =
           new ObjectMapper().readTree(new ObjectMapper().writeValueAsString(ex.getCause()));
@@ -52,7 +56,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(UserAuthenticationException.class)
   public ResponseEntity<ResponseWrapper> userAuthenticationException(
       UserAuthenticationException ex) {
-
+    log.error(ExceptionUtils.getStackTrace(ex));
     ResponseStatus status =
         new ResponseStatus()
             .code(AppConstants.Status.ERROR)
@@ -64,7 +68,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(BizException.class)
   public ResponseEntity<ResponseWrapper> bizException(BizException ex) {
-
+    log.error(ExceptionUtils.getStackTrace(ex));
     ResponseStatus status =
         new ResponseStatus()
             .code(AppConstants.Status.ERROR)
@@ -77,7 +81,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(InternalException.class)
   public ResponseEntity<ResponseWrapper> internalException(InternalException ex) {
-
+    log.error(ExceptionUtils.getStackTrace(ex));
     ResponseStatus status =
         new ResponseStatus()
             .code(AppConstants.Status.ERROR)
@@ -90,7 +94,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ResponseWrapper> argMissingException(MethodArgumentNotValidException ex) {
-
+    log.error(ExceptionUtils.getStackTrace(ex));
     ResponseStatus status =
         new ResponseStatus()
             .code(AppConstants.Status.ERROR)
@@ -102,7 +106,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(GatewayTimeoutException.class)
   public ResponseEntity<ResponseWrapper> gatewayTimeoutException(GatewayTimeoutException ex) {
-
+    log.error(ExceptionUtils.getStackTrace(ex));
     ResponseStatus status =
         new ResponseStatus()
             .code(AppConstants.Status.ERROR)
@@ -114,7 +118,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ResponseWrapper> genericException(Exception ex) {
-
+    log.error(ExceptionUtils.getStackTrace(ex));
     ResponseStatus status =
         new ResponseStatus()
             .code(AppConstants.Status.ERROR)
