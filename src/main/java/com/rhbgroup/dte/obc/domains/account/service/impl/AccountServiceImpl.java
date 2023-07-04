@@ -269,7 +269,7 @@ public class AccountServiceImpl implements AccountService {
         accountRepository
             .findByUserIdAndBakongIdAndLinkedStatus(
                 currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.PENDING)
-            .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
+            .orElseThrow(() -> new UserAuthenticationException(ResponseMessage.INVALID_TOKEN));
 
     CDRBGetAccountDetailRequest accountDetailRequest =
         new CDRBGetAccountDetailRequest()

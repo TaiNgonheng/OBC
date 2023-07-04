@@ -435,12 +435,12 @@ class AccountServiceTest extends AbstractAccountTest {
 
     try {
       accountService.finishLinkAccount(mockFinishLinkAccountRequest());
-    } catch (BizException ex) {
+    } catch (UserAuthenticationException ex) {
 
       Assertions.assertEquals(
-          ResponseMessage.NO_ACCOUNT_FOUND.getCode(), ex.getResponseMessage().getCode());
+          ResponseMessage.INVALID_TOKEN.getCode(), ex.getResponseMessage().getCode());
       Assertions.assertEquals(
-          ResponseMessage.NO_ACCOUNT_FOUND.getMsg(), ex.getResponseMessage().getMsg());
+          ResponseMessage.INVALID_TOKEN.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 
