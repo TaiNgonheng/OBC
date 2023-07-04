@@ -64,7 +64,7 @@ public class InfoBipRestClient {
 
   @PostConstruct
   private void initCache() {
-    cacheUtil.createCache(CacheConstants.InfoBipCache.CACHE_NAME, EXPIRE_TIME_TWO_MINUTES
+    cacheUtil.createCache(CacheConstants.InfoBipCache.CACHE_NAME, EXPIRE_TIME_TWO_MINUTES);
   }
 
   public InfoBipSendOtpResponse sendOtp(String phone, String loginKey) {
