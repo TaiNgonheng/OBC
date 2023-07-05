@@ -30,6 +30,7 @@ import com.rhbgroup.dte.obc.domains.transaction.service.TransactionValidator;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.InternalException;
+import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
@@ -97,6 +98,8 @@ public class TransactionServiceImpl implements TransactionService {
         accountService.getActiveAccount(
             new AccountFilterCondition().accountNo(request.getSourceAcc()));
 
+    validateUserAccountWithBakongId(request.getDestinationAcc(), request.getSourceAcc());
+
     ConfigService transactionConfig =
         this.configService.loadJSONValue(ConfigConstants.Transaction.mapCurrency(request.getCcy()));
 
@@ -157,6 +160,14 @@ public class TransactionServiceImpl implements TransactionService {
                 .fee(feeAndCashback.getFee()));
   }
 
+  private void validateUserAccountWithBakongId(String bakongId, String accountId) {
+    boolean isAccountLinkedToBakongId =
+        accountService.checkAccountLinkedWithBakongId(bakongId, accountId);
+    if (!isAccountLinkedToBakongId) {
+      throw new BizException(ResponseMessage.ACCOUNT_NOT_LINKED_WITH_BAKONG_ACCOUNT);
+    }
+  }
+
   private void validateInitTransactionRequest(InitTransactionRequest request) {
     if (StringUtils.isBlank(request.getType())) {
       throw new BizException(ResponseMessage.MISSING_TRANSFER_TYPE);
@@ -212,7 +223,7 @@ public class TransactionServiceImpl implements TransactionService {
             .andThen(
                 trxOptional ->
                     trxOptional.orElseThrow(
-                        () -> new InternalException(ResponseMessage.INTERNAL_SERVER_ERROR)))
+                        () -> new BizException(ResponseMessage.INIT_REFNUMBER_NOT_FOUND)))
             .andThen(peek(TransactionValidator::validateTransactionStatus))
             .andThen(
                 peek(
@@ -221,7 +232,7 @@ public class TransactionServiceImpl implements TransactionService {
                           && Boolean.FALSE.equals(
                               infoBipRestClient.verifyOtp(
                                   request.getOtpCode(), currentUser.getBakongId()))) {
-                        throw new BizException(ResponseMessage.INVALID_TOKEN);
+                        throw new BizException(ResponseMessage.INVALID_OTP);
                       }
                     }))
             .apply(request.getInitRefNumber());
@@ -267,6 +278,11 @@ public class TransactionServiceImpl implements TransactionService {
     if (StringUtils.isBlank(request.getOtpCode())
         && applicationProperties.isInitTransferRequiredOtp()) {
       throw new BizException(ResponseMessage.MISSING_OTP_CODE);
+    }
+
+    if (!StringUtils.isBlank(request.getOtpCode())
+        && !applicationProperties.isInitTransferRequiredOtp()) {
+      throw new UserAuthenticationException(ResponseMessage.INVALID_TOKEN);
     }
 
     if (StringUtils.isBlank(request.getKey())) {

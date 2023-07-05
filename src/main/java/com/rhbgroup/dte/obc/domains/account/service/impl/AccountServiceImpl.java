@@ -19,6 +19,7 @@ import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
+import com.rhbgroup.dte.obc.exceptions.UserAuthenticationException;
 import com.rhbgroup.dte.obc.model.*;
 import com.rhbgroup.dte.obc.rest.CDRBRestClient;
 import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
@@ -245,6 +246,10 @@ public class AccountServiceImpl implements AccountService {
   }
 
   private void validateVerifyOTPRequest(VerifyOtpRequest request) {
+    if (!properties.isInitLinkRequiredOtp()) {
+      throw new UserAuthenticationException(ResponseMessage.INVALID_TOKEN);
+    }
+
     if (StringUtils.isEmpty(request.getOtpCode())) {
       throw new BizException(ResponseMessage.MISSING_OTP_CODE);
     }
@@ -264,7 +269,7 @@ public class AccountServiceImpl implements AccountService {
         accountRepository
             .findByUserIdAndBakongIdAndLinkedStatus(
                 currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.PENDING)
-            .orElseThrow(() -> new BizException(ResponseMessage.NO_ACCOUNT_FOUND));
+            .orElseThrow(() -> new UserAuthenticationException(ResponseMessage.INVALID_TOKEN));
 
     CDRBGetAccountDetailRequest accountDetailRequest =
         new CDRBGetAccountDetailRequest()
@@ -362,6 +367,12 @@ public class AccountServiceImpl implements AccountService {
     accountRepository.save(accountEntity);
 
     return new UnlinkAccountResponse().status(ResponseHandler.ok()).data(null);
+  }
+
+  @Override
+  public boolean checkAccountLinkedWithBakongId(String bakongId, String accountId) {
+    return accountRepository.existsByBakongIdAndAccountIdAndLinkedStatus(
+        bakongId, accountId, LinkedStatusEnum.COMPLETED);
   }
 
   private void validateUnlinkAccountRequest(UnlinkAccountRequest unlinkAccountRequest) {
