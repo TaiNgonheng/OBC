@@ -9,6 +9,7 @@ import com.rhbgroup.dte.obc.model.CasaAccountStatus;
 import com.rhbgroup.dte.obc.model.CasaKYCStatus;
 import com.rhbgroup.dte.obc.model.InitTransactionRequest;
 import com.rhbgroup.dte.obc.model.PGProfileResponse;
+import org.apache.commons.lang3.ObjectUtils;
 
 public class AccountValidator {
 
@@ -30,7 +31,7 @@ public class AccountValidator {
 
     // Check if CASA account is not Fully KYC
     CasaKYCStatus kycStatus = account.getAcct().getKycStatus();
-    if (!kycStatus.equals(CasaKYCStatus.F)) {
+    if (ObjectUtils.isEmpty(kycStatus) || !kycStatus.equals(CasaKYCStatus.F)) {
       throw new BizException(ResponseMessage.KYC_NOT_VERIFIED);
     }
 
