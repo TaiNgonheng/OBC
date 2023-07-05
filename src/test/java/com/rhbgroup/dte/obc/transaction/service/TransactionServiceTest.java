@@ -437,8 +437,8 @@ class TransactionServiceTest extends AbstractTransactionTest {
     try {
       transactionService.finishTransaction(requestWithOTP);
     } catch (BizException ex) {
-      assertEquals(ResponseMessage.INVALID_TOKEN.getCode(), ex.getResponseMessage().getCode());
-      assertEquals(ResponseMessage.INVALID_TOKEN.getMsg(), ex.getResponseMessage().getMsg());
+      assertEquals(ResponseMessage.INVALID_OTP.getCode(), ex.getResponseMessage().getCode());
+      assertEquals(ResponseMessage.INVALID_OTP.getMsg(), ex.getResponseMessage().getMsg());
     }
   }
 
