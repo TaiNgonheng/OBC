@@ -75,6 +75,19 @@ public class GlobalExceptionHandler {
         new ResponseWrapper().status(status).data(null), HttpStatus.BAD_REQUEST);
   }
 
+  @ExceptionHandler(DynamicBizException.class)
+  public ResponseEntity<ResponseWrapper> dynamicBizException(DynamicBizException ex) {
+
+    ResponseStatus status =
+        new ResponseStatus()
+            .code(AppConstants.Status.ERROR)
+            .errorCode(ex.getCode().toString())
+            .errorMessage(ex.getMsg());
+
+    return new ResponseEntity<>(
+        new ResponseWrapper().status(status).data(null), HttpStatus.BAD_REQUEST);
+  }
+
   @ExceptionHandler(InternalException.class)
   public ResponseEntity<ResponseWrapper> internalException(InternalException ex) {
 

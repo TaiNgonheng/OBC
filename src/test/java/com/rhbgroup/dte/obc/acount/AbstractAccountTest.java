@@ -214,6 +214,22 @@ public abstract class AbstractAccountTest {
                 .kycStatus(CasaKYCStatus.X));
   }
 
+  protected CDRBGetAccountDetailResponse mockCdrbAccountResponseActiveNotKYC() {
+    return new CDRBGetAccountDetailResponse()
+        .acct(
+            new CDRBGetAccountDetailResponseAcct()
+                .accountNo(ACC_NUMBER)
+                .accountType(CasaAccountType.S)
+                .accountStatus(CasaAccountStatus._1)
+                .accountName("name")
+                .cifNo("123")
+                .currentBal(1.2)
+                .availBal(1.2)
+                .currencyCode("USD")
+                .ctryCitizen("KH")
+                .kycStatus(CasaKYCStatus.X));
+  }
+
   protected AccountEntity mockAccountEntityLinked() {
     AccountEntity accountEntity = new AccountEntity();
     accountEntity.setId(1L);

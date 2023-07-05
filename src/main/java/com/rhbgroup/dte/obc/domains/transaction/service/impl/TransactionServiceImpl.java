@@ -121,6 +121,7 @@ public class TransactionServiceImpl implements TransactionService {
             new CDRBGetAccountDetailRequest()
                 .accountNo(request.getSourceAcc())
                 .cifNo(currentUser.getCif()));
+    AccountValidator.validateAccountStatus(casaAccount);
     AccountValidator.validateBalanceAndCurrency(casaAccount, request);
 
     // Getting fee and cashback
