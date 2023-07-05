@@ -232,7 +232,7 @@ public class TransactionServiceImpl implements TransactionService {
                           && Boolean.FALSE.equals(
                               infoBipRestClient.verifyOtp(
                                   request.getOtpCode(), currentUser.getBakongId()))) {
-                        throw new BizException(ResponseMessage.INVALID_TOKEN);
+                        throw new BizException(ResponseMessage.INVALID_OTP);
                       }
                     }))
             .apply(request.getInitRefNumber());
