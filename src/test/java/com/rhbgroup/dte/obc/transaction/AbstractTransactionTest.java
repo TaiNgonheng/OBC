@@ -249,10 +249,10 @@ public abstract class AbstractTransactionTest {
         .transactions(
             Arrays.asList(
                 new CDRBTransactionHistoryResponseTransactions()
-                    .transactionDate("01012023")
+                    .transactionDate("2023-01-01")
                     .transactionTime(135623L),
                 new CDRBTransactionHistoryResponseTransactions()
-                    .transactionDate("01012023")
+                    .transactionDate("2023-01-01")
                     .transactionTime(123456L)));
   }
 }

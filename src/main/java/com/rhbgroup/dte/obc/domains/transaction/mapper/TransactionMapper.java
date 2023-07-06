@@ -195,7 +195,7 @@ public interface TransactionMapper {
   @Named("DateFromDDMMYYYY")
   default LocalDate getDateFromDDMMYYYY(String date) {
     if (date.length() == 7) date = "0" + date;
-    return LocalDate.parse(date, DateTimeFormatter.ofPattern("ddMMyyyy"));
+    return LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
   }
 
   @Named("InstantFromDDMMYYYY")

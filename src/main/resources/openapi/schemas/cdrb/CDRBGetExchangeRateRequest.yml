@@ -1,0 +1,11 @@
+type: object
+description: Exchange rate request for USD to KHR
+properties:
+  frAccountNo:
+    type: string
+    description: from account number
+    pattern: '^[0-9]{19}$'
+  currencyCode:
+    type: string
+  frAccountType:
+    type: string

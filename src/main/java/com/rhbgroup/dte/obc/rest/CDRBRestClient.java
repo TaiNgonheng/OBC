@@ -9,19 +9,7 @@ import com.rhbgroup.dte.obc.common.util.crypto.CryptoUtil;
 import com.rhbgroup.dte.obc.common.util.crypto.TripleDESCryptoUtil;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.InternalException;
-import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackRequest;
-import com.rhbgroup.dte.obc.model.CDRBFeeAndCashbackResponse;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailRequest;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
-import com.rhbgroup.dte.obc.model.CDRBGetHsmKeyResponse;
-import com.rhbgroup.dte.obc.model.CDRBLoginRequest;
-import com.rhbgroup.dte.obc.model.CDRBLoginResponse;
-import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryRequest;
-import com.rhbgroup.dte.obc.model.CDRBTransactionHistoryResponse;
-import com.rhbgroup.dte.obc.model.CDRBTransferInquiryRequest;
-import com.rhbgroup.dte.obc.model.CDRBTransferInquiryResponse;
-import com.rhbgroup.dte.obc.model.CDRBTransferRequest;
-import com.rhbgroup.dte.obc.model.CDRBTransferResponse;
+import com.rhbgroup.dte.obc.model.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
@@ -56,6 +44,8 @@ public class CDRBRestClient {
 
   private static final String ACCOUNT_TRANSACTIONS =
       "/corebankingnonfinancialclient/bakong-link-casa/transactions";
+
+  private static final String GET_EXCHANGE_RATE = "/corebankingnonfinancialclient/exchangeRate";
 
   private final SpringRestUtil restUtil;
 
@@ -146,6 +136,15 @@ public class CDRBRestClient {
       }
       throw new BizException(ResponseMessage.FAIL_TO_FETCH_ACCOUNT_DETAILS);
     }
+  }
+
+  public ExchangeRateResponse fetchExchangeRates(CDRBGetExchangeRateRequest request) {
+
+    return restUtil.sendPost(
+        baseUrl.concat(GET_EXCHANGE_RATE),
+        buildHeader(getAccessToken()),
+        request,
+        ParameterizedTypeReference.forType(ExchangeRateResponse.class));
   }
 
   public CDRBTransactionHistoryResponse fetchTodayTransactionHistory(
