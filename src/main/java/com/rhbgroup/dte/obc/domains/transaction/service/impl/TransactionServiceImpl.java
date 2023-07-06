@@ -278,8 +278,8 @@ public class TransactionServiceImpl implements TransactionService {
           cdrbTransferRequest.getFromAccountType().getValue());
       ExchangeRateResponse exchangeRateResponse =
           cdrbRestClient.fetchExchangeRates(cdrbGetExchangeRateRequest);
-      cdrbTransferRequest.setBuyRate(exchangeRateResponse.getBuyRate());
-      cdrbTransferRequest.setSellRate(exchangeRateResponse.getSellRate());
+      cdrbTransferRequest.setBuyRate(exchangeRateResponse.getMidRate());
+      cdrbTransferRequest.setSellRate(exchangeRateResponse.getMidRate());
       cdrbTransferRequest.setFeeAmountInUSD(
           Double.parseDouble(
               df.format(exchangeRateResponse.getMidRate() * cdrbTransferRequest.getFees())));
@@ -293,6 +293,8 @@ public class TransactionServiceImpl implements TransactionService {
       cdrbTransferRequest.setFeeAmountInUSD(cdrbTransferRequest.getFees());
       cdrbTransferRequest.setTransactionAmountInUSD(cdrbTransferRequest.getAmount());
       cdrbTransferRequest.setCashBackAmountInUSD(cdrbTransferRequest.getCashBack());
+      cdrbTransferRequest.setBuyRate(1d);
+      cdrbTransferRequest.setSellRate(1d);
     }
     return cdrbTransferRequest;
   }
