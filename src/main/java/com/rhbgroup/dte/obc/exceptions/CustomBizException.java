@@ -7,7 +7,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Setter
 @Getter
-public class DynamicBizException extends RuntimeException {
+public class CustomBizException extends RuntimeException {
 
   private final Integer code;
   private final String msg;

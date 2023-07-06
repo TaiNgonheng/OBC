@@ -75,8 +75,8 @@ public class GlobalExceptionHandler {
         new ResponseWrapper().status(status).data(null), HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler(DynamicBizException.class)
-  public ResponseEntity<ResponseWrapper> dynamicBizException(DynamicBizException ex) {
+  @ExceptionHandler(CustomBizException.class)
+  public ResponseEntity<ResponseWrapper> dynamicBizException(CustomBizException ex) {
 
     ResponseStatus status =
         new ResponseStatus()

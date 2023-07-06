@@ -286,8 +286,7 @@ public class AccountServiceImpl implements AccountService {
 
     // Get CDRB account detail & update account table
     return of(cdrbRestClient::getAccountDetail)
-        .andThen(peek(AccountValidator::validateAccountStatus))
-        .andThen(peek(AccountValidator::validateCasaAccount))
+        .andThen(peek(AccountValidator::validateAccountAndKYCStatus))
         .andThen(cdrbAccount -> accountMapper.toAccountEntity(pendingAccount, cdrbAccount))
         .andThen(peek(accountRepository::save))
         .andThen(account -> accountMapper.toFinishLinkAccountResponse())
