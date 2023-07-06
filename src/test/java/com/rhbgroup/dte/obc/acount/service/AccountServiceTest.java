@@ -412,7 +412,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
     when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
         .thenReturn(Optional.ofNullable(mockAccountEntityAccountPending()));
-    when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponseNotKYC());
+    when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponseActiveNotKYC());
 
     try {
       accountService.finishLinkAccount(mockFinishLinkAccountRequest());
@@ -503,7 +503,7 @@ class AccountServiceTest extends AbstractAccountTest {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
     when(accountRepository.countByAccountIdAndLinkedStatus(anyString(), any())).thenReturn(1L);
-    when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponseNotKYC());
+    when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponseActiveNotKYC());
 
     ConfigServiceImpl mockConfig = new ConfigServiceImpl(null);
 
@@ -519,7 +519,7 @@ class AccountServiceTest extends AbstractAccountTest {
 
     Assertions.assertNotNull(response.getData());
     Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
-    Assertions.assertEquals(BakongAccountStatus.BLOCKED, response.getData().getAccStatus());
+    Assertions.assertEquals(BakongAccountStatus.ACTIVE, response.getData().getAccStatus());
     Assertions.assertEquals(BakongKYCStatus.PARTIAL, response.getData().getKycStatus());
     Assertions.assertEquals(minAmt, response.getData().getLimit().getMinTrxAmount());
     Assertions.assertEquals(maxAmt, response.getData().getLimit().getMaxTrxAmount());
