@@ -18,7 +18,7 @@ public class TransactionValidator {
       InitTransactionRequest request, ConfigService transactionConfig, AccountModel accountModel) {
 
     // Only support CASA_TO_WALLET for now
-    if (TransactionType.CASA.equals(request.getType())) {
+    if (TransactionType.CASA.getValue().equals(request.getType())) {
       throw new BizException(ResponseMessage.MANDATORY_FIELD_MISSING);
     }
 
