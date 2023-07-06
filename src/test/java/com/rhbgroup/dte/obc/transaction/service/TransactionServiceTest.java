@@ -109,15 +109,11 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testInitTransaction_OperationNotSupported_CASA_TO_CASA() {
-    when(properties.isInitTransferRequiredOtp()).thenReturn(false);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.checkAccountLinkedWithBakongId(anyString(), anyString())).thenReturn(true);
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
-    when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
-    when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockCDRBFeeAndCashback());
-    when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     // Update transaction type to CASA_TO_CASA
