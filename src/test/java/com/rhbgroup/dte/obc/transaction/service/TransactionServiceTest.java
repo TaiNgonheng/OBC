@@ -102,8 +102,10 @@ class TransactionServiceTest extends AbstractTransactionTest {
     assertFalse(initTransactionResponse.getData().getRequireOtp());
 
     assertEquals(mockFeeAndCashback.getFee(), initTransactionResponse.getData().getFee());
+    assertEquals(initTransactionRequest.getAmount(), initTransactionResponse.getData().getAmount());
     assertEquals(
-        initTransactionRequest.getAmount(), initTransactionResponse.getData().getDebitAmount());
+        initTransactionRequest.getAmount() + mockFeeAndCashback.getFee(),
+        initTransactionResponse.getData().getDebitAmount());
     assertEquals(initTransactionRequest.getCcy(), initTransactionResponse.getData().getDebitCcy());
   }
 
@@ -283,8 +285,10 @@ class TransactionServiceTest extends AbstractTransactionTest {
     assertTrue(initTransactionResponse.getData().getRequireOtp());
 
     assertEquals(mockFeeAndCashback.getFee(), initTransactionResponse.getData().getFee());
+    assertEquals(initTransactionRequest.getAmount(), initTransactionResponse.getData().getAmount());
     assertEquals(
-        initTransactionRequest.getAmount(), initTransactionResponse.getData().getDebitAmount());
+        initTransactionRequest.getAmount() + mockFeeAndCashback.getFee(),
+        initTransactionResponse.getData().getDebitAmount());
     assertEquals(initTransactionRequest.getCcy(), initTransactionResponse.getData().getDebitCcy());
   }
 

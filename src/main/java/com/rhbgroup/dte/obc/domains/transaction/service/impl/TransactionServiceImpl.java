@@ -155,7 +155,8 @@ public class TransactionServiceImpl implements TransactionService {
         .data(
             new InitTransactionResponseAllOfData()
                 .initRefNumber(pendingTransaction.getInitRefNumber())
-                .debitAmount(pendingTransaction.getTrxAmount())
+                .debitAmount(pendingTransaction.getTrxAmount() + pendingTransaction.getTrxFee())
+                .amount(pendingTransaction.getTrxAmount())
                 .debitCcy(pendingTransaction.getTrxCcy())
                 .requireOtp(properties.isInitTransferRequiredOtp())
                 .fee(feeAndCashback.getFee()));
