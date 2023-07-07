@@ -22,7 +22,8 @@ public class ConfigConstants {
 
     public static final String MIN_AMOUNT = "txMinAmt";
     public static final String MAX_AMOUNT = "txMaxAmt";
-    public static final String OTP_REQUIRED = "txOtpRequired";
+
+    public static final String DAILY_LIMIT = "dailyLimit";
 
     public static String mapCurrency(String currencyCode) {
       if ("USD".equalsIgnoreCase(currencyCode)) {

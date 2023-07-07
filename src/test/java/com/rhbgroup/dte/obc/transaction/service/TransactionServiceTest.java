@@ -90,6 +90,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockFeeAndCashback);
 
     when(transactionRepository.save(any())).thenReturn(new TransactionEntity());
+    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     InitTransactionResponse initTransactionResponse =
@@ -114,6 +115,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
+    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     // Update transaction type to CASA_TO_CASA
@@ -137,6 +139,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModelSourceAccNotMatched());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
+    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     try {
@@ -157,6 +160,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
+    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     // Mimic a huge transfer amount
@@ -185,6 +189,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
         .thenReturn(mockTransactionConfig());
     when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
+    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     // Mimic a different transfer currency
@@ -215,6 +220,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
     casaAccDetail.getAcct().setCurrentBal(1.0);
     casaAccDetail.getAcct().setAvailBal(1.0);
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(casaAccDetail);
+    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     initTransactionRequest.setAmount(10.0);
@@ -238,6 +244,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
         .thenReturn(mockTransactionConfig());
     when(pgRestClient.getUserProfile(any()))
         .thenThrow(new BizException(ResponseMessage.TRANSACTION_TO_UNAVAILABLE_ACCOUNT));
+    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
 
     try {
       InitTransactionResponse initTransactionResponse =
@@ -270,6 +277,7 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockFeeAndCashback);
 
     when(transactionRepository.save(any())).thenReturn(new TransactionEntity());
+    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     InitTransactionResponse initTransactionResponse =
@@ -542,6 +550,9 @@ class TransactionServiceTest extends AbstractTransactionTest {
   void testInitTransactionWithAccountDoesNotLinkWithBakongId() {
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(accountService.checkAccountLinkedWithBakongId(anyString(), anyString())).thenReturn(false);
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
+        .thenReturn(mockTransactionConfig());
+    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
     BizException execption =
         catchThrowableOfType(
             () -> transactionService.initTransaction(mockInitTransactionRequest()),

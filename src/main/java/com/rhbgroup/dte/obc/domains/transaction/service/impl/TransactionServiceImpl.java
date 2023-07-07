@@ -39,6 +39,7 @@ import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -207,6 +208,31 @@ public class TransactionServiceImpl implements TransactionService {
     if (!request.getCcy().equals(CURRENCY_KHR) && !request.getCcy().equals(CURRENCY_USD)) {
       throw new BizException(ResponseMessage.INVALID_CURRENCY);
     }
+
+    if (overDailyLimit(request)) {
+      throw new BizException(ResponseMessage.OVER_DAILY_TRANSFER_LIMIT);
+    }
+  }
+
+  private boolean overDailyLimit(InitTransactionRequest request) {
+    CDRBTransactionHistoryRequest cdrbTransactionHistoryRequest =
+        new CDRBTransactionHistoryRequest()
+            .accountNumber(request.getSourceAcc())
+            .cifNumber(userAuthService.getCurrentUser().getCif());
+    CDRBTransactionHistoryResponse cdrbTransactionHistoryResponse =
+        cdrbRestClient.fetchTodayTransactionHistory(cdrbTransactionHistoryRequest);
+    BigDecimal dailyTranAmount =
+        cdrbTransactionHistoryResponse.getTransactions().stream()
+            .map(trx -> BigDecimal.valueOf(trx.getAmount()))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    ConfigService transactionConfig =
+        configService.loadJSONValue(ConfigConstants.Transaction.mapCurrency(request.getCcy()));
+    Double dailyLimit =
+        transactionConfig.getValue(ConfigConstants.Transaction.DAILY_LIMIT, Double.class);
+    return dailyTranAmount
+            .add(BigDecimal.valueOf(request.getAmount()))
+            .compareTo(BigDecimal.valueOf(dailyLimit))
+        > 0;
   }
 
   @Override
