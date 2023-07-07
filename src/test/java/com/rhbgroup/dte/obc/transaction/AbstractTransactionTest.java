@@ -261,4 +261,18 @@ public abstract class AbstractTransactionTest {
                     .transactionTime(123456L)
                     .amount((10.0))));
   }
+
+  protected CDRBTransactionHistoryResponse mock2BigAmountRecordsToday() {
+    return new CDRBTransactionHistoryResponse()
+        .transactions(
+            Arrays.asList(
+                new CDRBTransactionHistoryResponseTransactions()
+                    .transactionDate("2023-01-01")
+                    .transactionTime(135623L)
+                    .amount(2000000.0),
+                new CDRBTransactionHistoryResponseTransactions()
+                    .transactionDate("2023-01-01")
+                    .transactionTime(123456L)
+                    .amount((2100000.0))));
+  }
 }

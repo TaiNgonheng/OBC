@@ -565,4 +565,24 @@ class TransactionServiceTest extends AbstractTransactionTest {
         ResponseMessage.ACCOUNT_NOT_LINKED_WITH_BAKONG_ACCOUNT.getMsg(),
         execption.getResponseMessage().getMsg());
   }
+
+  @Test
+  void testInitTransactionOverDailyLimit() {
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
+        .thenReturn(mockTransactionConfig());
+    when(cdrbRestClient.fetchTodayTransactionHistory(any()))
+        .thenReturn(mock2BigAmountRecordsToday());
+    BizException execption =
+        catchThrowableOfType(
+            () -> transactionService.initTransaction(mockInitTransactionRequest()),
+            BizException.class);
+
+    assertEquals(
+        ResponseMessage.OVER_DAILY_TRANSFER_LIMIT.getCode(),
+        execption.getResponseMessage().getCode());
+    assertEquals(
+        ResponseMessage.OVER_DAILY_TRANSFER_LIMIT.getMsg(),
+        execption.getResponseMessage().getMsg());
+  }
 }
