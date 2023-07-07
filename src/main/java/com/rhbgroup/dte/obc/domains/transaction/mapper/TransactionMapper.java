@@ -73,7 +73,7 @@ public interface TransactionMapper {
         .transferType(request.getType())
         .trxAmount(request.getAmount())
         .trxFee(feeAndCashback.getFee())
-        .trxCashback(feeAndCashback.getCashBack())
+        .trxCashback(0d)
         .trxDate(OffsetDateTime.now())
         .trxStatus(TransactionStatus.PENDING);
   }
