@@ -21,7 +21,7 @@ public enum ResponseMessage {
   OUT_OF_RANGE_LOGIN_TYPE(6, "loginType must be one of the following values: PHONE_PIN, USER_PWD"),
 
   INVALID_AMOUNT(6, "Invalid amount"),
-  DESC_TOO_LONG(6, "desc length must be less than 30"),
+  DESC_TOO_LONG(6, "The description exceeds the maximum characters limit."),
   MISSING_LOGIN_TYPE(
       6,
       "loginType is mandatory, loginType must be one of the following values: PHONE_PIN, USER_PWD"),
