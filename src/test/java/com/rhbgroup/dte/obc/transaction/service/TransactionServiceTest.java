@@ -568,8 +568,9 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
     when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockCDRBFeeAndCashback());
-    when(transactionRepository.findByFromAccountAndTrxStatusAndTrxDate(any(), any(), any()))
-        .thenReturn(mock2BigAmountRecordsToday());
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
+    when(transactionRepository.sumTodayTotalDebitAmountByAcctId(any(), any(), any(), any()))
+        .thenReturn(4000000D);
 
     BizException execption =
         catchThrowableOfType(

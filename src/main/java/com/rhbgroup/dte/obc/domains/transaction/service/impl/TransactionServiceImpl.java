@@ -210,8 +210,9 @@ public class TransactionServiceImpl implements TransactionService {
   }
 
   private boolean overDailyLimit(InitTransactionRequest request) {
+    CustomUserDetails currentUser = userAuthService.getCurrentUser();
     BigDecimal todayDebitAmountPerAccount =
-        accumulateTodayDebitAmountPerAccount(request.getSourceAcc());
+        accumulateTodayDebitAmountPerAccount(request.getSourceAcc(), currentUser.getUserId());
 
     CDRBFeeAndCashbackResponse feeAndCashback = getFeeAndCashback(request);
 
@@ -238,14 +239,12 @@ public class TransactionServiceImpl implements TransactionService {
             .transactionType(AppConstants.Transaction.OBC_TOP_UP));
   }
 
-  private BigDecimal accumulateTodayDebitAmountPerAccount(String sourceAcc) {
+  private BigDecimal accumulateTodayDebitAmountPerAccount(String sourceAcc, Long userId) {
 
-    List<TransactionEntity> byFromAccountAndTrxStatusAndTrxDate =
-        transactionRepository.findByFromAccountAndTrxStatusAndTrxDate(
-            sourceAcc, TransactionStatus.COMPLETED.getValue(), LocalDate.now());
-    return byFromAccountAndTrxStatusAndTrxDate.stream()
-        .map(trx -> BigDecimal.valueOf(trx.getTrxAmount()).add(BigDecimal.valueOf(trx.getTrxFee())))
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
+    Double todayTotalDebitAmountByAcctId =
+        transactionRepository.sumTodayTotalDebitAmountByAcctId(
+            sourceAcc, TransactionStatus.COMPLETED.getValue(), LocalDate.now(), userId);
+    return BigDecimal.valueOf(todayTotalDebitAmountByAcctId);
   }
 
   @Override
