@@ -52,7 +52,7 @@ public class TransactionEntity {
   @Column(name = "trx_date", insertable = false, updatable = false)
   private Instant trxDate;
 
-  @Column(name = "trx_completion_date", updatable = false)
+  @Column(name = "trx_completion_date")
   private Instant trxCompletionDate;
 
   @Column(name = "trx_status", length = 10, nullable = false)

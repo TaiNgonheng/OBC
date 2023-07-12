@@ -211,7 +211,7 @@ public class TransactionServiceImpl implements TransactionService {
 
   private boolean overDailyLimit(InitTransactionRequest request) {
     BigDecimal todayDebitAmountPerAccount =
-        accumulatTodayDebitAmountPerAccount(request.getSourceAcc());
+        accumulateTodayDebitAmountPerAccount(request.getSourceAcc());
 
     CDRBFeeAndCashbackResponse feeAndCashback = getFeeAndCashback(request);
 
@@ -238,16 +238,13 @@ public class TransactionServiceImpl implements TransactionService {
             .transactionType(AppConstants.Transaction.OBC_TOP_UP));
   }
 
-  private BigDecimal accumulatTodayDebitAmountPerAccount(String sourceAcc) {
-    CDRBTransactionHistoryRequest cdrbTransactionHistoryRequest =
-        new CDRBTransactionHistoryRequest()
-            .accountNumber(sourceAcc)
-            .cifNumber(userAuthService.getCurrentUser().getCif());
-    CDRBTransactionHistoryResponse cdrbTransactionHistoryResponse =
-        cdrbRestClient.fetchTodayTransactionHistory(cdrbTransactionHistoryRequest);
+  private BigDecimal accumulateTodayDebitAmountPerAccount(String sourceAcc) {
 
-    return cdrbTransactionHistoryResponse.getTransactions().stream()
-        .map(trx -> BigDecimal.valueOf(trx.getAmount()))
+    List<TransactionEntity> byFromAccountAndTrxStatusAndTrxDate =
+        transactionRepository.findByFromAccountAndTrxStatusAndTrxDate(
+            sourceAcc, TransactionStatus.COMPLETED.getValue(), LocalDate.now());
+    return byFromAccountAndTrxStatusAndTrxDate.stream()
+        .map(trx -> BigDecimal.valueOf(trx.getTrxAmount()).add(BigDecimal.valueOf(trx.getTrxFee())))
         .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 

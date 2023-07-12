@@ -90,7 +90,6 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockFeeAndCashback);
 
     when(transactionRepository.save(any())).thenReturn(new TransactionEntity());
-    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     InitTransactionResponse initTransactionResponse =
@@ -115,7 +114,6 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
-    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
     when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockCDRBFeeAndCashback());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
@@ -140,7 +138,6 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModelSourceAccNotMatched());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
-    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
     when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockCDRBFeeAndCashback());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
@@ -162,7 +159,6 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(accountService.getActiveAccount(any())).thenReturn(mockAccountModel());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
-    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
     when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockCDRBFeeAndCashback());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
@@ -192,7 +188,6 @@ class TransactionServiceTest extends AbstractTransactionTest {
         .thenReturn(mockTransactionConfig());
     when(pgRestClient.getUserProfile(any())).thenReturn(mockBakongUserProfile());
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(mockCdrbAccountResponse());
-    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
     when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockCDRBFeeAndCashback());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
@@ -225,7 +220,6 @@ class TransactionServiceTest extends AbstractTransactionTest {
     casaAccDetail.getAcct().setCurrentBal(1.0);
     casaAccDetail.getAcct().setAvailBal(1.0);
     when(cdrbRestClient.getAccountDetail(any())).thenReturn(casaAccDetail);
-    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     initTransactionRequest.setAmount(10.0);
@@ -249,7 +243,6 @@ class TransactionServiceTest extends AbstractTransactionTest {
         .thenReturn(mockTransactionConfig());
     when(pgRestClient.getUserProfile(any()))
         .thenThrow(new BizException(ResponseMessage.TRANSACTION_TO_UNAVAILABLE_ACCOUNT));
-    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
     when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockCDRBFeeAndCashback());
 
     try {
@@ -282,7 +275,6 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockCDRBFeeAndCashback());
 
     when(transactionRepository.save(any())).thenReturn(new TransactionEntity());
-    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
 
     InitTransactionRequest initTransactionRequest = mockInitTransactionRequest();
     InitTransactionResponse initTransactionResponse =
@@ -557,7 +549,6 @@ class TransactionServiceTest extends AbstractTransactionTest {
     when(accountService.checkAccountLinkedWithBakongId(anyString(), anyString())).thenReturn(false);
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
-    when(cdrbRestClient.fetchTodayTransactionHistory(any())).thenReturn(mock2MoreRecordsToday());
     when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockCDRBFeeAndCashback());
     BizException execption =
         catchThrowableOfType(
@@ -574,12 +565,11 @@ class TransactionServiceTest extends AbstractTransactionTest {
 
   @Test
   void testInitTransactionOverDailyLimit() {
-    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(configService.loadJSONValue(ConfigConstants.Transaction.CONFIG_KEY_USD))
         .thenReturn(mockTransactionConfig());
-    when(cdrbRestClient.fetchTodayTransactionHistory(any()))
-        .thenReturn(mock2BigAmountRecordsToday());
     when(cdrbRestClient.getFeeAndCashback(any())).thenReturn(mockCDRBFeeAndCashback());
+    when(transactionRepository.findByFromAccountAndTrxStatusAndTrxDate(any(), any(), any()))
+        .thenReturn(mock2BigAmountRecordsToday());
 
     BizException execption =
         catchThrowableOfType(
