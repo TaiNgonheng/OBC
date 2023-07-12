@@ -211,7 +211,7 @@ public class TransactionServiceImpl implements TransactionService {
 
   private boolean overDailyLimit(InitTransactionRequest request) {
     BigDecimal todayDebitAmountPerAccount =
-        accumulatedTodayDebitAmountPerAccount(request.getSourceAcc());
+        accumulatTodayDebitAmountPerAccount(request.getSourceAcc());
 
     CDRBFeeAndCashbackResponse feeAndCashback = getFeeAndCashback(request);
 
@@ -238,7 +238,7 @@ public class TransactionServiceImpl implements TransactionService {
             .transactionType(AppConstants.Transaction.OBC_TOP_UP));
   }
 
-  private BigDecimal accumulatedTodayDebitAmountPerAccount(String sourceAcc) {
+  private BigDecimal accumulatTodayDebitAmountPerAccount(String sourceAcc) {
     CDRBTransactionHistoryRequest cdrbTransactionHistoryRequest =
         new CDRBTransactionHistoryRequest()
             .accountNumber(sourceAcc)
