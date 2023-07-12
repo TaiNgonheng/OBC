@@ -226,9 +226,7 @@ public class TransactionServiceImpl implements TransactionService {
   private Double getDailyLimitFromConfig(InitTransactionRequest request) {
     ConfigService transactionConfig =
         configService.loadJSONValue(ConfigConstants.Transaction.mapCurrency(request.getCcy()));
-    Double dailyLimit =
-        transactionConfig.getValue(ConfigConstants.Transaction.DAILY_LIMIT, Double.class);
-    return dailyLimit;
+    return transactionConfig.getValue(ConfigConstants.Transaction.DAILY_LIMIT, Double.class);
   }
 
   private CDRBFeeAndCashbackResponse getFeeAndCashback(InitTransactionRequest request) {
