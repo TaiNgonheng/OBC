@@ -37,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.List;
 import org.codehaus.plexus.util.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -118,7 +119,11 @@ public abstract class AbstractTransactionTest {
   protected ConfigServiceImpl mockTransactionConfig() {
     try {
       ConfigServiceImpl transactionConfig = new ConfigServiceImpl(null);
-      transactionConfig.setJsonValue(new JSONObject().put("txMinAmt", 1.0).put("txMaxAmt", 1000.0));
+      transactionConfig.setJsonValue(
+          new JSONObject()
+              .put("txMinAmt", 1.0)
+              .put("txMaxAmt", 1000.0)
+              .put("dailyLimit", 4000000.0));
 
       return transactionConfig;
     } catch (JSONException ex) {
@@ -250,9 +255,23 @@ public abstract class AbstractTransactionTest {
             Arrays.asList(
                 new CDRBTransactionHistoryResponseTransactions()
                     .transactionDate("2023-01-01")
-                    .transactionTime(135623L),
+                    .transactionTime(135623L)
+                    .amount(10.0),
                 new CDRBTransactionHistoryResponseTransactions()
                     .transactionDate("2023-01-01")
-                    .transactionTime(123456L)));
+                    .transactionTime(123456L)
+                    .amount((10.0))));
+  }
+
+  protected List<TransactionEntity> mock2BigAmountRecordsToday() {
+    TransactionEntity firstTrx = new TransactionEntity();
+    firstTrx.setTrxAmount(2000000.0);
+    firstTrx.setTrxFee(100.0);
+
+    TransactionEntity secondTrx = new TransactionEntity();
+    secondTrx.setTrxAmount(2000000.0);
+    secondTrx.setTrxFee(100.0);
+
+    return Arrays.asList(firstTrx, secondTrx);
   }
 }

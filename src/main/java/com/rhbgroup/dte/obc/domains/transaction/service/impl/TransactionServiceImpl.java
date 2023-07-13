@@ -39,6 +39,7 @@ import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -129,12 +130,7 @@ public class TransactionServiceImpl implements TransactionService {
     AccountValidator.validateBalanceAndCurrency(casaAccount, request);
 
     // Getting fee and cashback
-    CDRBFeeAndCashbackResponse feeAndCashback =
-        cdrbRestClient.getFeeAndCashback(
-            new CDRBFeeAndCashbackRequest()
-                .amount(request.getAmount())
-                .currencyCode(request.getCcy())
-                .transactionType(AppConstants.Transaction.OBC_TOP_UP));
+    CDRBFeeAndCashbackResponse feeAndCashback = getFeeAndCashback(request);
 
     // Store PENDING transaction
     TransactionModel pendingTransaction =
@@ -207,6 +203,48 @@ public class TransactionServiceImpl implements TransactionService {
     if (!request.getCcy().equals(CURRENCY_KHR) && !request.getCcy().equals(CURRENCY_USD)) {
       throw new BizException(ResponseMessage.INVALID_CURRENCY);
     }
+
+    if (overDailyLimit(request)) {
+      throw new BizException(ResponseMessage.OVER_DAILY_TRANSFER_LIMIT);
+    }
+  }
+
+  private boolean overDailyLimit(InitTransactionRequest request) {
+    CustomUserDetails currentUser = userAuthService.getCurrentUser();
+    BigDecimal todayDebitAmountPerAccount =
+        accumulateTodayDebitAmountPerAccount(request.getSourceAcc(), currentUser.getUserId());
+
+    CDRBFeeAndCashbackResponse feeAndCashback = getFeeAndCashback(request);
+
+    Double dailyLimit = getDailyLimitFromConfig(request);
+
+    return todayDebitAmountPerAccount
+            .add(BigDecimal.valueOf(request.getAmount()))
+            .add(BigDecimal.valueOf(feeAndCashback.getFee()))
+            .compareTo(BigDecimal.valueOf(dailyLimit))
+        > 0;
+  }
+
+  private Double getDailyLimitFromConfig(InitTransactionRequest request) {
+    ConfigService transactionConfig =
+        configService.loadJSONValue(ConfigConstants.Transaction.mapCurrency(request.getCcy()));
+    return transactionConfig.getValue(ConfigConstants.Transaction.DAILY_LIMIT, Double.class);
+  }
+
+  private CDRBFeeAndCashbackResponse getFeeAndCashback(InitTransactionRequest request) {
+    return cdrbRestClient.getFeeAndCashback(
+        new CDRBFeeAndCashbackRequest()
+            .amount(request.getAmount())
+            .currencyCode(request.getCcy())
+            .transactionType(AppConstants.Transaction.OBC_TOP_UP));
+  }
+
+  private BigDecimal accumulateTodayDebitAmountPerAccount(String sourceAcc, Long userId) {
+
+    Double todayTotalDebitAmountByAcctId =
+        transactionRepository.sumTodayTotalDebitAmountByAcctId(
+            sourceAcc, TransactionStatus.COMPLETED.getValue(), LocalDate.now(), userId);
+    return BigDecimal.valueOf(todayTotalDebitAmountByAcctId);
   }
 
   @Override

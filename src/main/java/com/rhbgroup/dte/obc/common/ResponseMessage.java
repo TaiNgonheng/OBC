@@ -21,7 +21,7 @@ public enum ResponseMessage {
   OUT_OF_RANGE_LOGIN_TYPE(6, "loginType must be one of the following values: PHONE_PIN, USER_PWD"),
 
   INVALID_AMOUNT(6, "Invalid amount"),
-  DESC_TOO_LONG(6, "desc length must be less than 30"),
+  DESC_TOO_LONG(6, "The description exceeds the maximum characters limit."),
   MISSING_LOGIN_TYPE(
       6,
       "loginType is mandatory, loginType must be one of the following values: PHONE_PIN, USER_PWD"),
@@ -65,6 +65,8 @@ public enum ResponseMessage {
   KYC_NOT_VERIFIED(14, "Cannot link account due to your account not yet verified."),
   ACCOUNT_ALREADY_LINKED(15, "This account is already linked to another Bakong account."),
   AUTHENTICATION_LOCKED(16, "Too many incorrect authentication attempts. Please try again later."),
+
+  OVER_DAILY_TRANSFER_LIMIT(21, "Transaction amount exceeds daily limit"),
   ACCOUNT_NOT_LINKED_WITH_BAKONG_ACCOUNT(
       32, "The Bakong account you are trying to transfer to is not linked to your account."),
   INIT_REFNUMBER_NOT_FOUND(
