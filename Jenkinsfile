@@ -28,6 +28,7 @@ pipeline {
                 }
             }
         }
+
         stage('Sonarqube Analysis') {
             withSonarQubeEnv('SonarqubeNonProd') {
                 script {
@@ -36,10 +37,10 @@ pipeline {
                         -Dsonar.branch.name='${params.BRANCH}' \
                         -Dsonar.host.url=https://sonarqube.intranet.rhbgroup.com \
                         -Dsonar.projectKey=cdrb-obc"
-
                 }
             }
         }
+
         stage('Deployment') {
             steps {
                 script {
