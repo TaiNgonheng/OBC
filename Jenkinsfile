@@ -7,10 +7,10 @@ pipeline {
         maven "M3"
     } //tools
 
-    options {
-        ansiColor('xterm')
-        buildDiscarder(logRotator(artifactNumToKeepStr: '10'))
-    }
+    // options {
+    //     ansiColor('xterm')
+    //     buildDiscarder(logRotator(artifactNumToKeepStr: '10'))
+    // }
 
     stages {
         stage("Set deployment PARAM") {
