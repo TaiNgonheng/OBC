@@ -1,7 +1,7 @@
 pipeline {
-    agent {
-        label 'ecs'
-    }
+    // agent {
+    //     label 'ecs'
+    // }
 
     tools {
         maven "M3"
