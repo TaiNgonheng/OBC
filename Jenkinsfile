@@ -11,14 +11,11 @@ pipeline {
                 script {
                     if (params.WORKSPACE == "sit") {
                         env.SERVER_IP_ADDRESS = "10.202.38.39"
-                        env.SONARQUBE_LOGIN = credentials('SonarqubeNonProd')
                     }else if (params.WORKSPACE == "uat") {
                         env.SERVER_IP_ADDRESS = "10.202.38.40"
                         env.SERVER_IP_ADDRESS_SECOND = "10.202.38.41"
-                        env.SONARQUBE_LOGIN = credentials('SonarqubeNonProd')
                     }else if (params.WORKSPACE == "production") {
                         env.SERVER_IP_ADDRESS = "TBD"
-                        env.SONARQUBE_LOGIN = credentials('SonarqubeNonProd')
                     }
                 }
             }
@@ -32,19 +29,14 @@ pipeline {
             }
         }
         stage('Sonarqube Analysis') {
-            steps {
+            withSonarQubeEnv('SonarqubeNonProd') {
                 script {
-                    withSonarQubeEnv('SonarqubeNonProd') {
-                        script {
-                            sh "echo 'Starting Sonarqube Scan...' "
-                            sh "mvn -am sonar:sonar \
-                                -Dsonar.branch.name='${params.BRANCH}' \
-                                -Dsonar.host.url=https://sonarqube.intranet.rhbgroup.com \
-                                -Dsonar.login='${SONARQUBE_LOGIN}' \
-                                -Dsonar.projectKey=cdrb-obc"
+                    sh "echo 'Starting Sonarqube Scan...' "
+                    sh "mvn -am sonar:sonar \
+                        -Dsonar.branch.name='${params.BRANCH}' \
+                        -Dsonar.host.url=https://sonarqube.intranet.rhbgroup.com \
+                        -Dsonar.projectKey=cdrb-obc"
 
-                        }
-                    }
                 }
             }
         }
