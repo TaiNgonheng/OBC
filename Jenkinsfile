@@ -48,7 +48,7 @@ pipeline {
                 script {
                     sh "echo 'Starting Deployment...' "
                     sh "mv target/obc-1.0.jar target/obc-1.0_${BUILD_TIMESTAMP}.jar"
-                    sh "scp target/obc-1.0_${BUILD_TIMESTAMP}.jar" root@${SERVER_IP_ADDRESS}:/opt/app/versions/"
+                    sh "scp target/obc-1.0_${BUILD_TIMESTAMP}.jar root@${SERVER_IP_ADDRESS}:/opt/app/versions/"
                 }
             }
         }
