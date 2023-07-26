@@ -30,13 +30,15 @@ pipeline {
         }
 
         stage('Sonarqube Analysis') {
-            withSonarQubeEnv('SonarqubeNonProd') {
-                script {
-                    sh "echo 'Starting Sonarqube Scan...' "
-                    sh "mvn -am sonar:sonar \
-                        -Dsonar.branch.name='${params.BRANCH}' \
-                        -Dsonar.host.url=https://sonarqube.intranet.rhbgroup.com \
-                        -Dsonar.projectKey=cdrb-obc"
+            steps {
+                withSonarQubeEnv('SonarqubeNonProd') {
+                    script {
+                        sh "echo 'Starting Sonarqube Scan...' "
+                        sh "mvn -am sonar:sonar \
+                            -Dsonar.branch.name='${params.BRANCH}' \
+                            -Dsonar.host.url=https://sonarqube.intranet.rhbgroup.com \
+                            -Dsonar.projectKey=cdrb-obc"
+                    }
                 }
             }
         }
