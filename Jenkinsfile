@@ -38,10 +38,11 @@ pipeline {
                         script {
                             sh "echo 'Starting Sonarqube Scan...' "
                             sh "mvn -am sonar:sonar \
-                                -Dsonar.projectKey=cdrb-obc \
+                                -Dsonar.branch.name='${params.BRANCH}' \
                                 -Dsonar.host.url=https://sonarqube.intranet.rhbgroup.com \
-                                -Dsonar.branch.name='${params.BRANCH}' \ 
-                                -Dsonar.login='${SONARQUBE_LOGIN}'"
+                                -Dsonar.login='${SONARQUBE_LOGIN}' \
+                                -Dsonar.projectKey=cdrb-obc"
+
                         }
                     }
                 }
