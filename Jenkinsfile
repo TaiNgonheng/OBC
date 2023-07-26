@@ -40,8 +40,8 @@ pipeline {
                             sh "mvn -am sonar:sonar \
                                 -Dsonar.projectKey=cdrb-obc \
                                 -Dsonar.host.url=https://sonarqube.intranet.rhbgroup.com \
-                                -Dsonar.branch.name=${params.SONARQUBE_BRANCH}" \ 
-                                -Dsonar.login=${SONARQUBE_LOGIN}
+                                -Dsonar.branch.name=${params.SONARQUBE_BRANCH} \ 
+                                -Dsonar.login=${SONARQUBE_LOGIN}"
 
                         }
                     }
