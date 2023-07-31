@@ -36,8 +36,8 @@ public class TransactionHistoryEntity {
   @Column(name = "trx_id", updatable = false, nullable = false, unique = true)
   private String trxId;
 
-  @Column(name = "trx_amount", updatable = false, nullable = false)
-  private Double trxAmount;
+  @Column(name = "trx_amount_in_acct_currency", updatable = false, nullable = false)
+  private Double amount;
 
   @Column(name = "trx_date", updatable = false, nullable = false)
   private Instant trxDate;
@@ -49,8 +49,8 @@ public class TransactionHistoryEntity {
   @Enumerated(EnumType.STRING)
   private TransactionStatus trxStatus;
 
-  @Column(name = "trx_ccy", updatable = false, nullable = false)
-  private String trxCcy;
+  @Column(name = "currency_code", updatable = false, nullable = false)
+  private String currencyCode;
 
   @Column(name = "from_account", updatable = false, nullable = false)
   private String fromAccount;
@@ -61,4 +61,16 @@ public class TransactionHistoryEntity {
   @Column(name = "credit_debit_indicator", updatable = false, nullable = false)
   @Enumerated(EnumType.STRING)
   private CreditDebitIndicator creditDebitIndicator;
+
+  @Column(name = "trx_amnt", updatable = false, nullable = false)
+  private Double tranAmnt;
+
+  @Column(name = "tranCurr", updatable = false, nullable = false)
+  private String tranCurr;
+
+  @Column(name = "tran_fee_amnt", updatable = false, nullable = false)
+  private Double tranFeeAmnt;
+
+  @Column(name = "fee_amnt_in_acct_currency", updatable = false, nullable = false)
+  private Double feeAmntInAcctCurrency;
 }

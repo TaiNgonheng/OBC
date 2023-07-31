@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Mac generated folder
+.DS_Store
+*/.DS_Store

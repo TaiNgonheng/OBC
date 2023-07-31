@@ -240,10 +240,14 @@ public abstract class AbstractTransactionTest {
 
     TransactionHistoryEntity entity1 = new TransactionHistoryEntity();
     entity1.setTrxId("1");
+    entity1.setTranAmnt(10d);
+    entity1.setTranFeeAmnt(0d);
     entity1.setTrxStatus(TransactionStatus.FAILED);
 
     TransactionHistoryEntity entity2 = new TransactionHistoryEntity();
     entity2.setTrxId("2");
+    entity2.setTranAmnt(10d);
+    entity2.setTranFeeAmnt(0d);
     entity2.setTrxStatus(TransactionStatus.COMPLETED);
 
     return new PageImpl<>(Arrays.asList(entity1, entity2));

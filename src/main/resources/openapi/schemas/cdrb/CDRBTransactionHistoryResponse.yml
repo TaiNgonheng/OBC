@@ -51,6 +51,15 @@ properties:
           type: string
         bakongStatus:
           type: string
+        tranAmnt:
+          type: number
+        tranCurr:
+          type: string
+          example: USD
+        tranFeeAmnt:
+          type: number
+        feeAmnt:
+          type: number
         userId:
           type: string
         transferType:

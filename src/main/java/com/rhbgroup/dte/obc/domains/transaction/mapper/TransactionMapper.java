@@ -130,8 +130,10 @@ public interface TransactionMapper {
   @Mapping(source = "fromAccount", target = "sourceAcc")
   @Mapping(source = "toAccount", target = "destinationAcc")
   @Mapping(source = "transferType", target = "type")
-  @Mapping(source = "trxAmount", target = "amount")
-  @Mapping(source = "trxCcy", target = "ccy")
+  @Mapping(source = "tranAmnt", target = "amount")
+  @Mapping(source = "tranFeeAmnt", target = "fee")
+  @Mapping(source = "entity", target = "debitAmount", qualifiedByName = "getTransactionDebitAmount")
+  @Mapping(source = "tranCurr", target = "ccy")
   @Mapping(source = "transferMessage", target = "desc")
   @Mapping(source = "trxStatus", target = "status", qualifiedByName = "toBakongStatusEnum")
   @Mapping(source = "creditDebitIndicator", target = "cdtDbtInd")
@@ -139,6 +141,13 @@ public interface TransactionMapper {
   @Mapping(source = "trxDate", target = "transactionDate", qualifiedByName = "getDateInMillis")
   @Mapping(source = "trxHash", target = "transactionHash")
   TransactionHistoryModel toTransactionHistoryModel(TransactionHistoryEntity entity);
+
+  @Named("getTransactionDebitAmount")
+  default Double getTransactionDebitAmount(TransactionHistoryEntity entity) {
+    BigDecimal debitAmount =
+        BigDecimal.valueOf(entity.getTranAmnt()).add(BigDecimal.valueOf(entity.getTranFeeAmnt()));
+    return debitAmount.doubleValue();
+  }
 
   @Named("getDateInMillis")
   default Long getDateInMillis(Instant instant) {
@@ -163,11 +172,11 @@ public interface TransactionMapper {
   @Mapping(source = "remark", target = "transferMessage")
   @Mapping(source = "senderAccountNumber", target = "fromAccount")
   @Mapping(source = "receiverAccountNumber", target = "toAccount")
-  @Mapping(source = "amount", target = "trxAmount")
   @Mapping(source = "obcUserId", target = "channelId")
   @Mapping(source = "debitCreditCode", target = "creditDebitIndicator")
   @Mapping(source = "transferId", target = "trxId")
-  @Mapping(source = "currency", target = "trxCcy")
+  @Mapping(source = "currency", target = "currencyCode")
+  @Mapping(source = "feeAmnt", target = "feeAmntInAcctCurrency")
   @Mapping(
       source = "transactionHistory",
       target = "trxDate",
@@ -177,13 +186,12 @@ public interface TransactionMapper {
 
   @Mapping(source = "transactionCode", target = "transferType", qualifiedByName = "GetTransferType")
   @Mapping(source = "remark", target = "transferMessage")
-  @Mapping(source = "amount", target = "trxAmount")
   @Mapping(
       source = "transaction",
       target = "trxDate",
       qualifiedByName = "GetTransactionHistoryInstant")
   @Mapping(source = "transactionHash", target = "trxHash")
-  @Mapping(source = "transactionCurrency", target = "trxCcy")
+  @Mapping(source = "transactionCurrency", target = "tranCurr")
   @Mapping(source = "senderAccount", target = "fromAccount")
   @Mapping(source = "receiverAccount", target = "toAccount")
   @Mapping(target = "trxStatus", constant = "COMPLETED")
