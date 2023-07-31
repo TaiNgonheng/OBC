@@ -12,8 +12,8 @@ pipeline {
                     if (params.WORKSPACE == "sit") {
                         env.SERVER_IP_ADDRESS = "10.202.38.39"
                     }else if (params.WORKSPACE == "uat") {
-                        env.SERVER_IP_ADDRESS = "10.202.38.40"
-                        env.SERVER_IP_ADDRESS_SECOND = "10.202.38.41"
+                        env.SERVER_IP_ADDRESS = "10.202.38.41"
+                        // env.SERVER_IP_ADDRESS_SECOND = "10.202.38.41"
                     }else if (params.WORKSPACE == "production") {
                         env.SERVER_IP_ADDRESS = "TBD"
                     }
