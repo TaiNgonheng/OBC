@@ -56,7 +56,7 @@ pipeline {
             steps {
                 script {
                     sh "echo 'Call remote deployment scirpt' "
-                    sh "ssh root@${SERVER_IP_ADDRESS} "/opt/app/startup.sh > /dev/null 2>&1 &"
+                    sh "ssh root@${SERVER_IP_ADDRESS} /opt/app/startup.sh > /dev/null 2>&1 &"
                     sh "ssh root@${SERVER_IP_ADDRESS} 'cd /opt/app && java -jar latest > /dev/null 2>&1 &'"
                 }
             }
