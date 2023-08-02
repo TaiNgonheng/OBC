@@ -19,6 +19,7 @@ spring:
 
   flyway:
     locations: classpath:sql/ddl,classpath:sql/dml
+    out-of-order: true
 
   jackson:
     default-property-inclusion: ALWAYS
