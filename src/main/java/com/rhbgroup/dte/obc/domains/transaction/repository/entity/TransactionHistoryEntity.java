@@ -65,7 +65,7 @@ public class TransactionHistoryEntity {
   @Column(name = "trx_amnt", updatable = false, nullable = false)
   private Double tranAmnt;
 
-  @Column(name = "tranCurr", updatable = false, nullable = false)
+  @Column(name = "tran_curr", updatable = false, nullable = false)
   private String tranCurr;
 
   @Column(name = "tran_fee_amnt", updatable = false, nullable = false)
