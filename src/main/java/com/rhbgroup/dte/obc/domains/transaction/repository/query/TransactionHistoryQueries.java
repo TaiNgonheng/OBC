@@ -6,7 +6,7 @@ public class TransactionHistoryQueries {
 
   public static final String QUERY_TRANSACTION_HISTORY_BY_ACCOUNT_NUMBER =
       "SELECT sth.id, sth.transfer_type, sth.transfer_message, sth.trx_id, sth.trx_amnt, sth.trx_date, "
-          + "sth.trx_hash, sth.trx_status, sth.tranCurr, sth.from_account, sth.to_account, sth.credit_debit_indicator, sth.channel_id "
+          + "sth.trx_hash, sth.trx_status, sth.tran_curr, sth.from_account, sth.to_account, sth.credit_debit_indicator, sth.channel_id "
           + "FROM tbl_obc_sibs_transaction_history sth "
           + "WHERE sth.from_account = :accNumber";
 
