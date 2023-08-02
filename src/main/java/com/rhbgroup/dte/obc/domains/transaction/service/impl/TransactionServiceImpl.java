@@ -456,7 +456,7 @@ public class TransactionServiceImpl implements TransactionService {
 
   private void applySequenceId(
       List<TransactionHistoryModel> items, GetAccountTransactionsRequest request) {
-    int currentPageNumber = request.getPage();
+    int currentPageNumber = request.getPage() - 1;
     int firstSequenceId = (currentPageNumber * request.getSize()) + 1;
     for (int i = 0; i < items.size(); i++) {
       items.get(i).setId(firstSequenceId + i);
