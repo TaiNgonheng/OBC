@@ -15,6 +15,7 @@ public class ObcDateUtils extends org.apache.commons.lang3.time.DateUtils {
   public static final String DEFAULT_DATE_FORMAT = "dd/MM/yyyy hh:mm:ss";
   public static final String YYYY_MM_DD = "yyyy-MM-dd";
   public static final String YYYY_MM_DD_NO_SPACE = "yyyyMMdd";
+  public static final String DD_MM_YYYY_NO_SPACE = "ddMMyyyy";
 
   public static String toDateString(Date date, String format) {
     if (date == null) {

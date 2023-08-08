@@ -196,7 +196,7 @@ public interface TransactionMapper {
       target = "trxDate",
       qualifiedByName = "GetTransactionHistoryInstant")
   @Mapping(source = "transactionHash", target = "trxHash")
-  @Mapping(source = "transactionCurrency", target = "tranCurr")
+  @Mapping(source = "transactionCurrency", target = "currencyCode")
   @Mapping(source = "senderAccount", target = "fromAccount")
   @Mapping(source = "receiverAccount", target = "toAccount")
   @Mapping(target = "trxStatus", constant = "COMPLETED")
@@ -208,6 +208,10 @@ public interface TransactionMapper {
   @Named("DateFromDDMMYYYY")
   default LocalDate getDateFromDDMMYYYY(String date) {
     if (date.length() == 7) date = "0" + date;
+    return LocalDate.parse(date, DateTimeFormatter.ofPattern(ObcDateUtils.DD_MM_YYYY_NO_SPACE));
+  }
+
+  default LocalDate getDateFromDDMMYYYWithDash(String date) {
     return LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
   }
 
@@ -239,10 +243,17 @@ public interface TransactionMapper {
   default Instant getInstantFromCDRBTrxHistory(
       CDRBTransactionHistoryResponseTransactions cdrbTrxHistory) {
     if (!ObjectUtils.isEmpty(cdrbTrxHistory)) {
-      return getInstantFromStringDateTime(
+      return getInstantFromStringDateTimeHistory(
           cdrbTrxHistory.getTransactionDate(), String.valueOf(cdrbTrxHistory.getTransactionTime()));
     }
     return null;
+  }
+
+  default Instant getInstantFromStringDateTimeHistory(String date, String time) {
+    LocalDate d = getDateFromDDMMYYYWithDash(date);
+    if (time.length() == 5) time = "0" + time;
+    LocalTime t = LocalTime.parse(time, DateTimeFormatter.ofPattern("HHmmss"));
+    return LocalDateTime.of(d, t).atZone(ZoneId.systemDefault()).toInstant();
   }
 
   default Instant getInstantFromStringDateTime(String date, String time) {
