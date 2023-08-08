@@ -127,14 +127,16 @@ public interface TransactionMapper {
                 .transactionHash(null == extRef ? null : inquiryResponse.getExternalSystemRef()));
   }
 
+  // ticket number : CDRB-3560
   @Mapping(source = "fromAccount", target = "sourceAcc")
   @Mapping(source = "toAccount", target = "destinationAcc")
   @Mapping(source = "transferType", target = "type")
-  //tranAmnt is the Bakong Transaction Amount, mapped to NBC's amount field
+  // tranAmnt is the Bakong Transaction Amount, mapped to NBC's amount field
   @Mapping(source = "tranAmnt", target = "amount")
-  //Bakong Transaction Charges Amount, mapped to NBC's fee field
+  // Bakong Transaction Charges Amount, mapped to NBC's fee field
   @Mapping(source = "tranFeeAmnt", target = "fee")
-  //debitAmount = WTLB04 + WTLBF08 to follow the transaction currency. Fee, amount and debitAmount should be same currency code. Confirmed by SA via mail
+  // debitAmount = WTLB04 + WTLBF08 to follow the transaction currency. Fee, amount and debitAmount
+  // should be same currency code. Confirmed by SA via mail
   @Mapping(source = "entity", target = "debitAmount", qualifiedByName = "getTransactionDebitAmount")
   @Mapping(source = "tranCurr", target = "ccy")
   @Mapping(source = "transferMessage", target = "desc")

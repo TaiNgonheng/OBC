@@ -36,7 +36,7 @@ public class TransactionHistoryEntity {
   @Column(name = "trx_id", updatable = false, nullable = false, unique = true)
   private String trxId;
 
-  @Column(name = "trx_amount_in_acct_currency", updatable = false, nullable = false)
+  @Column(name = "amount", updatable = false, nullable = false)
   private Double amount;
 
   @Column(name = "trx_date", updatable = false, nullable = false)

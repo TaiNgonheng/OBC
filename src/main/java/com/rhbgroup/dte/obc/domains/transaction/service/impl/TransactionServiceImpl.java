@@ -445,7 +445,6 @@ public class TransactionServiceImpl implements TransactionService {
                       .get()
                       .map(transactionMapper::toTransactionHistoryModel)
                       .collect(Collectors.toList());
-              applySequenceId(items, request);
               return new GetAccountTransactionsResponse()
                   .status(ResponseHandler.ok())
                   .data(
@@ -454,15 +453,6 @@ public class TransactionServiceImpl implements TransactionService {
                           .totalElement(resultPage.getTotalElements()));
             })
         .apply(new AccountFilterCondition().accountNo(request.getAccNumber()));
-  }
-
-  private void applySequenceId(
-      List<TransactionHistoryModel> items, GetAccountTransactionsRequest request) {
-    int currentPageNumber = request.getPage() - 1;
-    int firstSequenceId = (currentPageNumber * request.getSize()) + 1;
-    for (int i = 0; i < items.size(); i++) {
-      items.get(i).setId(firstSequenceId + i);
-    }
   }
 
   private void validateGetAccountTransactionsRequest(GetAccountTransactionsRequest request) {

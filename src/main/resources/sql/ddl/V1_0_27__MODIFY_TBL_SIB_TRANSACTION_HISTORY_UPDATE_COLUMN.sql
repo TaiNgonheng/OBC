@@ -1,0 +1,1 @@
+ALTER TABLE obc.tbl_obc_sibs_transaction_history CHANGE `trx_amount_in_acct_currency` `amount` decimal NOT NULL;

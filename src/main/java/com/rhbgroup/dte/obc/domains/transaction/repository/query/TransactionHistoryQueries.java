@@ -9,7 +9,7 @@ public class TransactionHistoryQueries {
           + "       sth.transfer_type,\n"
           + "       sth.transfer_message,\n"
           + "       sth.trx_id,\n"
-          + "       sth.trx_amount_in_acct_currency,\n"
+          + "       sth.amount,\n"
           + "       sth.trx_date,\n"
           + "       sth.trx_hash,\n"
           + "       sth.trx_status,\n"
