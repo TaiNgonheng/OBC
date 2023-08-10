@@ -1,7 +1,5 @@
 type: object
 properties:
-  id:
-    type: integer
   type:
     $ref: '../common/TransactionType.yml'
   sourceAcc:
