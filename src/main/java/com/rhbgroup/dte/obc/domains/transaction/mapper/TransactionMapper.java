@@ -73,6 +73,8 @@ public interface TransactionMapper {
         .transferType(request.getType())
         .trxAmount(request.getAmount())
         .trxFee(feeAndCashback.getFee())
+        // CDRB-3489 : per confirmation from operation, we wont have cashback for link bakong wallet
+        // topup
         .trxCashback(0d)
         .trxDate(OffsetDateTime.now())
         .trxStatus(TransactionStatus.PENDING);
