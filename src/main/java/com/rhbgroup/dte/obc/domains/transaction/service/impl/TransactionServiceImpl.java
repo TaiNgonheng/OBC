@@ -155,7 +155,7 @@ public class TransactionServiceImpl implements TransactionService {
         .data(
             new InitTransactionResponseAllOfData()
                 .initRefNumber(pendingTransaction.getInitRefNumber())
-                // CDRB-3489 : As a user, when you perform a wallet top, you want to see how much
+                // CDRB-3489 : As a user, when you perform a wallet top up, you want to see how much
                 // fee, amount,
                 // Total amount debited in the same currency
                 .debitAmount(pendingTransaction.getTrxAmount() + pendingTransaction.getTrxFee())
