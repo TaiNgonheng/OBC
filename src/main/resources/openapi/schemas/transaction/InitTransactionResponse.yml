@@ -9,6 +9,10 @@ allOf:
           initRefNumber:
             type: string
             description: Initialize reference number that generated randomly for defined transaction. Notice that, the format is alphanumeric with 32 length
+          amount:
+            type: number
+            format: double
+            description: transfer amount
           debitAmount:
             type: number
             description: amount that will be debit from source account

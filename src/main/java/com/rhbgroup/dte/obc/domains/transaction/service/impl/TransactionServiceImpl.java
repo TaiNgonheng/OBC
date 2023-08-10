@@ -151,7 +151,10 @@ public class TransactionServiceImpl implements TransactionService {
         .data(
             new InitTransactionResponseAllOfData()
                 .initRefNumber(pendingTransaction.getInitRefNumber())
-                .debitAmount(pendingTransaction.getTrxAmount())
+                // CDRB-3489 : As a user, when you perform a wallet top up, you want to see how much
+                // fee, amount and total amount debited in transaction based currency
+                .debitAmount(pendingTransaction.getTrxAmount() + pendingTransaction.getTrxFee())
+                .amount(pendingTransaction.getTrxAmount())
                 .debitCcy(pendingTransaction.getTrxCcy())
                 .requireOtp(properties.isInitTransferRequiredOtp())
                 .fee(feeAndCashback.getFee()));
