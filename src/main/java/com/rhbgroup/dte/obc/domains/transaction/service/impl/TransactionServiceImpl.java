@@ -199,7 +199,7 @@ public class TransactionServiceImpl implements TransactionService {
       throw new BizException(ResponseMessage.INVALID_AMOUNT);
     }
 
-    if (request.getDesc() != null && request.getDesc().length() > 30) {
+    if (request.getDesc() != null && request.getDesc().length() > 64) {
       throw new BizException(ResponseMessage.DESC_TOO_LONG);
     }
 
