@@ -71,6 +71,6 @@ public class TransactionHistoryEntity {
   @Column(name = "tran_fee_amnt", updatable = false, nullable = false)
   private Double tranFeeAmnt;
 
-  @Column(name = "fee_amnt_in_acct_currency", updatable = false, nullable = false)
-  private Double feeAmntInAcctCurrency;
+  @Column(name = "fee_amnt", updatable = false, nullable = false)
+  private Double feeAmnt;
 }

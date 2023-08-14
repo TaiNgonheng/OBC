@@ -131,12 +131,10 @@ public interface TransactionMapper {
   @Mapping(source = "fromAccount", target = "sourceAcc")
   @Mapping(source = "toAccount", target = "destinationAcc")
   @Mapping(source = "transferType", target = "type")
-  // tranAmnt is the Bakong Transaction Amount, mapped to NBC's amount field
+  // CDRB-3489 : As a user, when you perform a wallet top up, you want to see how much
+  // fee, amount and total amount debited in transaction based currency
   @Mapping(source = "tranAmnt", target = "amount")
-  // Bakong Transaction Charges Amount, mapped to NBC's fee field
   @Mapping(source = "tranFeeAmnt", target = "fee")
-  // debitAmount = WTLB04 + WTLBF08 to follow the transaction currency. Fee, amount and debitAmount
-  // should be same currency code. Confirmed by SA via mail
   @Mapping(source = "entity", target = "debitAmount", qualifiedByName = "getTransactionDebitAmount")
   @Mapping(source = "tranCurr", target = "ccy")
   @Mapping(source = "transferMessage", target = "desc")
@@ -181,7 +179,6 @@ public interface TransactionMapper {
   @Mapping(source = "debitCreditCode", target = "creditDebitIndicator")
   @Mapping(source = "transferId", target = "trxId")
   @Mapping(source = "currency", target = "currencyCode")
-  @Mapping(source = "feeAmnt", target = "feeAmntInAcctCurrency")
   @Mapping(
       source = "transactionHistory",
       target = "trxDate",

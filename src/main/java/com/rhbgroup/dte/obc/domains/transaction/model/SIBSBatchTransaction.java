@@ -94,5 +94,5 @@ public class SIBSBatchTransaction {
   private Double tranFeeAmnt;
 
   @JsonProperty("Debit Charges in account currency")
-  private Double feeAmntInAcctCurrency;
+  private Double feeAmnt;
 }

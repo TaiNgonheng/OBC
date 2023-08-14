@@ -21,7 +21,7 @@ public class TransactionHistoryQueries {
           + "       sth.trx_amnt,\n"
           + "       sth.tran_curr,\n"
           + "       sth.tran_fee_amnt,\n"
-          + "       sth.fee_amnt_in_acct_currency\n"
+          + "       sth.fee_amnt\n"
           + "FROM tbl_obc_sibs_transaction_history sth "
           + "WHERE sth.from_account = :accNumber";
 
