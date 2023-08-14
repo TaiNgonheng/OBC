@@ -101,9 +101,15 @@ public interface TransactionMapper {
     originalRequest.setObcUserId(BigDecimal.valueOf(userDetails.getUserId()));
     originalRequest.setAccountCurrencyCode(accountDetailResponse.getData().getAccCcy());
     String acctType = "";
-    if (accountDetailResponse.getData().getAccType().equalsIgnoreCase("CURRENT")) {
+    if (accountDetailResponse
+        .getData()
+        .getAccType()
+        .equalsIgnoreCase(AppConstants.Account.CURRENT)) {
       acctType = "D";
-    } else if (accountDetailResponse.getData().getAccType().equalsIgnoreCase("SAVINGS")) {
+    } else if (accountDetailResponse
+        .getData()
+        .getAccType()
+        .equalsIgnoreCase(AppConstants.Account.SAVINGS)) {
       acctType = "S";
     }
     originalRequest.setFromAccountType(CasaAccountType.fromValue(acctType));

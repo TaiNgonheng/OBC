@@ -307,7 +307,10 @@ class TransactionServiceTest extends AbstractTransactionTest {
         .thenReturn(
             new GetAccountDetailResponse()
                 .status(ResponseHandler.ok())
-                .data(new GetAccountDetailResponseAllOfData().accCcy("USD").accType("SAVINGS")));
+                .data(
+                    new GetAccountDetailResponseAllOfData()
+                        .accCcy("USD")
+                        .accType(AppConstants.Account.SAVINGS)));
 
     when(cdrbRestClient.transfer(any())).thenReturn(mockCDRBTransferResponse());
 
@@ -346,7 +349,10 @@ class TransactionServiceTest extends AbstractTransactionTest {
         .thenReturn(
             new GetAccountDetailResponse()
                 .status(ResponseHandler.ok())
-                .data(new GetAccountDetailResponseAllOfData().accCcy("USD").accType("SAVINGS")));
+                .data(
+                    new GetAccountDetailResponseAllOfData()
+                        .accCcy("USD")
+                        .accType(AppConstants.Account.SAVINGS)));
 
     when(cdrbRestClient.transfer(any())).thenReturn(mockCDRBTransferResponse());
 
@@ -451,7 +457,10 @@ class TransactionServiceTest extends AbstractTransactionTest {
         .thenReturn(
             new GetAccountDetailResponse()
                 .status(ResponseHandler.ok())
-                .data(new GetAccountDetailResponseAllOfData().accCcy("USD").accType("SAVINGS")));
+                .data(
+                    new GetAccountDetailResponseAllOfData()
+                        .accCcy("USD")
+                        .accType(AppConstants.Account.SAVINGS)));
 
     when(cdrbRestClient.transfer(any())).thenReturn(mockCDRBTransferResponse());
     when(configService.getByConfigKey(ConfigConstants.Transaction.TRX_QUERY_MAX_DURATION, "value"))

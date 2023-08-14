@@ -147,9 +147,9 @@ public interface AccountMapper {
 
     String acctType = "";
     if (response.getAccountType().getValue().equalsIgnoreCase("D")) {
-      acctType = "CURRENT";
+      acctType = AppConstants.Account.CURRENT;
     } else if (response.getAccountType().getValue().equalsIgnoreCase("S")) {
-      acctType = "SAVINGS";
+      acctType = AppConstants.Account.SAVINGS;
     }
     mappingData.getData().setAccType(acctType);
 
