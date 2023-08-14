@@ -73,4 +73,5 @@ public class TransactionHistoryEntity {
 
   @Column(name = "fee_amnt", updatable = false, nullable = false)
   private Double feeAmnt;
+
 }
