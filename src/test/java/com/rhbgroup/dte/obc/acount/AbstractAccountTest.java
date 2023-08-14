@@ -9,7 +9,6 @@ import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
 import com.rhbgroup.dte.obc.model.BakongAccountStatus;
-import com.rhbgroup.dte.obc.model.BakongAccountType;
 import com.rhbgroup.dte.obc.model.BakongKYCStatus;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
@@ -279,7 +278,7 @@ public abstract class AbstractAccountTest {
                         .maxTrxAmount(100.0)
                         .minTrxAmount(1.0))
                 .kycStatus(BakongKYCStatus.FULL)
-                .accType(BakongAccountType.D)
+                .accType("D")
                 .accName("ACC1"));
   }
 }

@@ -15,7 +15,8 @@ allOf:
             type: string
             example: 855xxxxxxxx
           accType:
-            $ref: '../common/BakongAccountType.yml'
+            type: string
+            example: Current or Saving
           accCcy:
             type: string
             example: USD
