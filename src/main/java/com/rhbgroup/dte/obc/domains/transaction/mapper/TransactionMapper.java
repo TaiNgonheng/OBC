@@ -195,7 +195,6 @@ public interface TransactionMapper {
       target = "trxDate",
       qualifiedByName = "GetTransactionHistoryInstant")
   @Mapping(source = "transactionHash", target = "trxHash")
-  @Mapping(source = "transactionCurrency", target = "currencyCode")
   @Mapping(source = "senderAccount", target = "fromAccount")
   @Mapping(source = "receiverAccount", target = "toAccount")
   @Mapping(target = "trxStatus", constant = "COMPLETED")

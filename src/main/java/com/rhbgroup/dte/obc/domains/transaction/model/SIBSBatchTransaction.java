@@ -66,8 +66,8 @@ public class SIBSBatchTransaction {
   @JsonProperty("Amount")
   private Double amount;
 
-  @JsonProperty("Trx Currency")
-  private String transactionCurrency;
+  @JsonProperty("currencyCode")
+  private String currencyCode;
 
   @JsonProperty("Remark")
   private String remark;
