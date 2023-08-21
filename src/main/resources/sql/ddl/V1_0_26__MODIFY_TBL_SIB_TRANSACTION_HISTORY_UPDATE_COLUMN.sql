@@ -1,0 +1,1 @@
+ALTER TABLE obc.tbl_obc_sibs_transaction_history CHANGE `tranCurr` `tran_curr` varchar(10) NOT NULL;

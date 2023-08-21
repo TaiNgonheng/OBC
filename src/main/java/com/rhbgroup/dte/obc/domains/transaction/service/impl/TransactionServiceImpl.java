@@ -247,7 +247,9 @@ public class TransactionServiceImpl implements TransactionService {
     Double todayTotalDebitAmountByAcctId =
         transactionRepository.sumTodayTotalDebitAmountByAcctId(
             sourceAcc, TransactionStatus.COMPLETED.getValue(), LocalDate.now(), userId);
-    return BigDecimal.valueOf(todayTotalDebitAmountByAcctId);
+    return todayTotalDebitAmountByAcctId == null
+        ? BigDecimal.valueOf(0)
+        : BigDecimal.valueOf(todayTotalDebitAmountByAcctId);
   }
 
   @Override
@@ -446,7 +448,6 @@ public class TransactionServiceImpl implements TransactionService {
                       .get()
                       .map(transactionMapper::toTransactionHistoryModel)
                       .collect(Collectors.toList());
-
               return new GetAccountTransactionsResponse()
                   .status(ResponseHandler.ok())
                   .data(

@@ -24,7 +24,11 @@ import lombok.NoArgsConstructor;
   "Debit Credit Indicator",
   "Trx Hash",
   "Payment Ref No",
-  "Bakong Status"
+  "Bakong Status",
+  "Transaction Equivalent Amount",
+  "Transaction Equivalent Currency",
+  "Transaction Charges Amount",
+  "Debit Charges in account currency"
 })
 @Builder
 @Data
@@ -62,8 +66,8 @@ public class SIBSBatchTransaction {
   @JsonProperty("Amount")
   private Double amount;
 
-  @JsonProperty("Trx Currency")
-  private String transactionCurrency;
+  @JsonProperty("currencyCode")
+  private String currencyCode;
 
   @JsonProperty("Remark")
   private String remark;
@@ -79,4 +83,16 @@ public class SIBSBatchTransaction {
 
   @JsonProperty("Bakong Status")
   private String bakongStatus;
+
+  @JsonProperty("Transaction Equivalent Amount")
+  private Double tranAmnt;
+
+  @JsonProperty("Transaction Equivalent Currency")
+  private String tranCurr;
+
+  @JsonProperty("Transaction Charges Amount")
+  private Double tranFeeAmnt;
+
+  @JsonProperty("Debit Charges in account currency")
+  private Double feeAmnt;
 }

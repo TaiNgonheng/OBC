@@ -9,6 +9,12 @@ properties:
   amount:
     type: number
     format: double
+  fee:
+    type: number
+    format: double
+  debitAmount:
+    type: number
+    format: double
   ccy:
     type: string
   desc:

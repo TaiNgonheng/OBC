@@ -140,11 +140,16 @@ public interface TransactionMapper {
                 .transactionHash(null == extRef ? null : inquiryResponse.getExternalSystemRef()));
   }
 
+  // ticket number : CDRB-3560
   @Mapping(source = "fromAccount", target = "sourceAcc")
   @Mapping(source = "toAccount", target = "destinationAcc")
   @Mapping(source = "transferType", target = "type")
-  @Mapping(source = "trxAmount", target = "amount")
-  @Mapping(source = "trxCcy", target = "ccy")
+  // CDRB-3489 : As a user, when you perform a wallet top up, you want to see how much
+  // fee, amount and total amount debited in transaction based currency
+  @Mapping(source = "tranAmnt", target = "amount")
+  @Mapping(source = "tranFeeAmnt", target = "fee")
+  @Mapping(source = "entity", target = "debitAmount", qualifiedByName = "getTransactionDebitAmount")
+  @Mapping(source = "tranCurr", target = "ccy")
   @Mapping(source = "transferMessage", target = "desc")
   @Mapping(source = "trxStatus", target = "status", qualifiedByName = "toBakongStatusEnum")
   @Mapping(source = "creditDebitIndicator", target = "cdtDbtInd")
@@ -152,6 +157,13 @@ public interface TransactionMapper {
   @Mapping(source = "trxDate", target = "transactionDate", qualifiedByName = "getDateInMillis")
   @Mapping(source = "trxHash", target = "transactionHash")
   TransactionHistoryModel toTransactionHistoryModel(TransactionHistoryEntity entity);
+
+  @Named("getTransactionDebitAmount")
+  default Double getTransactionDebitAmount(TransactionHistoryEntity entity) {
+    BigDecimal debitAmount =
+        BigDecimal.valueOf(entity.getTranAmnt()).add(BigDecimal.valueOf(entity.getTranFeeAmnt()));
+    return debitAmount.doubleValue();
+  }
 
   @Named("getDateInMillis")
   default Long getDateInMillis(Instant instant) {
@@ -176,11 +188,10 @@ public interface TransactionMapper {
   @Mapping(source = "remark", target = "transferMessage")
   @Mapping(source = "senderAccountNumber", target = "fromAccount")
   @Mapping(source = "receiverAccountNumber", target = "toAccount")
-  @Mapping(source = "amount", target = "trxAmount")
   @Mapping(source = "obcUserId", target = "channelId")
   @Mapping(source = "debitCreditCode", target = "creditDebitIndicator")
   @Mapping(source = "transferId", target = "trxId")
-  @Mapping(source = "currency", target = "trxCcy")
+  @Mapping(source = "currency", target = "currencyCode")
   @Mapping(
       source = "transactionHistory",
       target = "trxDate",
@@ -190,13 +201,11 @@ public interface TransactionMapper {
 
   @Mapping(source = "transactionCode", target = "transferType", qualifiedByName = "GetTransferType")
   @Mapping(source = "remark", target = "transferMessage")
-  @Mapping(source = "amount", target = "trxAmount")
   @Mapping(
       source = "transaction",
       target = "trxDate",
       qualifiedByName = "GetTransactionHistoryInstant")
   @Mapping(source = "transactionHash", target = "trxHash")
-  @Mapping(source = "transactionCurrency", target = "trxCcy")
   @Mapping(source = "senderAccount", target = "fromAccount")
   @Mapping(source = "receiverAccount", target = "toAccount")
   @Mapping(target = "trxStatus", constant = "COMPLETED")
@@ -208,6 +217,10 @@ public interface TransactionMapper {
   @Named("DateFromDDMMYYYY")
   default LocalDate getDateFromDDMMYYYY(String date) {
     if (date.length() == 7) date = "0" + date;
+    return LocalDate.parse(date, DateTimeFormatter.ofPattern(ObcDateUtils.DD_MM_YYYY_NO_SPACE));
+  }
+
+  default LocalDate getDateFromDDMMYYYWithDash(String date) {
     return LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
   }
 
@@ -239,10 +252,17 @@ public interface TransactionMapper {
   default Instant getInstantFromCDRBTrxHistory(
       CDRBTransactionHistoryResponseTransactions cdrbTrxHistory) {
     if (!ObjectUtils.isEmpty(cdrbTrxHistory)) {
-      return getInstantFromStringDateTime(
+      return getInstantFromStringDateTimeHistory(
           cdrbTrxHistory.getTransactionDate(), String.valueOf(cdrbTrxHistory.getTransactionTime()));
     }
     return null;
+  }
+
+  default Instant getInstantFromStringDateTimeHistory(String date, String time) {
+    LocalDate d = getDateFromDDMMYYYWithDash(date);
+    if (time.length() == 5) time = "0" + time;
+    LocalTime t = LocalTime.parse(time, DateTimeFormatter.ofPattern("HHmmss"));
+    return LocalDateTime.of(d, t).atZone(ZoneId.systemDefault()).toInstant();
   }
 
   default Instant getInstantFromStringDateTime(String date, String time) {
