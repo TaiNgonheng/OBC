@@ -70,7 +70,7 @@ public enum ResponseMessage {
   ACCOUNT_NOT_LINKED_WITH_BAKONG_ACCOUNT(
       32, "The Bakong account you are trying to transfer to is not linked to your account."),
   INIT_REFNUMBER_NOT_FOUND(
-      35, "initRefNumber was not found or already used in another transaction."),
+      12, "initRefNumber was not found or already used in another transaction."),
 
   ACC_NOT_LINKED(30, "Your credential is not associated with any account"),
   // CDRB error messages

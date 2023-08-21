@@ -10,7 +10,6 @@ import com.rhbgroup.dte.obc.model.AuthenticationRequest;
 import com.rhbgroup.dte.obc.model.AuthenticationResponse;
 import com.rhbgroup.dte.obc.model.AuthenticationResponseAllOfData;
 import com.rhbgroup.dte.obc.model.BakongAccountStatus;
-import com.rhbgroup.dte.obc.model.BakongAccountType;
 import com.rhbgroup.dte.obc.model.BakongKYCStatus;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
 import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponseAcct;
@@ -146,9 +145,13 @@ public interface AccountMapper {
       mappingData.getData().setKycStatus(BakongKYCStatus.BASIC);
     }
 
-    mappingData
-        .getData()
-        .setAccType(BakongAccountType.fromValue(response.getAccountType().getValue()));
+    String acctType = "";
+    if (response.getAccountType().getValue().equalsIgnoreCase("D")) {
+      acctType = AppConstants.Account.CURRENT;
+    } else if (response.getAccountType().getValue().equalsIgnoreCase("S")) {
+      acctType = AppConstants.Account.SAVINGS;
+    }
+    mappingData.getData().setAccType(acctType);
 
     return mappingData;
   }

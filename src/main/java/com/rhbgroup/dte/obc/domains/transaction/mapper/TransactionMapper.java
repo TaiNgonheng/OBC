@@ -100,8 +100,19 @@ public interface TransactionMapper {
     originalRequest.setCifNumber(userDetails.getCif());
     originalRequest.setObcUserId(BigDecimal.valueOf(userDetails.getUserId()));
     originalRequest.setAccountCurrencyCode(accountDetailResponse.getData().getAccCcy());
-    originalRequest.setFromAccountType(
-        CasaAccountType.fromValue(accountDetailResponse.getData().getAccType().getValue()));
+    String acctType = "";
+    if (accountDetailResponse
+        .getData()
+        .getAccType()
+        .equalsIgnoreCase(AppConstants.Account.CURRENT)) {
+      acctType = "D";
+    } else if (accountDetailResponse
+        .getData()
+        .getAccType()
+        .equalsIgnoreCase(AppConstants.Account.SAVINGS)) {
+      acctType = "S";
+    }
+    originalRequest.setFromAccountType(CasaAccountType.fromValue(acctType));
 
     // Optional
     originalRequest.setTransactionCurrencyAmount(originalRequest.getAmount());

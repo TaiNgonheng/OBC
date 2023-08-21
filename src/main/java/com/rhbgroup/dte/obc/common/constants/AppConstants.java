@@ -58,4 +58,10 @@ public class AppConstants {
     public static final String RECORD_DETAIL_INDICATOR = "D";
     public static final List<String> CASA_TO_WALLET_CODES = List.of("9186", "9187");
   }
+
+  @UtilityClass
+  public class Account {
+    public static final String SAVINGS = "SAVINGS";
+    public static final String CURRENT = "CURRENT";
+  }
 }
