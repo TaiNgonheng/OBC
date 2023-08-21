@@ -24,7 +24,6 @@ public interface UserExchangeMapper {
 
   UserModel fromAuthRequestToModel(GWAuthenticationRequest request);
 
-  @Mapping(source = "otpVerifiedDate", target = "otpVerifiedDate", qualifiedByName = "toInstant")
   UserProfileEntity toEntity(UserModel userModel);
 
   @Named("toInstant")

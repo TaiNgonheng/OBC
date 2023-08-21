@@ -59,7 +59,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                       .phoneNumber(userProfile.getMobileNo())
                       .permissions(userRole.getPermissions())
                       .password(userProfile.getPassword())
-                      .otpVerified(userProfile.getOtpVerifiedStatus())
                       .authorities(authorities)
                       .accountNonLocked(userProfile.getLockTime() == null)
                       .accountNonExpired(true)

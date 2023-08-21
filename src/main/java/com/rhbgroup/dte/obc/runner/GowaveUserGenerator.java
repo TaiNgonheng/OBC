@@ -2,7 +2,6 @@ package com.rhbgroup.dte.obc.runner;
 
 import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.entity.UserProfileEntity;
-import java.time.Instant;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +33,6 @@ public class GowaveUserGenerator implements ApplicationRunner {
       entity.setUsername(gowaveUser);
       entity.setPassword(passwordEncoder.encode(gowavePassword));
       entity.setDeleted(false);
-      entity.setOtpVerifiedStatus(true);
-      entity.setOtpVerifiedDate(Instant.now());
 
       userProfileRepository.save(entity);
       log.info("Created new  gowave user");

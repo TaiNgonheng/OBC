@@ -11,11 +11,6 @@ properties:
     $ref: '../common/LoginTypeEnum.yml'
   otpId:
     type: string
-  otpVerifiedStatus:
-    type: boolean
-  otpVerifiedDate:
-    type: string
-    format: date-time
   mobileNo:
     type: string
   cifNo:
