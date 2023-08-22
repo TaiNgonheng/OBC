@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
   "Sender Account",
   "Receiver Account",
   "Amount",
-  "Trx Currency",
+  "CurrencyCode",
   "Remark",
   "Debit Credit Indicator",
   "Trx Hash",
@@ -66,7 +66,7 @@ public class SIBSBatchTransaction {
   @JsonProperty("Amount")
   private Double amount;
 
-  @JsonProperty("currencyCode")
+  @JsonProperty("CurrencyCode")
   private String currencyCode;
 
   @JsonProperty("Remark")
