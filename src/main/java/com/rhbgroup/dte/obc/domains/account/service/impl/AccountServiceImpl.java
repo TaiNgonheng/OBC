@@ -220,23 +220,30 @@ public class AccountServiceImpl implements AccountService {
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     boolean otpVerified =
         infoBipRestClient.verifyOtp(request.getOtpCode(), currentUser.getBakongId());
-
     if (otpVerified) {
       // Update otp verify status
-      AccountEntity byUserIdAndBakongIdAndLinkedStatus =
-          accountRepository
-              .findByUserIdAndBakongIdAndLinkedStatus(
-                  currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.PENDING)
-              .orElseThrow(() -> new BizException(ResponseMessage.INVALID_TOKEN));
-      byUserIdAndBakongIdAndLinkedStatus.setOtpVerified(true);
-      byUserIdAndBakongIdAndLinkedStatus.setOtpVerifiedDateTime(Instant.now());
-      accountRepository.save(byUserIdAndBakongIdAndLinkedStatus);
+      of(this::findByUserIdAndBakongIdAndLinkedStatus)
+          .andThen(
+              peek(
+                  account -> {
+                    account.setOtpVerified(true);
+                    account.setOtpVerifiedDateTime(Instant.now());
+                    accountRepository.save(account);
+                  }))
+          .apply(currentUser);
       return new VerifyOtpResponse()
           .status(ResponseHandler.ok())
           .data(new VerifyOtpResponseAllOfData().isValid(true));
     } else {
       throw new BizException(ResponseMessage.INVALID_OTP);
     }
+  }
+
+  private AccountEntity findByUserIdAndBakongIdAndLinkedStatus(CustomUserDetails currentUser) {
+    return accountRepository
+        .findByUserIdAndBakongIdAndLinkedStatus(
+            currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.PENDING)
+        .orElseThrow(() -> new BizException(ResponseMessage.INVALID_TOKEN));
   }
 
   private void validateVerifyOTPRequest(VerifyOtpRequest request) {
@@ -293,7 +300,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     if (byPassOTP()) {
-      throw new BizException(ResponseMessage.MISSING_OTP_CODE);
+      throw new BizException(ResponseMessage.BY_PASS_OTP);
     }
   }
 
