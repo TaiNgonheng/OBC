@@ -24,12 +24,6 @@ public class UserProfileEntity {
   @Column(name = "password", nullable = false)
   private String password;
 
-  @Column(name = "otp_verified_status")
-  private Boolean otpVerifiedStatus;
-
-  @Column(name = "otp_verified_date")
-  private Instant otpVerifiedDate;
-
   @Column(name = "mobile_no", unique = true)
   private String mobileNo;
 

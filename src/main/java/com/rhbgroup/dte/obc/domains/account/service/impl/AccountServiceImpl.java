@@ -26,7 +26,7 @@ import com.rhbgroup.dte.obc.rest.InfoBipRestClient;
 import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -206,7 +206,7 @@ public class AccountServiceImpl implements AccountService {
                           accountEntity.setUserId(userModel.getId().longValue());
                           accountEntity.setBakongId(bakongId);
                           accountEntity.setLinkedStatus(LinkedStatusEnum.PENDING);
-
+                          accountEntity.setOtpVerified(false);
                           return accountEntity;
                         }))
         .andThen(accountRepository::save)
@@ -220,24 +220,30 @@ public class AccountServiceImpl implements AccountService {
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     boolean otpVerified =
         infoBipRestClient.verifyOtp(request.getOtpCode(), currentUser.getBakongId());
-
     if (otpVerified) {
       // Update otp verify status
-      of(userProfileService::findByUserId)
+      of(this::findByUserIdAndBakongIdAndLinkedStatus)
           .andThen(
               peek(
-                  userProfile -> {
-                    userProfile.setOtpVerifiedStatus(true);
-                    userProfile.setOtpVerifiedDate(OffsetDateTime.now());
-                    userProfileService.updateUserProfile(userProfile);
+                  account -> {
+                    account.setOtpVerified(true);
+                    account.setOtpVerifiedDateTime(Instant.now());
+                    accountRepository.save(account);
                   }))
-          .apply(currentUser.getUserId());
+          .apply(currentUser);
       return new VerifyOtpResponse()
           .status(ResponseHandler.ok())
-          .data(new VerifyOtpResponseAllOfData().isValid(otpVerified));
+          .data(new VerifyOtpResponseAllOfData().isValid(true));
     } else {
       throw new BizException(ResponseMessage.INVALID_OTP);
     }
+  }
+
+  private AccountEntity findByUserIdAndBakongIdAndLinkedStatus(CustomUserDetails currentUser) {
+    return accountRepository
+        .findByUserIdAndBakongIdAndLinkedStatus(
+            currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.PENDING)
+        .orElseThrow(() -> new BizException(ResponseMessage.INVALID_TOKEN));
   }
 
   private void validateVerifyOTPRequest(VerifyOtpRequest request) {
@@ -292,6 +298,24 @@ public class AccountServiceImpl implements AccountService {
     if (StringUtils.isEmpty(request.getAccNumber())) {
       throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
     }
+
+    if (isByPassOTPValidation()) {
+      throw new BizException(ResponseMessage.BY_PASS_OTP);
+    }
+  }
+
+  private boolean isByPassOTPValidation() {
+    if (!properties.isInitLinkRequiredOtp()) {
+      return false;
+    }
+
+    CustomUserDetails currentUser = userAuthService.getCurrentUser();
+    AccountEntity byUserIdAndBakongIdAndLinkedStatus =
+        accountRepository
+            .findByUserIdAndBakongIdAndLinkedStatus(
+                currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.PENDING)
+            .orElseThrow(() -> new BizException(ResponseMessage.INVALID_TOKEN));
+    return !byUserIdAndBakongIdAndLinkedStatus.getOtpVerified();
   }
 
   @Override

@@ -49,6 +49,12 @@ public class AccountEntity {
   @Enumerated(EnumType.STRING)
   private LinkedStatusEnum linkedStatus;
 
+  @Column(name = "otp_verified")
+  private Boolean otpVerified;
+
+  @Column(name = "otp_verified_date_time")
+  private Instant otpVerifiedDateTime;
+
   @Column(name = "created_date", insertable = false, updatable = false)
   private Instant createdDate;
 

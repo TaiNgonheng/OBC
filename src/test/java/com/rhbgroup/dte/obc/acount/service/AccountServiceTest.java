@@ -212,10 +212,13 @@ class AccountServiceTest extends AbstractAccountTest {
 
   @Test
   void testVerifyOTP_Success_IsValid_True() {
+    AccountEntity accountEntity = new AccountEntity();
+    accountEntity.setOtpVerified(true);
     when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     when(infoBipRestClient.verifyOtp(anyString(), anyString())).thenReturn(true);
-    when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
     when(properties.isInitLinkRequiredOtp()).thenReturn(true);
+    when(accountRepository.findByUserIdAndBakongIdAndLinkedStatus(any(), any(), any()))
+        .thenReturn(Optional.of(accountEntity));
 
     VerifyOtpResponse response = accountService.verifyOtp(mockVerifyOtpRequest());
     Assertions.assertEquals(AppConstants.Status.SUCCESS, response.getStatus().getCode());
