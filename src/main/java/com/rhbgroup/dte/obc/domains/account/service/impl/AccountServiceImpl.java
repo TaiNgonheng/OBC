@@ -299,12 +299,12 @@ public class AccountServiceImpl implements AccountService {
       throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
     }
 
-    if (bypassOtp()) {
+    if (isByPassOTPValidation()) {
       throw new BizException(ResponseMessage.BY_PASS_OTP);
     }
   }
 
-  private boolean bypassOtp() {
+  private boolean isByPassOTPValidation() {
     if (!properties.isInitLinkRequiredOtp()) {
       return false;
     }
