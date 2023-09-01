@@ -37,7 +37,13 @@ server:
   port: ${SERVER_PORT:8080}
   servlet:
     context-path: ${SERVER_CONTEXT_PATH:/api/v1}
-
+  ssl:
+    enabled: ${SSL_ENABLE:false}
+    key-store-type: ${KEY_STORE_TYPE:JKS}
+    key-store: ${KEY_STORE_PATH:"PATH_TO_KEY_STORE_JKS_FILE"}
+    key-store-password: ${KEY_STORE_PASSWORD:"KEY_STORE_PASSWORD"}
+    enabled-protocols: ${ENABLED_PROTOCOLS_VERSION:TLSv1.2}
+    protocol: TLS
 obc:
   gowave-user: ${OBC_GOWAVE_USER:gowave_user}
   gowave-password: ${OBC_GOWAVE_PASSWORD:gowave_password}
