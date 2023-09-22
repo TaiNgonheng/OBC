@@ -282,6 +282,7 @@ public class AccountServiceImpl implements AccountService {
             request.getAccNumber(), LinkedStatusEnum.COMPLETED);
 
     if (byAccountIdAndLinkedStatusCompleted.isPresent()) {
+      log.info(">>>>>> checking linking status");
       AccountEntity previousLinkedAccount = byAccountIdAndLinkedStatusCompleted.get();
       if (previousLinkedAccount.getBakongId().equals(currentUser.getBakongId())) {
         previousLinkedAccount.setLinkedStatus(LinkedStatusEnum.UNLINKED);
