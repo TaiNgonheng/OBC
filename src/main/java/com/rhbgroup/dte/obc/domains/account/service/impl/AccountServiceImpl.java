@@ -257,6 +257,7 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
+  @Transactional
   public FinishLinkAccountResponse finishLinkAccount(FinishLinkAccountRequest request) {
     validateFinishLinkAccountRequest(request);
 
