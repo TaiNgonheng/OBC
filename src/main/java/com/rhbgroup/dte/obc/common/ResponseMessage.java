@@ -60,6 +60,9 @@ public enum ResponseMessage {
   FAIL_TO_FETCH_ACCOUNT_DETAILS(8, "Getting user account information failed."),
   TRANSACTION_TO_UNAVAILABLE_ACCOUNT(9, "Transaction to unavailable account."),
   BALANCE_NOT_ENOUGH(10, "Not enough balance to do a transaction."),
+
+  BALANCE_NOT_ENOUGH_INCLUDE_FEE(
+      10, "Not enough balance to do a transaction because a fee will be applied."),
   TRANSACTION_EXCEED_AMOUNT_LIMIT(11, "The amount entered is below or exceed the allowed limit."),
   DUPLICATE_SUBMISSION_ID(12, "Duplicate submissionId."),
   INVALID_OTP(13, "Invalid OTP. Please try again."),

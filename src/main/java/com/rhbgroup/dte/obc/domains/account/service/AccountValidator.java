@@ -5,11 +5,7 @@ import com.rhbgroup.dte.obc.common.enums.AccountStatusEnum;
 import com.rhbgroup.dte.obc.common.enums.KycStatusEnum;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.exceptions.CustomBizException;
-import com.rhbgroup.dte.obc.model.CDRBGetAccountDetailResponse;
-import com.rhbgroup.dte.obc.model.CasaAccountStatus;
-import com.rhbgroup.dte.obc.model.CasaKYCStatus;
-import com.rhbgroup.dte.obc.model.InitTransactionRequest;
-import com.rhbgroup.dte.obc.model.PGProfileResponse;
+import com.rhbgroup.dte.obc.model.*;
 import java.util.Map;
 import org.apache.commons.lang3.ObjectUtils;
 
@@ -30,15 +26,20 @@ public class AccountValidator {
   }
 
   public static void validateBalanceAndCurrency(
-      CDRBGetAccountDetailResponse account, InitTransactionRequest request) {
+      CDRBGetAccountDetailResponse account,
+      InitTransactionRequest request,
+      CDRBFeeAndCashbackResponse feeAndCashback) {
 
     if (!request.getCcy().equalsIgnoreCase(account.getAcct().getCurrencyCode())) {
       throw new BizException(ResponseMessage.INVALID_CURRENCY);
     }
 
-    // Do we need to include fee + transaction amount?
     if (request.getAmount() > account.getAcct().getCurrentBal()) {
       throw new BizException(ResponseMessage.BALANCE_NOT_ENOUGH);
+    }
+
+    if (request.getAmount() + feeAndCashback.getFee() > account.getAcct().getCurrentBal()) {
+      throw new BizException(ResponseMessage.BALANCE_NOT_ENOUGH_INCLUDE_FEE);
     }
   }
 
