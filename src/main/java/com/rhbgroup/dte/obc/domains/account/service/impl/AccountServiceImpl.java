@@ -257,6 +257,7 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
+  @Transactional
   public FinishLinkAccountResponse finishLinkAccount(FinishLinkAccountRequest request) {
     validateFinishLinkAccountRequest(request);
 
@@ -277,13 +278,20 @@ public class AccountServiceImpl implements AccountService {
             .accountNo(request.getAccNumber())
             .cifNo(userProfileService.findByUserId(currentUser.getUserId()).getCifNo());
 
-    // Validate if acct has been linked already
-    accountRepository
-        .findByAccountIdAndLinkedStatus(request.getAccNumber(), LinkedStatusEnum.COMPLETED)
-        .ifPresent(
-            account -> {
-              throw new BizException(ResponseMessage.ACCOUNT_ALREADY_LINKED);
-            });
+    Optional<AccountEntity> byAccountIdAndLinkedStatusCompleted =
+        accountRepository.findByAccountIdAndLinkedStatus(
+            request.getAccNumber(), LinkedStatusEnum.COMPLETED);
+
+    if (byAccountIdAndLinkedStatusCompleted.isPresent()) {
+      log.info(">>>>>> checking linking status");
+      AccountEntity previousLinkedAccount = byAccountIdAndLinkedStatusCompleted.get();
+      if (previousLinkedAccount.getBakongId().equals(currentUser.getBakongId())) {
+        previousLinkedAccount.setLinkedStatus(LinkedStatusEnum.UNLINKED);
+        accountRepository.save(previousLinkedAccount);
+      } else {
+        throw new BizException(ResponseMessage.ACCOUNT_ALREADY_LINKED);
+      }
+    }
 
     // Get CDRB account detail & update account table
     return of(cdrbRestClient::getAccountDetail)
