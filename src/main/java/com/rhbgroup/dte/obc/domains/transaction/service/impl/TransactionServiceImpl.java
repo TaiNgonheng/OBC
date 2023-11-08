@@ -437,7 +437,7 @@ public class TransactionServiceImpl implements TransactionService {
                 transactionHistoryRepository.queryByFromAccount(
                     request.getAccNumber(),
                     PageRequest.of(
-                        request.getPage() - 1,
+                        request.getPage(),
                         request.getSize(),
                         Sort.by(Sort.Order.desc("trx_date")))))
         .andThen(
