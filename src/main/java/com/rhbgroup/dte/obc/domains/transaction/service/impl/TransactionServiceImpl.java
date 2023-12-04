@@ -215,14 +215,18 @@ public class TransactionServiceImpl implements TransactionService {
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     BigDecimal todayDebitAmountPerAccount =
         accumulateTodayDebitAmountPerAccount(request.getSourceAcc(), currentUser.getUserId());
-
-    CDRBFeeAndCashbackResponse feeAndCashback = getFeeAndCashback(request);
+    // As SIBs side only maintains feeAndCashback for KHR amount bigger than 100,
+    // If amount is lower than 100 KHR, SIBs side will throw exception.
+    BigDecimal fee =
+        request.getCcy().equalsIgnoreCase(CURRENCY_KHR) && request.getAmount() < 100
+            ? BigDecimal.ZERO
+            : BigDecimal.valueOf(getFeeAndCashback(request).getFee());
 
     Double dailyLimit = getDailyLimitFromConfig(request);
 
     return todayDebitAmountPerAccount
             .add(BigDecimal.valueOf(request.getAmount()))
-            .add(BigDecimal.valueOf(feeAndCashback.getFee()))
+            .add(fee)
             .compareTo(BigDecimal.valueOf(dailyLimit))
         > 0;
   }
