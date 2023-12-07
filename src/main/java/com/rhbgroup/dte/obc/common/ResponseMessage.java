@@ -35,7 +35,7 @@ public enum ResponseMessage {
 
   MISSING_OTP_CODE(6, "OTP is mandatory, OTP length must be 6"),
 
-  BY_PASS_OTP(6, "OTP step missed"),
+  OTP_NOT_VERIFIED(6, "OTP step missed"),
   MISSING_ACC_NUMBER(6, "accNumber is mandatory, accNumber length must be between 1 and 50"),
   MISSING_KEY(6, "key is mandatory, key length must be between 1 and 64"),
   MISSING_SOURCE_ACC(6, "sourceAcc is mandatory, sourceAcc length must be between 1 and 64"),

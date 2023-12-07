@@ -308,14 +308,14 @@ public class AccountServiceImpl implements AccountService {
       throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
     }
 
-    if (isByPassOTPValidation()) {
-      throw new BizException(ResponseMessage.BY_PASS_OTP);
+    if (!hasVerfiedOTP()) {
+      throw new BizException(ResponseMessage.OTP_NOT_VERIFIED);
     }
   }
 
-  private boolean isByPassOTPValidation() {
+  private boolean hasVerfiedOTP() {
     if (!properties.isInitLinkRequiredOtp()) {
-      return false;
+      return true;
     }
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
@@ -325,14 +325,14 @@ public class AccountServiceImpl implements AccountService {
                 currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.PENDING)
             .orElseThrow(() -> new BizException(ResponseMessage.INVALID_TOKEN));
 
-    boolean isOtpNotYetVerified = !byUserIdAndBakongIdAndLinkedStatus.getOtpVerified();
-    boolean isOtpVerifiedBeenTooLong =
+    boolean isOtpYetVerified = byUserIdAndBakongIdAndLinkedStatus.getOtpVerified();
+    boolean isOtpVerifiedNotStale =
         byUserIdAndBakongIdAndLinkedStatus
             .getOtpVerifiedDateTime()
             .plus(properties.getPinTimeToLiveInMins() + 1L, ChronoUnit.MINUTES)
-            .isBefore(Instant.now());
+            .isAfter(Instant.now());
 
-    return isOtpNotYetVerified || isOtpVerifiedBeenTooLong;
+    return isOtpYetVerified && isOtpVerifiedNotStale;
   }
 
   @Override
