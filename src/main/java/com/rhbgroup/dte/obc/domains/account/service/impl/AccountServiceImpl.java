@@ -27,6 +27,7 @@ import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -307,14 +308,14 @@ public class AccountServiceImpl implements AccountService {
       throw new BizException(ResponseMessage.MISSING_ACC_NUMBER);
     }
 
-    if (isByPassOTPValidation()) {
-      throw new BizException(ResponseMessage.BY_PASS_OTP);
+    if (!hasVerfiedOTP()) {
+      throw new BizException(ResponseMessage.OTP_NOT_VERIFIED);
     }
   }
 
-  private boolean isByPassOTPValidation() {
+  private boolean hasVerfiedOTP() {
     if (!properties.isInitLinkRequiredOtp()) {
-      return false;
+      return true;
     }
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
@@ -323,7 +324,15 @@ public class AccountServiceImpl implements AccountService {
             .findByUserIdAndBakongIdAndLinkedStatus(
                 currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.PENDING)
             .orElseThrow(() -> new BizException(ResponseMessage.INVALID_TOKEN));
-    return !byUserIdAndBakongIdAndLinkedStatus.getOtpVerified();
+
+    boolean isOtpYetVerified = byUserIdAndBakongIdAndLinkedStatus.getOtpVerified();
+    boolean isOtpVerifiedNotStale =
+        byUserIdAndBakongIdAndLinkedStatus
+            .getOtpVerifiedDateTime()
+            .plus(properties.getPinTimeToLiveInMins() + 1L, ChronoUnit.MINUTES)
+            .isAfter(Instant.now());
+
+    return isOtpYetVerified && isOtpVerifiedNotStale;
   }
 
   @Override
