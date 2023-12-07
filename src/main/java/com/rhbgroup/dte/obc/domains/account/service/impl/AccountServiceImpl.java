@@ -315,6 +315,7 @@ public class AccountServiceImpl implements AccountService {
   }
 
   private boolean isByPassOTPValidation() {
+    log.info(">>>>>>>>> isByPassOTPValidation");
     if (!properties.isInitLinkRequiredOtp()) {
       return false;
     }
