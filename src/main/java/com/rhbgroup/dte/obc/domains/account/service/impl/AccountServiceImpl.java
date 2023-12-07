@@ -27,7 +27,6 @@ import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Optional;
@@ -315,7 +314,6 @@ public class AccountServiceImpl implements AccountService {
   }
 
   private boolean isByPassOTPValidation() {
-    log.info(">>>>>>>>> isByPassOTPValidation");
     if (!properties.isInitLinkRequiredOtp()) {
       return false;
     }
