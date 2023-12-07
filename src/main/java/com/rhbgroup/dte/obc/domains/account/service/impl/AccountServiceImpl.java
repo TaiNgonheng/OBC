@@ -27,6 +27,8 @@ import com.rhbgroup.dte.obc.rest.PGRestClient;
 import com.rhbgroup.dte.obc.security.CustomUserDetails;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -323,7 +325,15 @@ public class AccountServiceImpl implements AccountService {
             .findByUserIdAndBakongIdAndLinkedStatus(
                 currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.PENDING)
             .orElseThrow(() -> new BizException(ResponseMessage.INVALID_TOKEN));
-    return !byUserIdAndBakongIdAndLinkedStatus.getOtpVerified();
+
+    boolean isOtpNotYetVerified = !byUserIdAndBakongIdAndLinkedStatus.getOtpVerified();
+    boolean isOtpVerifiedBeenTooLong =
+        byUserIdAndBakongIdAndLinkedStatus
+            .getOtpVerifiedDateTime()
+            .plus(properties.getPinTimeToLiveInMins() + 1, ChronoUnit.MINUTES)
+            .isBefore(Instant.from(LocalDateTime.now()));
+
+    return isOtpNotYetVerified || isOtpVerifiedBeenTooLong;
   }
 
   @Override

@@ -71,6 +71,7 @@ obc:
     ncNeeded: ${INFOBIP_NC_NEEDED:false}
     init-link-required-opt: ${INIT_LINK_REQUIRED_OTP:true}
     init-transger-required-opt: ${INIT_TRANSFER_REQUIRED_OTP:true}
+    pin-time-to-live-in-mins: ${PIN_TIME_TO_LIVE_IN_MINS:2}
   sftp:
     username: ${SFTP_USERNAME:testuser}
     password: ${SFTP_PASSWORD:testpassword}

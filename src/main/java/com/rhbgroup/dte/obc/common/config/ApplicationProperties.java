@@ -34,4 +34,7 @@ public class ApplicationProperties {
 
   @Value("${obc.infobip.init-transger-required-opt}")
   private boolean initTransferRequiredOtp;
+
+  @Value("${obc.infobip.pin-time-to-live-in-mins}")
+  private Integer pinTimeToLiveInMins;
 }
