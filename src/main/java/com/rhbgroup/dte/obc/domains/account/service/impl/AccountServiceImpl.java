@@ -330,7 +330,7 @@ public class AccountServiceImpl implements AccountService {
     boolean isOtpVerifiedBeenTooLong =
         byUserIdAndBakongIdAndLinkedStatus
             .getOtpVerifiedDateTime()
-            .plus(properties.getPinTimeToLiveInMins() + 1, ChronoUnit.MINUTES)
+            .plus(properties.getPinTimeToLiveInMins() + 1L, ChronoUnit.MINUTES)
             .isBefore(Instant.from(LocalDateTime.now()));
 
     return isOtpNotYetVerified || isOtpVerifiedBeenTooLong;
