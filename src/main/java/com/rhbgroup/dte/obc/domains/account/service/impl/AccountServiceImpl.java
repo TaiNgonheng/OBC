@@ -332,7 +332,7 @@ public class AccountServiceImpl implements AccountService {
         byUserIdAndBakongIdAndLinkedStatus
             .getOtpVerifiedDateTime()
             .plus(properties.getPinTimeToLiveInMins() + 1L, ChronoUnit.MINUTES)
-            .isBefore(Instant.from(LocalDateTime.now()));
+            .isBefore(Instant.now());
 
     return isOtpNotYetVerified || isOtpVerifiedBeenTooLong;
   }
