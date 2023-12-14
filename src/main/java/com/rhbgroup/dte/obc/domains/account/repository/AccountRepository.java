@@ -25,4 +25,6 @@ public interface AccountRepository extends JpaRepository<AccountEntity, Integer>
 
   boolean existsByBakongIdAndAccountIdAndLinkedStatus(
       String bakongId, String accountId, LinkedStatusEnum COM);
+
+  boolean existsByUserIdAndLinkedStatus(Long userId, LinkedStatusEnum COM);
 }

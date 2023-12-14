@@ -70,16 +70,11 @@ public class AccountServiceImpl implements AccountService {
                 authContext -> {
                   // Checking account status
                   CustomUserDetails principal = (CustomUserDetails) authContext.getPrincipal();
-                  Optional<AccountEntity> activeAccount =
-                      accountRepository.findFirstByUserIdAndBakongIdAndLinkedStatus(
-                          principal.getUserId(),
-                          principal.getBakongId(),
-                          LinkedStatusEnum.COMPLETED);
-                  if (activeAccount.isEmpty()) {
-                    log.error(
-                        "No active account found for user {} with bakong id {}",
-                        principal.getUserId(),
-                        principal.getBakongId());
+                  boolean activeAccountExisted =
+                      accountRepository.existsByUserIdAndLinkedStatus(
+                          principal.getUserId(), LinkedStatusEnum.COMPLETED);
+                  if (!activeAccountExisted) {
+                    log.error("No active account found for user {}", principal.getUserId());
                     throw new BizException(ResponseMessage.ACC_NOT_LINKED);
                   }
                 }))
@@ -138,7 +133,7 @@ public class AccountServiceImpl implements AccountService {
               // Trigger infobip 2-fa sms
               if (gowaveUser.getMobileNo().equals(request.getPhoneNumber())
                   && properties.isInitLinkRequiredOtp()) {
-                infoBipRestClient.sendOtp(request.getPhoneNumber(), request.getBakongAccId());
+                infoBipRestClient.sendOtp(request.getPhoneNumber(), gowaveUser.getId().toString());
               }
               return accountMapper.toInitAccountResponse(
                   gowaveUser, request.getPhoneNumber(), token, properties.isInitLinkRequiredOtp());
@@ -220,7 +215,7 @@ public class AccountServiceImpl implements AccountService {
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     boolean otpVerified =
-        infoBipRestClient.verifyOtp(request.getOtpCode(), currentUser.getBakongId());
+        infoBipRestClient.verifyOtp(request.getOtpCode(), currentUser.getUserId().toString());
     if (otpVerified) {
       // Update otp verify status
       of(this::findByUserIdAndBakongIdAndLinkedStatus)

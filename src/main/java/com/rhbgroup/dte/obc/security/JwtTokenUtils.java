@@ -40,25 +40,35 @@ public class JwtTokenUtils {
 
   public String getSubject(String jwt) {
     try {
-      return getClaimFromToken(extractJwt(jwt), Claims::getSubject);
+      String encUserId = getClaimFromToken(extractJwt(jwt), Claims::getSubject);
+      return decrypt(encUserId);
     } catch (Exception ex) {
       return StringUtils.EMPTY;
     }
   }
 
-  public String getUserId(String jwt) {
+  public String getUser(String jwt) {
     try {
-      String encUserId =
+      String encUser =
           (String) getClaimFromToken(extractJwt(jwt), claims -> claims.get(CLAIMS_USER));
       return new String(
           AESCryptoUtil.decrypt(
-              CryptoUtil.decodeHex(encUserId),
+              CryptoUtil.decodeHex(encUser),
               aesKey,
               Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8))),
           StandardCharsets.UTF_8);
     } catch (Exception ex) {
       return StringUtils.EMPTY;
     }
+  }
+
+  private String decrypt(String decrptedString) {
+    return new String(
+        AESCryptoUtil.decrypt(
+            CryptoUtil.decodeHex(decrptedString),
+            aesKey,
+            Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8))),
+        StandardCharsets.UTF_8);
   }
 
   private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
@@ -83,7 +93,12 @@ public class JwtTokenUtils {
 
     Claims claims =
         Jwts.claims()
-            .setSubject(StringUtils.isNotBlank(bakongId) ? bakongId : userDetails.getBakongId());
+            .setSubject(
+                CryptoUtil.encodeHexString(
+                    AESCryptoUtil.encrypt(
+                        userDetails.getUserId().toString(),
+                        aesKey,
+                        Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)))));
     if (StringUtils.isNotBlank(userDetails.getPermissions())) {
       claims.put(CLAIMS_AUTHORIZATIONS, userDetails.getPermissions().split(","));
     }
@@ -92,7 +107,7 @@ public class JwtTokenUtils {
         CLAIMS_USER,
         CryptoUtil.encodeHexString(
             AESCryptoUtil.encrypt(
-                userDetails.getUserId().toString(),
+                StringUtils.isNotBlank(bakongId) ? bakongId : userDetails.getBakongId(),
                 aesKey,
                 Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)))));
 
