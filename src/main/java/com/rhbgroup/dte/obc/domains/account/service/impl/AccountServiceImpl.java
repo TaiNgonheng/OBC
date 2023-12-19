@@ -73,8 +73,8 @@ public class AccountServiceImpl implements AccountService {
                 authContext -> {
                   // Checking account status
                   CustomUserDetails principal = (CustomUserDetails) authContext.getPrincipal();
-                  UserModel byUserId = userProfileService.findByUserId(principal.getUserId());
-                  if (!byUserId.getHaveLinkedAccount()) {
+                  UserModel user = userProfileService.findByUserId(principal.getUserId());
+                  if (!user.getHaveLinkedAccount()) {
                     log.error("No active account found for user {}", principal.getUserId());
                     throw new BizException(ResponseMessage.ACC_NOT_LINKED);
                   }
@@ -269,12 +269,10 @@ public class AccountServiceImpl implements AccountService {
             .findByUserIdAndBakongIdAndLinkedStatus(
                 currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.PENDING)
             .orElseThrow(() -> new UserAuthenticationException(ResponseMessage.INVALID_TOKEN));
-    UserModel byUserId = userProfileService.findByUserId(currentUser.getUserId());
+    UserModel user = userProfileService.findByUserId(currentUser.getUserId());
 
     CDRBGetAccountDetailRequest accountDetailRequest =
-        new CDRBGetAccountDetailRequest()
-            .accountNo(request.getAccNumber())
-            .cifNo(byUserId.getCifNo());
+        new CDRBGetAccountDetailRequest().accountNo(request.getAccNumber()).cifNo(user.getCifNo());
 
     Optional<AccountEntity> byAccountIdAndLinkedStatusCompleted =
         accountRepository.findByAccountIdAndLinkedStatus(
@@ -299,7 +297,7 @@ public class AccountServiceImpl implements AccountService {
             .andThen(peek(accountRepository::save))
             .andThen(account -> accountMapper.toFinishLinkAccountResponse())
             .apply(accountDetailRequest);
-    updateProfileHaveLinkedAccountToTrue(byUserId);
+    updateProfileHaveLinkedAccountToTrue(user);
     return finishLinkAccountResponse;
   }
 
@@ -417,9 +415,9 @@ public class AccountServiceImpl implements AccountService {
         accountRepository.existsByUserIdAndLinkedStatus(
             currentUser.getUserId(), LinkedStatusEnum.COMPLETED);
     if (!activeAccountExisted) {
-      UserModel byUserId = userProfileService.findByUserId(currentUser.getUserId());
-      byUserId.setHaveLinkedAccount(false);
-      userProfileService.updateUserProfile(byUserId);
+      UserModel user = userProfileService.findByUserId(currentUser.getUserId());
+      user.setHaveLinkedAccount(false);
+      userProfileService.updateUserProfile(user);
     }
   }
 
