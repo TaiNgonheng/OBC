@@ -16,7 +16,6 @@ import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
-import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
@@ -43,8 +42,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
-  private final UserProfileRepository userProfileRepository;
-
   private final JwtTokenUtils jwtTokenUtils;
 
   private final UserAuthService userAuthService;
@@ -64,7 +61,6 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
     validateAuthenticationRequest(request);
-    log.info("!!!!!!!!!!!!!!!!>>>>>>> fix pr comment");
 
     return of(accountMapper::toUserModel)
         .andThen(userAuthService::authenticate)
@@ -297,13 +293,11 @@ public class AccountServiceImpl implements AccountService {
             .andThen(peek(accountRepository::save))
             .andThen(account -> accountMapper.toFinishLinkAccountResponse())
             .apply(accountDetailRequest);
-    updateProfileHaveLinkedAccountToTrue(user);
-    return finishLinkAccountResponse;
-  }
 
-  private void updateProfileHaveLinkedAccountToTrue(UserModel byUserId) {
-    byUserId.setHaveLinkedAccount(true);
-    userProfileService.updateUserProfile(byUserId);
+    user.setHaveLinkedAccount(true);
+    userProfileService.updateUserProfile(user);
+
+    return finishLinkAccountResponse;
   }
 
   private void validateFinishLinkAccountRequest(FinishLinkAccountRequest request) {
