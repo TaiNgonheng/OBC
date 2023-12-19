@@ -287,7 +287,7 @@ class AccountServiceTest extends AbstractAccountTest {
   void testAuthenticate_Successful() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
-    when(accountRepository.existsByUserIdAndLinkedStatus(any(), any())).thenReturn(true);
+    when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
 
     AuthenticationResponse response = accountService.authenticate(mockAuthenticationRequest());
 
@@ -316,7 +316,7 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testAuthenticate_Failed_Unauthorized_ROLE_NOT_PERMITTED() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(accountRepository.existsByUserIdAndLinkedStatus(any(), any())).thenReturn(true);
+    when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
     doThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED))
         .when(userAuthService)
         .checkUserRole(any(), anyList());
@@ -334,7 +334,7 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testAuthenticate_Failed_AccountNotActive() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(accountRepository.existsByUserIdAndLinkedStatus(any(), any())).thenReturn(true);
+    when(userProfileService.findByUserId(any())).thenReturn(mockUserModel());
     try {
       accountService.authenticate(mockAuthenticationRequest());
     } catch (UserAuthenticationException ex) {

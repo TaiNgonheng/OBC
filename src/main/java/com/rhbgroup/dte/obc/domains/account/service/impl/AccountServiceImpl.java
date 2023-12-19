@@ -64,6 +64,7 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
     validateAuthenticationRequest(request);
+    log.info("!!!!!!!!!!!!!!!!>>>>>>> fix pr comment");
 
     return of(accountMapper::toUserModel)
         .andThen(userAuthService::authenticate)
@@ -72,10 +73,8 @@ public class AccountServiceImpl implements AccountService {
                 authContext -> {
                   // Checking account status
                   CustomUserDetails principal = (CustomUserDetails) authContext.getPrincipal();
-                  boolean activeAccountExisted =
-                      accountRepository.existsByUserIdAndLinkedStatus(
-                          principal.getUserId(), LinkedStatusEnum.COMPLETED);
-                  if (!activeAccountExisted) {
+                  UserModel byUserId = userProfileService.findByUserId(principal.getUserId());
+                  if (!byUserId.getHaveLinkedAccount()) {
                     log.error("No active account found for user {}", principal.getUserId());
                     throw new BizException(ResponseMessage.ACC_NOT_LINKED);
                   }
