@@ -448,7 +448,8 @@ class AccountServiceTest extends AbstractAccountTest {
   void testUnlinkAccount_Success() {
     when(accountRepository.findByAccountIdAndLinkedStatus(anyString(), any()))
         .thenReturn(Optional.of(mockAccountEntityLinked()));
-
+    when(accountRepository.existsByUserIdAndLinkedStatus(any(), any())).thenReturn(true);
+    when(userAuthService.getCurrentUser()).thenReturn(mockCustomUserDetails());
     UnlinkAccountResponse response = accountService.unlinkAccount(mockUnlinkAccountRequest());
 
     Assertions.assertEquals(0, response.getStatus().getCode());

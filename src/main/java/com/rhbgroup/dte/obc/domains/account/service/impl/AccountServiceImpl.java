@@ -16,6 +16,7 @@ import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.AccountService;
 import com.rhbgroup.dte.obc.domains.account.service.AccountValidator;
 import com.rhbgroup.dte.obc.domains.config.service.ConfigService;
+import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
 import com.rhbgroup.dte.obc.domains.user.service.UserAuthService;
 import com.rhbgroup.dte.obc.domains.user.service.UserProfileService;
 import com.rhbgroup.dte.obc.exceptions.BizException;
@@ -42,6 +43,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
+  private final UserProfileRepository userProfileRepository;
 
   private final JwtTokenUtils jwtTokenUtils;
 
@@ -268,11 +270,12 @@ public class AccountServiceImpl implements AccountService {
             .findByUserIdAndBakongIdAndLinkedStatus(
                 currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.PENDING)
             .orElseThrow(() -> new UserAuthenticationException(ResponseMessage.INVALID_TOKEN));
+    UserModel byUserId = userProfileService.findByUserId(currentUser.getUserId());
 
     CDRBGetAccountDetailRequest accountDetailRequest =
         new CDRBGetAccountDetailRequest()
             .accountNo(request.getAccNumber())
-            .cifNo(userProfileService.findByUserId(currentUser.getUserId()).getCifNo());
+            .cifNo(byUserId.getCifNo());
 
     Optional<AccountEntity> byAccountIdAndLinkedStatusCompleted =
         accountRepository.findByAccountIdAndLinkedStatus(
@@ -290,12 +293,20 @@ public class AccountServiceImpl implements AccountService {
     }
 
     // Get CDRB account detail & update account table
-    return of(cdrbRestClient::getAccountDetail)
-        .andThen(peek(AccountValidator::validateAccountAndKYCStatus))
-        .andThen(cdrbAccount -> accountMapper.toAccountEntity(pendingAccount, cdrbAccount))
-        .andThen(peek(accountRepository::save))
-        .andThen(account -> accountMapper.toFinishLinkAccountResponse())
-        .apply(accountDetailRequest);
+    FinishLinkAccountResponse finishLinkAccountResponse =
+        of(cdrbRestClient::getAccountDetail)
+            .andThen(peek(AccountValidator::validateAccountAndKYCStatus))
+            .andThen(cdrbAccount -> accountMapper.toAccountEntity(pendingAccount, cdrbAccount))
+            .andThen(peek(accountRepository::save))
+            .andThen(account -> accountMapper.toFinishLinkAccountResponse())
+            .apply(accountDetailRequest);
+    updateProfileHaveLinkedAccountToTrue(byUserId);
+    return finishLinkAccountResponse;
+  }
+
+  private void updateProfileHaveLinkedAccountToTrue(UserModel byUserId) {
+    byUserId.setHaveLinkedAccount(true);
+    userProfileService.updateUserProfile(byUserId);
   }
 
   private void validateFinishLinkAccountRequest(FinishLinkAccountRequest request) {
@@ -396,7 +407,21 @@ public class AccountServiceImpl implements AccountService {
     accountEntity.setLinkedStatus(LinkedStatusEnum.UNLINKED);
     accountRepository.save(accountEntity);
 
+    updateProfileHaveLinkedAccountStatus();
+
     return new UnlinkAccountResponse().status(ResponseHandler.ok()).data(null);
+  }
+
+  private void updateProfileHaveLinkedAccountStatus() {
+    CustomUserDetails currentUser = userAuthService.getCurrentUser();
+    boolean activeAccountExisted =
+        accountRepository.existsByUserIdAndLinkedStatus(
+            currentUser.getUserId(), LinkedStatusEnum.COMPLETED);
+    if (!activeAccountExisted) {
+      UserModel byUserId = userProfileService.findByUserId(currentUser.getUserId());
+      byUserId.setHaveLinkedAccount(false);
+      userProfileService.updateUserProfile(byUserId);
+    }
   }
 
   @Override
