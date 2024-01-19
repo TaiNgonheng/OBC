@@ -12,6 +12,7 @@ import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
+import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
 import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.impl.AccountServiceImpl;
@@ -59,6 +60,8 @@ class AccountServiceTest extends AbstractAccountTest {
   @Mock AccountRepository accountRepository;
 
   @Mock private ApplicationProperties properties;
+
+  @Mock private CacheUtil cacheUtil;
 
   @BeforeEach
   void cleanUp() {

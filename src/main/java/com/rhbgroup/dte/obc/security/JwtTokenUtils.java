@@ -103,13 +103,6 @@ public class JwtTokenUtils {
       claims.put(CLAIMS_AUTHORIZATIONS, userDetails.getPermissions().split(","));
     }
     claims.put(CLAIMS_EXPIRY_DATE, Instant.now().toEpochMilli() + (tokenTTL * 1000));
-    claims.put(
-        CLAIMS_USER,
-        CryptoUtil.encodeHexString(
-            AESCryptoUtil.encrypt(
-                StringUtils.isNotBlank(bakongId) ? bakongId : userDetails.getBakongId(),
-                aesKey,
-                Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)))));
 
     return Jwts.builder()
         .setClaims(claims)
@@ -124,14 +117,13 @@ public class JwtTokenUtils {
   public String generateJwt(Authentication authentication) {
     CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
     Claims claims =
-            Jwts.claims()
-                    .setSubject(
-                            CryptoUtil.encodeHexString(
-                                    AESCryptoUtil.encrypt(
-                                            userDetails.getUsername(),
-                                            aesKey,
-                                            Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)))));
-
+        Jwts.claims()
+            .setSubject(
+                CryptoUtil.encodeHexString(
+                    AESCryptoUtil.encrypt(
+                        userDetails.getUsername(),
+                        aesKey,
+                        Base64.getDecoder().decode(aesIv.getBytes(StandardCharsets.UTF_8)))));
 
     claims.put(CLAIMS_EXPIRY_DATE, Instant.now().toEpochMilli() + (tokenTTL * 1000));
     if (StringUtils.isNotBlank(userDetails.getPermissions())) {

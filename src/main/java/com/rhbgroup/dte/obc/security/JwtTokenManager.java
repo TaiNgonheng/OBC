@@ -2,6 +2,8 @@ package com.rhbgroup.dte.obc.security;
 
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.common.constants.CacheConstants;
+import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.domains.user.service.UserDetailsServiceImpl;
 import com.rhbgroup.dte.obc.exceptions.BizException;
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +23,8 @@ public class JwtTokenManager {
 
   private final UserDetailsServiceImpl userDetailsService;
   private final JwtTokenUtils jwtTokenUtils;
+
+  private final CacheUtil cacheUtil;
 
   public AuthenticationStatus verifyRequest(HttpServletRequest httpServletRequest) {
 
@@ -57,8 +61,8 @@ public class JwtTokenManager {
     try {
       if (AppConstants.System.BAKONG_APP.equals(appName)) {
         // APP_USER
-        String bakongId = jwtTokenUtils.getUser(jwt);
         Long userId = Long.parseLong(jwtTokenUtils.getSubject(jwt));
+        String bakongId = cacheUtil.getValueFromKey(CacheConstants.OBCCache.CACHE_NAME, jwt);
         userDetails = userDetailsService.loadUserByUserIdAndBakongId(userId, bakongId);
       } else {
         // SYSTEM_USER
