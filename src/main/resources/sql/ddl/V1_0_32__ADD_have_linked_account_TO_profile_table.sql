@@ -1,1 +1,0 @@
-ALTER TABLE tbl_obc_profile ADD COLUMN have_linked_account bit(1) DEFAULT 0;

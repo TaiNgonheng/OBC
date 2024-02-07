@@ -42,9 +42,6 @@ public class UserProfileEntity {
   @Column(name = "deleted")
   private boolean deleted;
 
-  @Column(name = "have_linked_account")
-  private boolean haveLinkedAccount;
-
   @Column(name = "created_date", insertable = false, updatable = false)
   private Instant createdDate;
 

@@ -87,8 +87,10 @@ public class AccountServiceImpl implements AccountService {
                 authContext -> {
                   // Checking account status
                   CustomUserDetails principal = (CustomUserDetails) authContext.getPrincipal();
-                  UserModel user = userProfileService.findByUserId(principal.getUserId());
-                  if (!user.getHaveLinkedAccount()) {
+                  boolean activeAccountExisted =
+                      accountRepository.existsByUserIdAndLinkedStatus(
+                          principal.getUserId(), LinkedStatusEnum.COMPLETED);
+                  if (!activeAccountExisted) {
                     log.error("No active account found for user {}", principal.getUserId());
                     throw new BizException(ResponseMessage.ACC_NOT_LINKED);
                   }
@@ -307,18 +309,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     // Get CDRB account detail & update account table
-    FinishLinkAccountResponse finishLinkAccountResponse =
-        of(cdrbRestClient::getAccountDetail)
-            .andThen(peek(AccountValidator::validateAccountAndKYCStatus))
-            .andThen(cdrbAccount -> accountMapper.toAccountEntity(pendingAccount, cdrbAccount))
-            .andThen(peek(accountRepository::save))
-            .andThen(account -> accountMapper.toFinishLinkAccountResponse())
-            .apply(accountDetailRequest);
-
-    user.setHaveLinkedAccount(true);
-    userProfileService.updateUserProfile(user);
-
-    return finishLinkAccountResponse;
+    return of(cdrbRestClient::getAccountDetail)
+        .andThen(peek(AccountValidator::validateAccountAndKYCStatus))
+        .andThen(cdrbAccount -> accountMapper.toAccountEntity(pendingAccount, cdrbAccount))
+        .andThen(peek(accountRepository::save))
+        .andThen(account -> accountMapper.toFinishLinkAccountResponse())
+        .apply(accountDetailRequest);
   }
 
   private void validateFinishLinkAccountRequest(FinishLinkAccountRequest request) {
@@ -419,21 +415,7 @@ public class AccountServiceImpl implements AccountService {
     accountEntity.setLinkedStatus(LinkedStatusEnum.UNLINKED);
     accountRepository.save(accountEntity);
 
-    updateProfileHaveLinkedAccountStatus();
-
     return new UnlinkAccountResponse().status(ResponseHandler.ok()).data(null);
-  }
-
-  private void updateProfileHaveLinkedAccountStatus() {
-    CustomUserDetails currentUser = userAuthService.getCurrentUser();
-    boolean activeAccountExisted =
-        accountRepository.existsByUserIdAndLinkedStatus(
-            currentUser.getUserId(), LinkedStatusEnum.COMPLETED);
-    if (!activeAccountExisted) {
-      UserModel user = userProfileService.findByUserId(currentUser.getUserId());
-      user.setHaveLinkedAccount(false);
-      userProfileService.updateUserProfile(user);
-    }
   }
 
   @Override

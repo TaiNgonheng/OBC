@@ -174,11 +174,7 @@ public abstract class AbstractAccountTest {
   }
 
   protected UserModel mockUserModel() {
-    return new UserModel()
-        .cifNo("123xxx")
-        .id(BigDecimal.ONE)
-        .mobileNo(MOBILE_NUMBER)
-        .haveLinkedAccount(true);
+    return new UserModel().cifNo("123xxx").id(BigDecimal.ONE).mobileNo(MOBILE_NUMBER);
   }
 
   protected CDRBGetAccountDetailResponse mockCdrbAccountResponse() {

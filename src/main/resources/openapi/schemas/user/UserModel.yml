@@ -18,6 +18,3 @@ properties:
   status:
     type: string
     example: UNLINKED
-  haveLinkedAccount:
-    type: boolean
-    example: false
