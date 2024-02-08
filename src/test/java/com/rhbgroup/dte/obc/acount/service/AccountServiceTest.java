@@ -12,6 +12,7 @@ import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
+import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
 import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import com.rhbgroup.dte.obc.domains.account.service.impl.AccountServiceImpl;
@@ -59,6 +60,8 @@ class AccountServiceTest extends AbstractAccountTest {
   @Mock AccountRepository accountRepository;
 
   @Mock private ApplicationProperties properties;
+
+  @Mock private CacheUtil cacheUtil;
 
   @BeforeEach
   void cleanUp() {
@@ -287,8 +290,7 @@ class AccountServiceTest extends AbstractAccountTest {
   void testAuthenticate_Successful() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
     when(jwtTokenUtils.generateJwtAppUser(any())).thenReturn(mockJwtToken());
-    when(accountRepository.findFirstByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
-        .thenReturn(Optional.of(mockAccountEntityLinked()));
+    when(accountRepository.existsByUserIdAndLinkedStatus(any(), any())).thenReturn(true);
 
     AuthenticationResponse response = accountService.authenticate(mockAuthenticationRequest());
 
@@ -317,8 +319,7 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testAuthenticate_Failed_Unauthorized_ROLE_NOT_PERMITTED() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(accountRepository.findFirstByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
-        .thenReturn(Optional.of(mockAccountEntityLinked()));
+    when(accountRepository.existsByUserIdAndLinkedStatus(any(), any())).thenReturn(true);
     doThrow(new UserAuthenticationException(ResponseMessage.AUTHENTICATION_FAILED))
         .when(userAuthService)
         .checkUserRole(any(), anyList());
@@ -336,8 +337,7 @@ class AccountServiceTest extends AbstractAccountTest {
   @Test
   void testAuthenticate_Failed_AccountNotActive() {
     when(userAuthService.authenticate(any())).thenReturn(mockAuthentication());
-    when(accountRepository.findFirstByUserIdAndBakongIdAndLinkedStatus(any(), anyString(), any()))
-        .thenReturn(Optional.of(mockAccountEntityAccountPending()));
+    when(accountRepository.existsByUserIdAndLinkedStatus(any(), any())).thenReturn(true);
     try {
       accountService.authenticate(mockAuthenticationRequest());
     } catch (UserAuthenticationException ex) {
@@ -451,7 +451,6 @@ class AccountServiceTest extends AbstractAccountTest {
   void testUnlinkAccount_Success() {
     when(accountRepository.findByAccountIdAndLinkedStatus(anyString(), any()))
         .thenReturn(Optional.of(mockAccountEntityLinked()));
-
     UnlinkAccountResponse response = accountService.unlinkAccount(mockUnlinkAccountRequest());
 
     Assertions.assertEquals(0, response.getStatus().getCode());

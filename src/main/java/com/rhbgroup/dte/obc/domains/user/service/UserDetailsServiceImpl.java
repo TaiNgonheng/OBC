@@ -1,7 +1,6 @@
 package com.rhbgroup.dte.obc.domains.user.service;
 
 import com.rhbgroup.dte.obc.common.ResponseMessage;
-import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.UserProfileRepository;
 import com.rhbgroup.dte.obc.domains.user.repository.UserRoleRepository;
@@ -67,29 +66,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                       .build();
 
               return Optional.of(userDetails);
-            })
-        .flatMap(
-            userDetail -> {
-              try {
-                CustomUserDetails customUserDetails =
-                    accountRepository
-                        .findByUserIdAndLinkedStatus(
-                            userProfile.getId(), LinkedStatusEnum.COMPLETED)
-                        .stream()
-                        .filter(
-                            account -> LinkedStatusEnum.COMPLETED.equals(account.getLinkedStatus()))
-                        .findFirst()
-                        .flatMap(
-                            account ->
-                                Optional.of(
-                                    userDetail.toBuilder().bakongId(account.getBakongId()).build()))
-                        .orElse(userDetail);
-
-                return Optional.of(customUserDetails);
-
-              } catch (Exception ex) {
-                return Optional.of(userDetail);
-              }
             })
         .orElseGet(() -> CustomUserDetails.withoutAuthorities(userProfile));
   }

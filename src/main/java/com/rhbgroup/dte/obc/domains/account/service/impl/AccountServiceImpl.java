@@ -2,13 +2,16 @@ package com.rhbgroup.dte.obc.domains.account.service.impl;
 
 import static com.rhbgroup.dte.obc.common.func.Functions.of;
 import static com.rhbgroup.dte.obc.common.func.Functions.peek;
+import static javax.cache.expiry.Duration.*;
 
 import com.rhbgroup.dte.obc.common.ResponseHandler;
 import com.rhbgroup.dte.obc.common.ResponseMessage;
 import com.rhbgroup.dte.obc.common.config.ApplicationProperties;
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
+import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.constants.ConfigConstants;
 import com.rhbgroup.dte.obc.common.enums.LinkedStatusEnum;
+import com.rhbgroup.dte.obc.common.util.CacheUtil;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapper;
 import com.rhbgroup.dte.obc.domains.account.mapper.AccountMapperImpl;
 import com.rhbgroup.dte.obc.domains.account.repository.AccountRepository;
@@ -30,19 +33,22 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.PostConstruct;
+import javax.cache.expiry.Duration;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
-
   private final JwtTokenUtils jwtTokenUtils;
 
   private final UserAuthService userAuthService;
@@ -59,6 +65,17 @@ public class AccountServiceImpl implements AccountService {
 
   private final ApplicationProperties properties;
 
+  private final CacheUtil cacheUtil;
+
+  @Value("${obc.security.jwt-ttl}")
+  protected long tokenTTL; // in second
+
+  @PostConstruct
+  private void initCache() {
+    cacheUtil.createCache(
+        CacheConstants.OBCCache.CACHE_NAME, new Duration(TimeUnit.MILLISECONDS, tokenTTL * 1000));
+  }
+
   @Override
   public AuthenticationResponse authenticate(AuthenticationRequest request) {
     validateAuthenticationRequest(request);
@@ -70,16 +87,11 @@ public class AccountServiceImpl implements AccountService {
                 authContext -> {
                   // Checking account status
                   CustomUserDetails principal = (CustomUserDetails) authContext.getPrincipal();
-                  Optional<AccountEntity> activeAccount =
-                      accountRepository.findFirstByUserIdAndBakongIdAndLinkedStatus(
-                          principal.getUserId(),
-                          principal.getBakongId(),
-                          LinkedStatusEnum.COMPLETED);
-                  if (activeAccount.isEmpty()) {
-                    log.error(
-                        "No active account found for user {} with bakong id {}",
-                        principal.getUserId(),
-                        principal.getBakongId());
+                  boolean activeAccountExisted =
+                      accountRepository.existsByUserIdAndLinkedStatus(
+                          principal.getUserId(), LinkedStatusEnum.COMPLETED);
+                  if (!activeAccountExisted) {
+                    log.error("No active account found for user {}", principal.getUserId());
                     throw new BizException(ResponseMessage.ACC_NOT_LINKED);
                   }
                 }))
@@ -138,8 +150,11 @@ public class AccountServiceImpl implements AccountService {
               // Trigger infobip 2-fa sms
               if (gowaveUser.getMobileNo().equals(request.getPhoneNumber())
                   && properties.isInitLinkRequiredOtp()) {
-                infoBipRestClient.sendOtp(request.getPhoneNumber(), request.getBakongAccId());
+                infoBipRestClient.sendOtp(request.getPhoneNumber(), gowaveUser.getId().toString());
               }
+
+              cacheUtil.addKey(CacheConstants.OBCCache.CACHE_NAME, token, request.getBakongAccId());
+
               return accountMapper.toInitAccountResponse(
                   gowaveUser, request.getPhoneNumber(), token, properties.isInitLinkRequiredOtp());
             })
@@ -220,7 +235,7 @@ public class AccountServiceImpl implements AccountService {
 
     CustomUserDetails currentUser = userAuthService.getCurrentUser();
     boolean otpVerified =
-        infoBipRestClient.verifyOtp(request.getOtpCode(), currentUser.getBakongId());
+        infoBipRestClient.verifyOtp(request.getOtpCode(), currentUser.getUserId().toString());
     if (otpVerified) {
       // Update otp verify status
       of(this::findByUserIdAndBakongIdAndLinkedStatus)
@@ -273,11 +288,10 @@ public class AccountServiceImpl implements AccountService {
             .findByUserIdAndBakongIdAndLinkedStatus(
                 currentUser.getUserId(), currentUser.getBakongId(), LinkedStatusEnum.PENDING)
             .orElseThrow(() -> new UserAuthenticationException(ResponseMessage.INVALID_TOKEN));
+    UserModel user = userProfileService.findByUserId(currentUser.getUserId());
 
     CDRBGetAccountDetailRequest accountDetailRequest =
-        new CDRBGetAccountDetailRequest()
-            .accountNo(request.getAccNumber())
-            .cifNo(userProfileService.findByUserId(currentUser.getUserId()).getCifNo());
+        new CDRBGetAccountDetailRequest().accountNo(request.getAccNumber()).cifNo(user.getCifNo());
 
     Optional<AccountEntity> byAccountIdAndLinkedStatusCompleted =
         accountRepository.findByAccountIdAndLinkedStatus(
