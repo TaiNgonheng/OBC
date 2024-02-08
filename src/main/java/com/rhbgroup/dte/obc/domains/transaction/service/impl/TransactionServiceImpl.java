@@ -142,7 +142,7 @@ public class TransactionServiceImpl implements TransactionService {
     save(pendingTransaction);
 
     if (properties.isInitTransferRequiredOtp()) {
-      infoBipRestClient.sendOtp(currentUser.getPhoneNumber(), currentUser.getBakongId());
+      infoBipRestClient.sendOtp(currentUser.getPhoneNumber(), currentUser.getUserId().toString());
     }
 
     return new InitTransactionResponse()
@@ -278,7 +278,7 @@ public class TransactionServiceImpl implements TransactionService {
                       if (properties.isInitTransferRequiredOtp()
                           && Boolean.FALSE.equals(
                               infoBipRestClient.verifyOtp(
-                                  request.getOtpCode(), currentUser.getBakongId()))) {
+                                  request.getOtpCode(), currentUser.getUserId().toString()))) {
                         throw new BizException(ResponseMessage.INVALID_OTP);
                       }
                     }))

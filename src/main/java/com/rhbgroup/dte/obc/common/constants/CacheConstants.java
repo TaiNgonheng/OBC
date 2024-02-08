@@ -23,4 +23,9 @@ public class CacheConstants {
     public static final String CACHE_NAME = "CDRB_CACHE";
     public static final String CDRB_LOGIN_KEY = "CDRB_LOGIN";
   }
+
+  @UtilityClass
+  public class OBCCache {
+    public static final String CACHE_NAME = "OBC_CACHE";
+  }
 }

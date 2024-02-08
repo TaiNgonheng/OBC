@@ -28,10 +28,6 @@ public interface AccountRepository extends JpaRepository<AccountEntity, Integer>
   boolean existsByBakongIdAndAccountIdAndLinkedStatus(
       String bakongId, String accountId, LinkedStatusEnum COM);
 
-  void getFindByUserId(Long userId);
-
-  List<AccountEntity> findByUserId(Long userId);
-
   @Query(
       value =
           "SELECT a FROM tbl_obc_account a WHERE a.userId = :userId AND a.bakongId <> :excludeBakongId AND a.linkedStatus = :linkedStatus",
@@ -40,4 +36,6 @@ public interface AccountRepository extends JpaRepository<AccountEntity, Integer>
       @Param("userId") Long userId,
       @Param("excludeBakongId") String excludeBakongId,
       @Param("linkedStatus") LinkedStatusEnum linkedStatus);
+
+  boolean existsByUserIdAndLinkedStatus(Long userId, LinkedStatusEnum COM);
 }

@@ -67,7 +67,7 @@ public class InfoBipRestClient {
     cacheUtil.createCache(CacheConstants.InfoBipCache.CACHE_NAME, EXPIRE_TIME_TWO_MINUTES);
   }
 
-  public InfoBipSendOtpResponse sendOtp(String phone, String loginKey) {
+  public InfoBipSendOtpResponse sendOtp(String phone, String userId) {
 
     Map<String, String> headers = new HashMap<>();
     headers.put("Authorization", "Bearer ".concat(getAccessToken()));
@@ -89,18 +89,18 @@ public class InfoBipRestClient {
 
     cacheUtil.addKey(
         CacheConstants.InfoBipCache.CACHE_NAME,
-        CacheConstants.InfoBipCache.PIN_ID_KEY.concat(loginKey),
+        CacheConstants.InfoBipCache.PIN_ID_KEY.concat(userId),
         sendSmsOtpResponse.getPinId());
 
     return sendSmsOtpResponse;
   }
 
-  public Boolean verifyOtp(String otp, String loginKey) {
+  public Boolean verifyOtp(String otp, String userId) {
 
     String pinId =
         cacheUtil.getValueFromKey(
             CacheConstants.InfoBipCache.CACHE_NAME,
-            CacheConstants.InfoBipCache.PIN_ID_KEY.concat(loginKey));
+            CacheConstants.InfoBipCache.PIN_ID_KEY.concat(userId));
 
     if (StringUtils.isBlank(pinId)) {
       throw new BizException(ResponseMessage.OTP_EXPIRED);
