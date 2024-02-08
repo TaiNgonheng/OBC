@@ -5,6 +5,8 @@ import com.rhbgroup.dte.obc.domains.account.repository.entity.AccountEntity;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -25,6 +27,15 @@ public interface AccountRepository extends JpaRepository<AccountEntity, Integer>
 
   boolean existsByBakongIdAndAccountIdAndLinkedStatus(
       String bakongId, String accountId, LinkedStatusEnum COM);
+
+  @Query(
+      value =
+          "SELECT a FROM tbl_obc_account a WHERE a.userId = :userId AND a.bakongId <> :excludeBakongId AND a.linkedStatus = :linkedStatus",
+      nativeQuery = true)
+  List<AccountEntity> findByUserIdAndNotTheBakongIdAndLinkedStatus(
+      @Param("userId") Long userId,
+      @Param("excludeBakongId") String excludeBakongId,
+      @Param("linkedStatus") LinkedStatusEnum linkedStatus);
 
   boolean existsByUserIdAndLinkedStatus(Long userId, LinkedStatusEnum COM);
 }
