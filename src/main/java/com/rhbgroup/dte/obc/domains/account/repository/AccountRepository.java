@@ -30,14 +30,12 @@ public interface AccountRepository extends JpaRepository<AccountEntity, Integer>
 
   @Query(
       value =
-          "SELECT * FROM obc.tbl_obc_account a WHERE a.user_id = :userId AND a.bakong_id <> :excludeBakongId AND a.linked_status = :linkedStatus",
+          "SELECT * FROM obc.tbl_obc_account a WHERE a.user_id = :userId AND a.bakong_id != :excludeBakongId AND a.linked_status = :linkedStatus",
       nativeQuery = true)
   List<AccountEntity> findByUserIdAndNotTheBakongIdAndLinkedStatus(
       @Param("userId") Long userId,
       @Param("excludeBakongId") String excludeBakongId,
-      @Param("linkedStatus") LinkedStatusEnum linkedStatus);
+      @Param("linkedStatus") String linkedStatus);
 
   boolean existsByUserIdAndLinkedStatus(Long userId, LinkedStatusEnum COM);
 }
-
-

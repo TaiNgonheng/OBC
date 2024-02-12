@@ -138,7 +138,11 @@ public class AccountServiceImpl implements AccountService {
         of(accountMapper::toModel)
             .andThen(AccountModel::getUser)
             .andThen(userAuthService::authenticate)
-            .andThen(peek(this::unlinkObsoleteLinkedToDeactivatedBakongIdRecords))
+            .andThen(
+                peek(
+                    authContext ->
+                        unlinkObsoleteLinkedToDeactivatedBakongIdRecords(
+                            request.getBakongAccId(), authContext)))
             .andThen(
                 authContext ->
                     jwtTokenUtils.generateJwtAppUser(request.getBakongAccId(), authContext))
@@ -165,14 +169,14 @@ public class AccountServiceImpl implements AccountService {
         .apply(Collections.singletonList(request.getBakongAccId()));
   }
 
-  private void unlinkObsoleteLinkedToDeactivatedBakongIdRecords(Authentication authContext) {
+  private void unlinkObsoleteLinkedToDeactivatedBakongIdRecords(
+      String bakongAcctId, Authentication authContext) {
     CustomUserDetails userDetails = (CustomUserDetails) authContext.getPrincipal();
     Long userId = userDetails.getUserId();
-    String userBakongId = userDetails.getBakongId();
 
     List<AccountEntity> linkedAccounts =
         accountRepository.findByUserIdAndNotTheBakongIdAndLinkedStatus(
-            userId, userBakongId, LinkedStatusEnum.COMPLETED);
+            userId, bakongAcctId, LinkedStatusEnum.COMPLETED.toString());
 
     List<AccountEntity> accountsToUnlink =
         linkedAccounts.stream().filter(this::isBakongIdDeactivated).collect(Collectors.toList());
@@ -180,6 +184,10 @@ public class AccountServiceImpl implements AccountService {
     accountsToUnlink.forEach(account -> account.setLinkedStatus(LinkedStatusEnum.UNLINKED));
 
     accountRepository.saveAll(accountsToUnlink);
+  }
+
+  public static void main(String[] args) {
+    System.out.println(LinkedStatusEnum.UNLINKED);
   }
 
   private boolean isBakongIdDeactivated(AccountEntity accountEntity) {

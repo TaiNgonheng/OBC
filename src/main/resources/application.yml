@@ -55,7 +55,7 @@ obc:
   pg1:
     url: ${PG1_URL:http://10.202.38.27}
     username: ${PG1_USERNAME:soap_user}
-    password: ${PG1_PASSWORD:+66xZ_feBcRpYP9e}
+    password: ${PG1_PASSWORD:+2023xZ_feBcRpYP9e}
   cdrb:
     url: ${CDRB_URL:https://api.dev.cdrb.link}
     username: ${CDRB_USERNAME:redRanger}
