@@ -186,10 +186,6 @@ public class AccountServiceImpl implements AccountService {
     accountRepository.saveAll(accountsToUnlink);
   }
 
-  public static void main(String[] args) {
-    System.out.println(LinkedStatusEnum.UNLINKED);
-  }
-
   private boolean isBakongIdDeactivated(AccountEntity accountEntity) {
     PGProfileResponse bakongProfile =
         pgRestClient.getUserProfile(Collections.singletonList(accountEntity.getBakongId()));
