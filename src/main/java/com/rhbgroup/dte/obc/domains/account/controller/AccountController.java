@@ -16,17 +16,20 @@ import com.rhbgroup.dte.obc.model.UnlinkAccountResponse;
 import com.rhbgroup.dte.obc.model.VerifyOtpRequest;
 import com.rhbgroup.dte.obc.model.VerifyOtpResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class AccountController implements AccountApiDelegate {
 
   private final AccountService accountService;
 
   @Override
   public ResponseEntity<InitAccountResponse> initLinkAccount(InitAccountRequest request) {
+    log.info("Init Link Account API starts.");
     return Functions.of(accountService::initLinkAccount).andThen(ResponseEntity::ok).apply(request);
   }
 
