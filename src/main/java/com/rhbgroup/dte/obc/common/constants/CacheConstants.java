@@ -27,5 +27,6 @@ public class CacheConstants {
   @UtilityClass
   public class OBCCache {
     public static final String CACHE_NAME = "OBC_CACHE";
+    public static final String CACHE_TOKEN_BUCKET = "TOKEN_BUCKET";
   }
 }

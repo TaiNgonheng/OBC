@@ -8,6 +8,8 @@ import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.CreatedExpiryPolicy;
 import javax.cache.expiry.Duration;
 import javax.cache.spi.CachingProvider;
+
+import io.github.bucket4j.local.LockFreeBucket;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,6 +31,25 @@ public class JCacheUtil implements CacheUtil {
   }
 
   @Override
+  public <T> void createCache(String cacheName, Duration expireTime, Class<T> clazz) {
+    MutableConfiguration<String, T> config = new MutableConfiguration<>();
+    config.setExpiryPolicyFactory(CreatedExpiryPolicy.factoryOf(expireTime));
+    cacheManager.createCache(cacheName, config);
+  }
+
+  @Override
+  public void createByteCache(String cacheName, Duration expireTime) {
+    MutableConfiguration<String, byte[]> config = new MutableConfiguration<>();
+    config.setExpiryPolicyFactory(CreatedExpiryPolicy.factoryOf(expireTime));
+    cacheManager.createCache(cacheName, config);
+  }
+
+  @Override
+  public byte[] getByteValueFromKey(String cacheName, String key) {
+    return (byte[]) cacheManager.getCache(cacheName).get(key);
+  }
+
+  @Override
   public void addKey(String cacheName, String key, String value) {
     cacheManager.getCache(cacheName).put(key, value);
   }
@@ -36,5 +57,24 @@ public class JCacheUtil implements CacheUtil {
   @Override
   public String getValueFromKey(String cacheName, String key) {
     return (String) cacheManager.getCache(cacheName).get(key);
+  }
+
+  @Override
+  public void addKey(String cacheName, String key, Object obj) {
+    cacheManager.getCache(cacheName).put(key, obj);
+  }
+
+  @Override
+  public <T> T getValueFromKey(String cacheName, String key, Class<T> clazz) {
+    Object obj = cacheManager.getCache(cacheName).get(key);
+    if (obj != null) {
+      return (T) obj;
+    }
+    return null;
+  }
+
+  @Override
+  public void addKey(String cacheName, String key, byte[] value) {
+    cacheManager.getCache(cacheName).put(key, value);
   }
 }
