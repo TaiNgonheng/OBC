@@ -54,11 +54,6 @@ public class JCacheUtil implements CacheUtil {
   }
 
   @Override
-  public void addKey(String cacheName, String key, byte[] value) {
-    cacheManager.getCache(cacheName).put(key, value);
-  }
-
-  @Override
   public HazelcastProxyManager<String> getHazelcastProxyManager() {
     return this.hazelcastProxyManager;
   }

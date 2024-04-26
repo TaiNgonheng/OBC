@@ -13,7 +13,5 @@ public interface CacheUtil {
 
   String getValueFromKey(String cacheName, String key);
 
-  void addKey(String cacheName, String key, byte[] value);
-
   HazelcastProxyManager<String> getHazelcastProxyManager();
 }
