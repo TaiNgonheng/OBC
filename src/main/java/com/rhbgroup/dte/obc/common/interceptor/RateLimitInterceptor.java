@@ -1,15 +1,15 @@
 package com.rhbgroup.dte.obc.common.interceptor;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.rhbgroup.dte.obc.common.ResponseMessage;
+import com.rhbgroup.dte.obc.exceptions.RateLimitException;
 import com.rhbgroup.dte.obc.security.RateLimitSecurityService;
 import io.github.bucket4j.Bucket;
+import java.util.Date;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.HandlerInterceptor;
-
-import java.util.Date;
 
 @Slf4j
 @Service
@@ -32,12 +32,12 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     Bucket bucket = rateLimitSecurityService.resolveBucket(ip);
     log.info("available token {} for key {}", bucket.getAvailableTokens(), ip);
-    if (rateLimitSecurityService.tryConsume(bucket, ip)){
+    if (bucket.tryConsume(1)) {
       log.info("remaining token {} for key {}", bucket.getAvailableTokens(), ip);
       return HandlerInterceptor.super.preHandle(request, response, handler);
     } else {
-       log.warn("Reach rate limited!");
-       return false;
+      log.warn("{} Reach rate limited!", ip);
+      throw new RateLimitException(ResponseMessage.TOO_MANY_REQUEST_ERROR);
     }
   }
 }

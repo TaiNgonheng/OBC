@@ -78,7 +78,12 @@ obc:
     host: ${SFTP_HOST:127.0.0.1}
     port: ${SFTP_PORT:2022}
     path: ${SFTP_PATH:data}
+  rate-limits:
+    bandwidths:
+      capacity: ${RATE_LIMIT_BANDWIDTHS_CAPACITY:200}
+      period: ${RATE_LIMIT_BANDWIDTHS_PERIOD_IN_MINUTE:1}
 
 config:
   maxStackTraceLength: ${MAX_STACK_TRACE_LENGTH:19999}
   allWatchToken: ${ALL_WATCH_TOKEN:ALL_WATCH_TOKEN}
+

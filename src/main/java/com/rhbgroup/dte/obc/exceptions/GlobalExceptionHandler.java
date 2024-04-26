@@ -119,7 +119,6 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(GatewayTimeoutException.class)
   public ResponseEntity<ResponseWrapper> gatewayTimeoutException(GatewayTimeoutException ex) {
-    log.error(ExceptionUtils.getStackTrace(ex));
     ResponseStatus status =
         new ResponseStatus()
             .code(AppConstants.Status.ERROR)
@@ -140,5 +139,17 @@ public class GlobalExceptionHandler {
 
     return new ResponseEntity<>(
         new ResponseWrapper().status(status), HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @ExceptionHandler(RateLimitException.class)
+  public ResponseEntity<ResponseWrapper> rateLimitException(RateLimitException ex) {
+    log.error(ExceptionUtils.getStackTrace(ex));
+    ResponseStatus status =
+        new ResponseStatus()
+            .code(AppConstants.Status.ERROR)
+            .errorCode(ResponseMessage.TOO_MANY_REQUEST_ERROR.getCode().toString())
+            .errorMessage(ResponseMessage.TOO_MANY_REQUEST_ERROR.getMsg());
+
+    return new ResponseEntity<>(new ResponseWrapper().status(status), HttpStatus.TOO_MANY_REQUESTS);
   }
 }

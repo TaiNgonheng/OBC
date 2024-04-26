@@ -1,26 +1,32 @@
 package com.rhbgroup.dte.obc.common.util.impl;
 
+import com.hazelcast.cache.HazelcastCacheManager;
+import com.hazelcast.map.IMap;
+import com.rhbgroup.dte.obc.common.constants.CacheConstants;
 import com.rhbgroup.dte.obc.common.util.CacheUtil;
+import io.github.bucket4j.grid.hazelcast.HazelcastProxyManager;
 import javax.annotation.PostConstruct;
-import javax.cache.CacheManager;
 import javax.cache.Caching;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.CreatedExpiryPolicy;
 import javax.cache.expiry.Duration;
 import javax.cache.spi.CachingProvider;
-
-import io.github.bucket4j.local.LockFreeBucket;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JCacheUtil implements CacheUtil {
 
-  private CacheManager cacheManager;
+  private HazelcastCacheManager cacheManager;
+  private HazelcastProxyManager<String> hazelcastProxyManager;
 
   @PostConstruct
   public void postConstruct() {
     CachingProvider cachingProvider = Caching.getCachingProvider();
-    this.cacheManager = cachingProvider.getCacheManager();
+    this.cacheManager = (HazelcastCacheManager) cachingProvider.getCacheManager();
+
+    IMap<String, byte[]> iMap =
+        this.cacheManager.getHazelcastInstance().getMap(CacheConstants.OBCCache.CACHE_TOKEN_BUCKET);
+    hazelcastProxyManager = new HazelcastProxyManager<>(iMap);
   }
 
   @Override
@@ -38,18 +44,6 @@ public class JCacheUtil implements CacheUtil {
   }
 
   @Override
-  public void createByteCache(String cacheName, Duration expireTime) {
-    MutableConfiguration<String, byte[]> config = new MutableConfiguration<>();
-    config.setExpiryPolicyFactory(CreatedExpiryPolicy.factoryOf(expireTime));
-    cacheManager.createCache(cacheName, config);
-  }
-
-  @Override
-  public byte[] getByteValueFromKey(String cacheName, String key) {
-    return (byte[]) cacheManager.getCache(cacheName).get(key);
-  }
-
-  @Override
   public void addKey(String cacheName, String key, String value) {
     cacheManager.getCache(cacheName).put(key, value);
   }
@@ -60,21 +54,12 @@ public class JCacheUtil implements CacheUtil {
   }
 
   @Override
-  public void addKey(String cacheName, String key, Object obj) {
-    cacheManager.getCache(cacheName).put(key, obj);
-  }
-
-  @Override
-  public <T> T getValueFromKey(String cacheName, String key, Class<T> clazz) {
-    Object obj = cacheManager.getCache(cacheName).get(key);
-    if (obj != null) {
-      return (T) obj;
-    }
-    return null;
-  }
-
-  @Override
   public void addKey(String cacheName, String key, byte[] value) {
     cacheManager.getCache(cacheName).put(key, value);
+  }
+
+  @Override
+  public HazelcastProxyManager<String> getHazelcastProxyManager() {
+    return this.hazelcastProxyManager;
   }
 }

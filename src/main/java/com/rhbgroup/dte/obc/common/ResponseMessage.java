@@ -87,7 +87,8 @@ public enum ResponseMessage {
   // Generic error message
   CONSTRAINT_VIOLATION_ERROR(300, "Constraint violation exception."),
   DATA_NOT_FOUND(301, "Data not found."),
-  DATA_STRUCTURE_INVALID(302, "Data structure invalid.");
+  DATA_STRUCTURE_INVALID(302, "Data structure invalid."),
+  TOO_MANY_REQUEST_ERROR(429, "Too Many Requests");
 
   private final Integer code;
   private final String msg;
