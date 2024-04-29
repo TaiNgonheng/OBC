@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.rhbgroup.dte</groupId>
     <artifactId>obc</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <name>cdrb-obc</name>
     <description>Open Banking Client</description>
     <properties>
@@ -106,11 +106,10 @@
             <artifactId>cache-api</artifactId>
             <version>1.1.1</version>
         </dependency>
-
         <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast</artifactId>
-            <version>5.2.2</version>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j-hazelcast</artifactId>
+            <version>8.2.0</version>
         </dependency>
 
         <dependency>
@@ -156,6 +155,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-quartz</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-spring</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.giffing.bucket4j.spring.boot.starter/bucket4j-spring-boot-starter -->
+        <dependency>
+            <groupId>com.giffing.bucket4j.spring.boot.starter</groupId>
+            <artifactId>bucket4j-spring-boot-starter</artifactId>
+            <version>0.12.6</version>
         </dependency>
 
     </dependencies>
