@@ -79,6 +79,7 @@ obc:
     port: ${SFTP_PORT:2022}
     path: ${SFTP_PATH:data}
   rate-limits:
+    enabled: ${RATE_LIMIT_ENABLED:true}
     bandwidths:
       capacity: ${RATE_LIMIT_BANDWIDTHS_CAPACITY:200}
       period: ${RATE_LIMIT_BANDWIDTHS_PERIOD_IN_MINUTE:1}

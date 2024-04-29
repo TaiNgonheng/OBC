@@ -8,6 +8,7 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -21,6 +22,9 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
   private final RateLimitSecurityService rateLimitSecurityService;
 
+  @Value("${obc.rate-limits.enabled}")
+  private boolean isRateLimitsEnabled;
+
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
       throws Exception {
@@ -29,15 +33,18 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     final String ip =
         xForwardedHeader != null ? xForwardedHeader.split(",")[0] : request.getRemoteAddr();
     log.info("remote address {} and request time {}", ip, new Date());
-
-    Bucket bucket = rateLimitSecurityService.resolveBucket(ip);
-    log.info("available token {} for key {}", bucket.getAvailableTokens(), ip);
-    if (bucket.tryConsume(1)) {
-      log.info("remaining token {} for key {}", bucket.getAvailableTokens(), ip);
-      return HandlerInterceptor.super.preHandle(request, response, handler);
+    if (isRateLimitsEnabled) {
+      Bucket bucket = rateLimitSecurityService.resolveBucket(ip);
+      log.info("available token {} for key {}", bucket.getAvailableTokens(), ip);
+      if (bucket.tryConsume(1)) {
+        log.info("remaining token {} for key {}", bucket.getAvailableTokens(), ip);
+        return HandlerInterceptor.super.preHandle(request, response, handler);
+      } else {
+        log.warn("{} Reach rate limited!", ip);
+        throw new RateLimitException(ResponseMessage.TOO_MANY_REQUEST_ERROR);
+      }
     } else {
-      log.warn("{} Reach rate limited!", ip);
-      throw new RateLimitException(ResponseMessage.TOO_MANY_REQUEST_ERROR);
+      return HandlerInterceptor.super.preHandle(request, response, handler);
     }
   }
 }
