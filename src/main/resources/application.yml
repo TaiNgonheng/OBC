@@ -50,24 +50,24 @@ obc:
   security:
     jwt-secret: ${JWT_SECRET:my-secret}
     jwt-ttl: ${JWT_TTL:300}
-    aesKey: ${CDRB_AES_KEY:64e80a9de98bff0c9ac865d2fa381611}
-    aesIv: ${CDRB_AES_IV:TzwQBXz8dGHQCEjEwppfiQ==}
+    aesKey: ${CDRB_AES_KEY:1234567812345678}
+    aesIv: ${CDRB_AES_IV:esdWoBKBeDpHEPBt56qw4g==}
   pg1:
-    url: http://10.202.38.24
+    url: ${PG1_URL:http://10.202.38.27}
     username: ${PG1_USERNAME:soap_user}
     password: ${PG1_PASSWORD:+2023xZ_feBcRpYP9e}
   cdrb:
-    url: https://api.uat2.cdrb.link
-    username: ${CDRB_USERNAME:obc_uat2}
-    password: ${CDRB_PASSWORD:wQMeJRLjQK5JlbZ1eovTng==}
-    hsmZmk: ${CDRB_HSM_ZMK:807097B901C7BC0D70C72C6892E094B6}
-    xApiKey: ${CDRB_X_API_KEY:SoeLsIrogq92fh3VHermr3MyjW0OGRyF1zQjmwaP}
+    url: ${CDRB_URL:https://api.dev.cdrb.link}
+    username: ${CDRB_USERNAME:redRanger}
+    password: ${CDRB_PASSWORD:sflsClYsuxash+qkDIJftkotgkzWmndPi5iR/atfzXQ=}
+    hsmZmk: ${CDRB_HSM_ZMK:5497B691458FC1CD31A16116701F57F8}
+    xApiKey: ${CDRB_X_API_KEY:NQrIN7HPBt141uX5yw2SZ4NigpagyHkZ8cG9b2rf}
   infobip:
-    url: https://9rd19r.api.infobip.com
-    appId: AEBF567DD1E525DFE30EB18DDB20D90B
-    messageId: 08618DC7FE0B5574F8BE47E9452D776B
-    username: bakong_link_casa
-    password: Thakvika@081
+    url: ${INFOBIP_URL:https://9rmmnv.api.infobip.com}
+    appId: ${INFOBIP_APP_ID:FA6C2DC0CCC7843B2395F3A91E0B5EC2}
+    messageId: ${INFOBIP_MESSAGE_ID:CFF95B6AC9CAB1CDE1E852762651F8A5}
+    username: ${INFOBIP_USERNAME:tmnhat.cmcglobal}
+    password: ${INFOBIP_PASSWORD:Sunn@123}
     ncNeeded: ${INFOBIP_NC_NEEDED:false}
     init-link-required-opt: ${INIT_LINK_REQUIRED_OTP:true}
     init-transger-required-opt: ${INIT_TRANSFER_REQUIRED_OTP:true}
