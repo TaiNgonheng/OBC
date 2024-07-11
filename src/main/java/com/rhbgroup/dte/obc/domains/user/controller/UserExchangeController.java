@@ -9,13 +9,11 @@ import com.rhbgroup.dte.obc.model.GWAuthenticationResponse;
 import com.rhbgroup.dte.obc.model.UserExchangeRequest;
 import com.rhbgroup.dte.obc.model.UserExchangeResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class UserExchangeController implements SystemExchangeApiDelegate {
 
   private final UserExchangeMapper userExchangeMapper;
@@ -26,9 +24,6 @@ public class UserExchangeController implements SystemExchangeApiDelegate {
   public ResponseEntity<UserExchangeResponse> userExchange(
       UserExchangeRequest userExchangeRequest) {
 
-    log.info(">>>>>>>>>>>>>>>>>>>>>>>>>");
-    log.info(">>>>>>>>>>>>>>>>>>>>>>>>> make sure new deployment working correct");
-    log.info(">>>>>>>>>>>>>>>>>>>>>>>>>");
     return Functions.of(userExchangeMapper::toModel)
         .andThen(userExchangeService::exchangeUser)
         .andThen(userExchangeMapper::toResponse)

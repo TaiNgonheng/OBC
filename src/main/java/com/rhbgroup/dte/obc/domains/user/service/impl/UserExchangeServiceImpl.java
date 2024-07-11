@@ -15,7 +15,6 @@ import com.rhbgroup.dte.obc.exceptions.BizException;
 import com.rhbgroup.dte.obc.model.ExchangeAccountResponseAllOfData;
 import com.rhbgroup.dte.obc.model.UserModel;
 import com.rhbgroup.dte.obc.security.JwtTokenUtils;
-
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Objects;
@@ -95,7 +94,8 @@ public class UserExchangeServiceImpl implements UserExchangeService {
             existingUser.setCifNo(newUser.getCifNo());
           }
 
-          existingUser.setUpdatedDate(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
+          existingUser.setUpdatedDate(
+              LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
           return existingUser;
         }
 
