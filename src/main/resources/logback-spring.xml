@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="LOG_PATH" value="/var/log/obc" />
+    <property name="LOG_FILE" value="${LOG_PATH}/application.log" />
+    <property name="ARCHIVE_LOG_FILE" value="${LOG_PATH}/application-%d{yyyy-MM-dd}.log" />
+
+    <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${ARCHIVE_LOG_FILE}</fileNamePattern>
+            <!--Set to 90 days to align with AWS log retention policies-->
+            <maxHistory>${LOG_MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${LOG_TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+            <immediateFlush>true</immediateFlush>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="ROLLING" />
+    </root>
+
+    <logger name="web" level="info" additivity="false">
+        <appender-ref ref="ROLLING" />
+    </logger>
+</configuration>
