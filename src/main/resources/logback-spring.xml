@@ -9,7 +9,7 @@
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${ARCHIVE_LOG_FILE}</fileNamePattern>
             <!--Set to 90 days to align with AWS log retention policies-->
-            <maxHistory>90</maxHistory>
+            <maxHistory>${LOG_MAX_HISTORY}</maxHistory>
             <totalSizeCap>${LOG_TOTAL_SIZE_CAP}</totalSizeCap>
         </rollingPolicy>
         <encoder>
