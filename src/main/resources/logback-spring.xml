@@ -10,7 +10,7 @@
             <fileNamePattern>${ARCHIVE_LOG_FILE}</fileNamePattern>
             <!--Set to 90 days to align with AWS log retention policies-->
             <maxHistory>90</maxHistory>
-            <totalSizeCap>50GB</totalSizeCap>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
         </rollingPolicy>
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
