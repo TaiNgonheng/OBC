@@ -2,4 +2,9 @@ hazelcast:
   network:
     join:
       multicast:
+        enabled: false
+      tcp-ip:
         enabled: true
+        member-list:
+          - 10.202.38.41:5701
+          - 10.202.38.40:5701
