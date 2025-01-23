@@ -8,7 +8,7 @@ spring:
   datasource:
     url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:33068}/obc?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=false
     username: ${MYSQL_USERNAME:root}
-    password: ${MYSQL_PASSWORD:1qaz!QAZ}
+    password: ${MYSQL_PASSWORD:1qazQAZ}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       minimumIdle: ${SPRING_HIKARI_MIN_IDLE:2}
@@ -16,6 +16,25 @@ spring:
       idleTimeout: ${SPRING_HIKARI_IDLE_TIMEOUT:120000}
       connectionTimeout: ${SPRING_HIKARI_CONNECTION_TIMEOUT:300000}
       leakDetectionThreshold: ${SPRING_HIKARI_LEAK_DETECTION_THRESHOLD:300000}
+
+#  hazelcast:
+#    network:
+#      join:
+#        multicast:
+#          enabled: false
+#        tcp-ip:
+#          enabled: true
+#          member-list:
+#            - ${HAZELCAST_MEMBER_1:10.0.0.1}
+#            - ${HAZELCAST_MEMBER_2:10.0.0.2}
+#      port:
+#        auto-increment: true
+#        port: ${HAZELCAST_PORT:5701}
+#    instance-name: ${spring.application.name}
+#    map:
+#      default:
+#        time-to-live-seconds: 3600
+#        max-idle-seconds: 1800
 
   flyway:
     locations: classpath:sql/ddl,classpath:sql/dml
@@ -44,6 +63,7 @@ server:
     key-store-password: ${KEY_STORE_PASSWORD:"KEY_STORE_PASSWORD"}
     enabled-protocols: ${ENABLED_PROTOCOLS_VERSION:TLSv1.2}
     protocol: TLS
+
 obc:
   gowave-user: ${OBC_GOWAVE_USER:gowave_user}
   gowave-password: ${OBC_GOWAVE_PASSWORD:gowave_password}
@@ -87,4 +107,3 @@ obc:
 config:
   maxStackTraceLength: ${MAX_STACK_TRACE_LENGTH:19999}
   allWatchToken: ${ALL_WATCH_TOKEN:ALL_WATCH_TOKEN}
-
