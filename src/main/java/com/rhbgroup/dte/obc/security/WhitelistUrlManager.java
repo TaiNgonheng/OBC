@@ -1,14 +1,15 @@
 package com.rhbgroup.dte.obc.security;
 
 import com.rhbgroup.dte.obc.common.constants.AppConstants;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class WhitelistUrlManager {
 

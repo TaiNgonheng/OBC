@@ -36,6 +36,4 @@ public class AuthenticationStatus {
   public static AuthenticationStatus bypassed() {
     return AuthenticationStatus.builder().result(Status.BYPASSED).build();
   }
-
-
 }
